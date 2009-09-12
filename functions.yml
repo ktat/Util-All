@@ -1,0 +1,103 @@
+---
+scalar:
+  Scalar::Util: *
+
+list:
+  List::Util: *
+  List::MoreUtils: *
+
+hash:
+  Hash::Util: *
+
+debug:
+  Data::Dumper:
+    - Dumper: dumper
+  Data::Dump:
+    - dump
+
+string:
+  String::Util: *
+  String::CamelCase: *
+
+md5:
+  Digest::MD5: *
+
+sha:
+  Digest::SHA: *
+
+utf8:
+  utf8:
+    is_utf8: is_utf8
+    upgrade: utf8_upgrade
+    downgrade: utf8_downgrade
+    encode: utf8_encode
+
+cgi:
+  CGI:
+    escape: cgi_escape
+    unescape: cgi_unescape
+
+char_enc:
+  Encode:
+    encode : char_encode
+    decode : char_decode
+    from_to: char_from_to
+uri:
+  URI::Escape:
+    - uri_escape
+    - uri_unescape
+  URI::Split:
+    - uri_splict
+    - uri_join
+
+base64:
+  MIME::Base64:
+    encode_base64: base64_encode
+    decode_base64: base64_decode
+
+http:
+  HTTP::Request::Common:
+    GET:    http_get
+    POST:   http_post
+    PUT:    http_put
+    DELETE: http_delete
+    HEAD:   http_head
+
+mail:
+  Mail::Sendmail:
+    - sendmail
+
+carp:
+  Carp: *
+
+yaml:
+  YAML::Syck:
+    LoadFile: load_yaml_file
+    Load:     load_yaml
+    DumpFile: dump_yaml_file
+    Dump:     dump_yaml
+
+json:
+  JSON::Syck:
+    LoadJSON: load_json_file
+    Load:      load_json
+    DumpJSON: dump_json_file
+    Dump:     dump_json
+
+date:
+  Date::Parse: *
+
+benchmark:
+  Benchmark: *
+
+file:
+  File::Slurp:
+    - slurp_file
+    - read_file
+    - write_file
+  File::Find: *
+  File::Copy:
+    copy: copy_file
+    move: move_file
+  File::Path: *
+
