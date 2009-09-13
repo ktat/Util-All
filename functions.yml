@@ -80,9 +80,9 @@ yaml:
 
 json:
   JSON::Syck:
-    LoadJSON: json_load_file
+    LoadFile: json_load_file
     Load:     json_load	    
-    DumpJSON: json_dump_file
+    DumpFile: json_dump_file
     Dump:     json_dump	    
 
 datetime:
@@ -94,7 +94,7 @@ benchmark:
 
 file:
   File::Find:
-    fild : find_file
+    fild : file_find
   File::Path: *
   File::Slurp:
     slurp     : file_slurp
