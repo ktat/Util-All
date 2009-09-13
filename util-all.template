@@ -9,7 +9,7 @@ our $Utils = ###DEFINITION###;
 
 =head1 NAME
 
-Util::All - collection of perl utilities
+Util::All - collect perl utilities and group them to appropliate kind.
 
 =cut
 
@@ -29,17 +29,17 @@ When you want string utilities.
 
 When you want encode Utilities.
 
- use Util::All -encode;
+ use Util::All -char_enc;
  char_encode('utf8', $str);
  char_decode('utf8', $str);
 
 When you want CGI utilities.
 
  use Util::All -cgi;
- cgiescape("/%"); # %2F%25
- cgiunescape("%2F%25") # /%
+ cgi_escape("/%"); # %2F%25
+ cgi_unescape("%2F%25") # /%
 
-When you want md5 utilities
+When you want MD5 utilities
 
  use Util::All -md5;
 
@@ -50,6 +50,26 @@ When you want all utilities
  use Util::All 'all';
 
 etc.
+
+=head1 DESCRIPTION
+
+Perl has many modules on CPAN and many modules provide utility functions.
+Their utility functions are useful themself.
+But there are two problem to use these utility functions.
+
+First, CPAN has too much modules to lookup useful utility functions.
+Newbie or even intermediate level programmers don't know such functions very much.
+Honestly speaking, I don't know so much utility functions, too.
+
+Second, utlitiy functions are written by many authors.
+So, its naming rule/grouping rule is defined by authors.
+
+It's very regrettable for Perl.
+
+Util::All aims to collect utility functions on CPAN and group them to appropriate kind
+and rename them by common naming rule.
+
+If you know good functions, pelase tell me.
 
 =head1 EXPORT
 
@@ -87,13 +107,13 @@ This file is functions.yml in distribution.
 
 =head1 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
-No. the related module(s) of your selected kind, is/are loaded.
+No. the related module(s) of your selected kind(s) is/are loaded.
 
 =head1 CREATE YOUR OWN Util::All
 
 If you want to put more functions in Util::All,
 download distribution file and extract it and modify functions.yml and util-all.template(if needed).
-And then do the following command.
+And then do the following.
 
  perl create_util_all.pl
  perl Makefile.PL
@@ -101,17 +121,24 @@ And then do the following command.
  make test
  make install
 
-To do this, the following modules is required.
+To do this, the following modules are required.
 
  YAML::Syck
  Data::Dump
  File::Slurp
+ Tie::IxHash
 
-If you think more functions should be in Util::All, please inform me.
+If you think more functions should be in Util::All, please tell me them.
 
 =head1 AUTHOR
 
 Ktat, C<< <ktat at cpan.org> >>
+
+=head1 REPOSITORY
+
+Util::All is hosted at github.
+
+L<http://github.com/ktat/Util-All>
 
 =head1 BUGS
 
@@ -152,7 +179,14 @@ L<http://search.cpan.org/dist/Util-All/>
 
 =head1 SEE ALSO
 
-L<Util::Any> ... Util::Any helps you to create your own utilitiy module.
+=over 4
+
+=item L<Util::Any>
+
+This module is based on Util::Any.
+Util::Any helps you to create your own utilitiy module.
+
+=back
 
 =head1 COPYRIGHT & LICENSE
 
@@ -161,7 +195,6 @@ Copyright 2009 Ktat, all rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-
 =cut
 
-1; # End of Util::All
+"All utility function are blong to Util::All"; # End of Util::All

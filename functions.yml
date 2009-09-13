@@ -27,10 +27,10 @@ sha:
 
 utf8:
   utf8:
-    is_utf8: is_utf8
-    upgrade: utf8_upgrade
+    is_utf8  : is_utf8
+    upgrade  : utf8_upgrade
     downgrade: utf8_downgrade
-    encode: utf8_encode
+    encode   : utf8_encode
 
 cgi:
   CGI:
@@ -41,7 +41,8 @@ char_enc:
   Encode:
     encode : char_encode
     decode : char_decode
-    from_to: char_from_to
+    from_to: char_convert
+
 uri:
   URI::Escape:
     - uri_escape
@@ -65,39 +66,42 @@ http:
 
 mail:
   Mail::Sendmail:
-    - sendmail
+    - mail_send
 
 carp:
   Carp: *
 
 yaml:
   YAML::Syck:
-    LoadFile: load_yaml_file
-    Load:     load_yaml
-    DumpFile: dump_yaml_file
-    Dump:     dump_yaml
+    LoadFile: yaml_load_file
+    Load:     yaml_load
+    DumpFile: yaml_dump_file
+    Dump:     yaml_dump
 
 json:
   JSON::Syck:
-    LoadJSON: load_json_file
-    Load:      load_json
-    DumpJSON: dump_json_file
-    Dump:     dump_json
+    LoadJSON: json_load_file
+    Load:     json_load	    
+    DumpJSON: json_dump_file
+    Dump:     json_dump	    
 
-date:
-  Date::Parse: *
+datetime:
+  Date::Parse:
+    strptime: time_parse
 
 benchmark:
   Benchmark: *
 
 file:
-  File::Slurp:
-    - slurp_file
-    - read_file
-    - write_file
-  File::Find: *
-  File::Copy:
-    copy: copy_file
-    move: move_file
+  File::Find:
+    fild : find_file
   File::Path: *
+  File::Slurp:
+    slurp     : file_slurp
+    read_file : file_read
+    write_file: file_write
+  File::Copy:
+    copy: file_copy
+    move: file_move
+
 

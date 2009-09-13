@@ -6,6 +6,7 @@ use strict;
 use Util::Any -Base;
 
 our $Utils = {
+  # tied Tie::IxHash
   "-base64"    => [
                     [
                       "MIME::Base64",
@@ -29,23 +30,27 @@ our $Utils = {
                       {
                         decode  => "char_decode",
                         encode  => "char_encode",
-                        from_to => "char_from_to",
+                        from_to => "char_convert",
                       },
                     ],
                   ],
-  "-date"      => [["Date::Parse"]],
+  "-datetime"  => [["Date::Parse", "", { strptime => "time_parse" }]],
   "-debug"     => [
                     ["Data::Dump", "", { "-select" => ["dump"] }],
                     ["Data::Dumper", "", { "-select" => [{ Dumper => "dumper" }] }],
                   ],
   "-file"      => [
-                    ["File::Copy", "", { copy => "copy_file", move => "move_file" }],
-                    ["File::Find"],
+                    ["File::Copy", "", { copy => "file_copy", move => "file_move" }],
+                    ["File::Find", "", { fild => "find_file" }],
                     ["File::Path"],
                     [
                       "File::Slurp",
                       "",
-                      { "-select" => ["slurp_file", "read_file", "write_file"] },
+                      {
+                        read_file => "file_read",
+                        slurp => "file_slurp",
+                        write_file => "file_write",
+                      },
                     ],
                   ],
   "-hash"      => [["Hash::Util"]],
@@ -67,15 +72,15 @@ our $Utils = {
                       "JSON::Syck",
                       "",
                       {
-                        Dump => "dump_json",
-                        DumpJSON => "dump_json_file",
-                        Load => "load_json",
-                        LoadJSON => "load_json_file",
+                        Dump => "json_dump",
+                        DumpJSON => "json_dump_file",
+                        Load => "json_load",
+                        LoadJSON => "json_load_file",
                       },
                     ],
                   ],
-  "-list"      => [["List::Util"], ["List::MoreUtils"]],
-  "-mail"      => [["Mail::Sendmail", "", { "-select" => ["sendmail"] }]],
+  "-list"      => [["List::MoreUtils"], ["List::Util"]],
+  "-mail"      => [["Mail::Sendmail", "", { "-select" => ["mail_send"] }]],
   "-md5"       => [["Digest::MD5"]],
   "-scalar"    => [["Scalar::Util"]],
   "-sha"       => [["Digest::SHA"]],
@@ -105,10 +110,10 @@ our $Utils = {
                       "YAML::Syck",
                       "",
                       {
-                        Dump => "dump_yaml",
-                        DumpFile => "dump_yaml_file",
-                        Load => "load_yaml",
-                        LoadFile => "load_yaml_file",
+                        Dump => "yaml_dump",
+                        DumpFile => "yaml_dump_file",
+                        Load => "yaml_load",
+                        LoadFile => "yaml_load_file",
                       },
                     ],
                   ],
@@ -116,7 +121,7 @@ our $Utils = {
 
 =head1 NAME
 
-Util::All - collection of perl utilities
+Util::All - collect perl utilities and group them to appropliate kind.
 
 =cut
 
@@ -136,17 +141,17 @@ When you want string utilities.
 
 When you want encode Utilities.
 
- use Util::All -encode;
+ use Util::All -char_enc;
  char_encode('utf8', $str);
  char_decode('utf8', $str);
 
 When you want CGI utilities.
 
  use Util::All -cgi;
- cgiescape("/%"); # %2F%25
- cgiunescape("%2F%25") # /%
+ cgi_escape("/%"); # %2F%25
+ cgi_unescape("%2F%25") # /%
 
-When you want md5 utilities
+When you want MD5 utilities
 
  use Util::All -md5;
 
@@ -157,6 +162,26 @@ When you want all utilities
  use Util::All 'all';
 
 etc.
+
+=head1 DESCRIPTION
+
+Perl has many modules on CPAN and many modules provide utility functions.
+Their utility functions are useful themself.
+But there are two problem to use these utility functions.
+
+First, CPAN has too much modules to lookup useful utility functions.
+Newbie or even intermediate level programmers don't know such functions very much.
+Honestly speaking, I don't know so much utility functions, too.
+
+Second, utlitiy functions are written by many authors.
+So, its naming rule/grouping rule is defined by authors.
+
+It's very regrettable for Perl.
+
+Util::All aims to collect utility functions on CPAN and group them to appropriate kind
+and rename them by common naming rule.
+
+If you know good functions, pelase tell me.
 
 =head1 EXPORT
 
@@ -219,10 +244,10 @@ This file is functions.yml in distribution.
    
    utf8:
      utf8:
-       is_utf8: is_utf8
-       upgrade: utf8_upgrade
+       is_utf8  : is_utf8
+       upgrade  : utf8_upgrade
        downgrade: utf8_downgrade
-       encode: utf8_encode
+       encode   : utf8_encode
    
    cgi:
      CGI:
@@ -233,7 +258,8 @@ This file is functions.yml in distribution.
      Encode:
        encode : char_encode
        decode : char_decode
-       from_to: char_from_to
+       from_to: char_convert
+   
    uri:
      URI::Escape:
        - uri_escape
@@ -257,53 +283,56 @@ This file is functions.yml in distribution.
    
    mail:
      Mail::Sendmail:
-       - sendmail
+       - mail_send
    
    carp:
      Carp: *
    
    yaml:
      YAML::Syck:
-       LoadFile: load_yaml_file
-       Load:     load_yaml
-       DumpFile: dump_yaml_file
-       Dump:     dump_yaml
+       LoadFile: yaml_load_file
+       Load:     yaml_load
+       DumpFile: yaml_dump_file
+       Dump:     yaml_dump
    
    json:
      JSON::Syck:
-       LoadJSON: load_json_file
-       Load:      load_json
-       DumpJSON: dump_json_file
-       Dump:     dump_json
+       LoadJSON: json_load_file
+       Load:     json_load	    
+       DumpJSON: json_dump_file
+       Dump:     json_dump	    
    
-   date:
-     Date::Parse: *
+   datetime:
+     Date::Parse:
+       strptime: time_parse
    
    benchmark:
      Benchmark: *
    
    file:
-     File::Slurp:
-       - slurp_file
-       - read_file
-       - write_file
-     File::Find: *
-     File::Copy:
-       copy: copy_file
-       move: move_file
+     File::Find:
+       fild : find_file
      File::Path: *
+     File::Slurp:
+       slurp     : file_slurp
+       read_file : file_read
+       write_file: file_write
+     File::Copy:
+       copy: file_copy
+       move: file_move
+   
    
 
 
 =head1 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
-No. the related module(s) of your selected kind, is/are loaded.
+No. the related module(s) of your selected kind(s) is/are loaded.
 
 =head1 CREATE YOUR OWN Util::All
 
 If you want to put more functions in Util::All,
 download distribution file and extract it and modify functions.yml and util-all.template(if needed).
-And then do the following command.
+And then do the following.
 
  perl create_util_all.pl
  perl Makefile.PL
@@ -311,17 +340,24 @@ And then do the following command.
  make test
  make install
 
-To do this, the following modules is required.
+To do this, the following modules are required.
 
  YAML::Syck
  Data::Dump
  File::Slurp
+ Tie::IxHash
 
-If you think more functions should be in Util::All, please inform me.
+If you think more functions should be in Util::All, please tell me them.
 
 =head1 AUTHOR
 
 Ktat, C<< <ktat at cpan.org> >>
+
+=head1 REPOSITORY
+
+Util::All is hosted at github.
+
+L<http://github.com/ktat/Util-All>
 
 =head1 BUGS
 
@@ -362,7 +398,14 @@ L<http://search.cpan.org/dist/Util-All/>
 
 =head1 SEE ALSO
 
-L<Util::Any> ... Util::Any helps you to create your own utilitiy module.
+=over 4
+
+=item L<Util::Any>
+
+This module is based on Util::Any.
+Util::Any helps you to create your own utilitiy module.
+
+=back
 
 =head1 COPYRIGHT & LICENSE
 
@@ -371,7 +414,6 @@ Copyright 2009 Ktat, all rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-
 =cut
 
-1; # End of Util::All
+"All utility function are blong to Util::All"; # End of Util::All

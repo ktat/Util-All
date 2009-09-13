@@ -4,14 +4,16 @@ use strict;
 use YAML::Syck "Load";
 use Data::Dump 'dump';
 use File::Slurp 'slurp';
+use Tie::IxHash;
 
 my %new;
+tie %new, 'Tie::IxHash';
 my $yaml = slurp("functions.yml");
 my $def = Load($yaml);
 my @modules;
 
-foreach my $k (keys %$def) {
-  foreach my $m (keys %{$def->{$k}}) {
+foreach my $k (sort keys %$def) {
+  foreach my $m (sort keys %{$def->{$k}}) {
     push @modules, $m;
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];
@@ -44,7 +46,7 @@ close $out;
 print "Writing lib/Util/All.pm\n";
 
 my $makefile = do {local $/; <DATA>};
-my $dependent_modules = join ",\n", map {"\t'$_' => 0"} @modules;
+my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort @modules;
 $makefile =~s{###DEPENDENT_MODULES###}{$dependent_modules};
 
 open my $out, '>', 'Makefile.PL' or die $!;
