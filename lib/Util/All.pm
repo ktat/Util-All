@@ -15,6 +15,9 @@ our $Utils = {
                     ],
                   ],
   "-benchmark" => [["Benchmark"]],
+  "-bool"      => [
+                    ["Return::Value", "", { "-select" => ["success", "failure"] }],
+                  ],
   "-carp"      => [["Carp"]],
   "-cgi"       => [
                     [
@@ -41,7 +44,7 @@ our $Utils = {
                   ],
   "-file"      => [
                     ["File::Copy", "", { copy => "file_copy", move => "file_move" }],
-                    ["File::Find", "", { fild => "find_file" }],
+                    ["File::Find", "", { fild => "file_find" }],
                     ["File::Path"],
                     [
                       "File::Slurp",
@@ -73,9 +76,9 @@ our $Utils = {
                       "",
                       {
                         Dump => "json_dump",
-                        DumpJSON => "json_dump_file",
+                        DumpFile => "json_dump_file",
                         Load => "json_load",
-                        LoadJSON => "json_load_file",
+                        LoadFile => "json_load_file",
                       },
                     ],
                   ],
@@ -167,26 +170,29 @@ etc.
 
 Perl has many modules on CPAN and many modules provide utility functions.
 Their utility functions are useful themself.
-But there are two problem to use these utility functions.
+But there are two problems to use these utility functions.
 
 First, CPAN has too much modules to lookup useful utility functions.
 Newbie or even intermediate level programmers don't know such functions very much.
 Honestly speaking, I don't know so much utility functions, too.
+Even if I could search such functions,
+User have to remember its name and the module including it.
 
 Second, utlitiy functions are written by many authors.
-So, its naming rule/grouping rule is defined by authors.
+So, its naming rule/grouping rule/interface is defined by authors.
+It is hard to remember the name/usage.
 
 It's very regrettable for Perl.
 
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
 and rename them by common naming rule.
 
-If you know good functions, pelase tell me.
+If you know good functions, pelase tell me. I want to add them into Util::All.
 
 =head1 EXPORT
 
 Instead of writing document,
-I'll show yaml file below.
+I'll show YAML file below.
 
 Its first level keys are kinds of functions.
 hashes of the kinds has three kind of structures.
@@ -297,9 +303,9 @@ This file is functions.yml in distribution.
    
    json:
      JSON::Syck:
-       LoadJSON: json_load_file
+       LoadFile: json_load_file
        Load:     json_load	    
-       DumpJSON: json_dump_file
+       DumpFile: json_dump_file
        Dump:     json_dump	    
    
    datetime:
@@ -311,7 +317,7 @@ This file is functions.yml in distribution.
    
    file:
      File::Find:
-       fild : find_file
+       fild : file_find
      File::Path: *
      File::Slurp:
        slurp     : file_slurp
@@ -321,6 +327,10 @@ This file is functions.yml in distribution.
        copy: file_copy
        move: file_move
    
+   bool:
+     Return::Value:
+       - success
+       - failure
    
 
 

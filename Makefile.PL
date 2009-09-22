@@ -34,6 +34,7 @@ WriteMakefile(
 	'List::Util' => 0,
 	'MIME::Base64' => 0,
 	'Mail::Sendmail' => 0,
+	'Return::Value' => 0,
 	'Scalar::Util' => 0,
 	'String::CamelCase' => 0,
 	'String::Util' => 0,

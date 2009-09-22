@@ -104,4 +104,8 @@ file:
     copy: file_copy
     move: file_move
 
+bool:
+  Return::Value:
+    - success
+    - failure
 
