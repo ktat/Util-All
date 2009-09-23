@@ -20,6 +20,7 @@ WriteMakefile(
 	'Data::Dump' => 0,
 	'Data::Dumper' => 0,
 	'Date::Parse' => 0,
+	'DateTime' => 0,
 	'Digest::MD5' => 0,
 	'Digest::SHA' => 0,
 	'Encode' => 0,

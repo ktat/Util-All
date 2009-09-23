@@ -2,9 +2,13 @@
 
 use strict;
 use YAML::Syck "Load";
-use Data::Dump 'dump';
 use File::Slurp 'slurp';
 use Tie::IxHash;
+use Data::Dumper;
+
+$Data::Dumper::Deparse = 1;
+$Data::Dumper::Terse = 1;
+$Data::Dumper::Indent = 1;
 
 my %new;
 tie %new, 'Tie::IxHash';
@@ -18,6 +22,11 @@ foreach my $k (sort keys %$def) {
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];
     } elsif (ref $def->{$k}{$m} eq 'HASH') {
+      foreach my $f (keys  %{$def->{$k}->{$m}}) {
+        if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
+          $def->{$k}->{$m}->{$f} = eval "$def->{$k}->{$m}->{$f}";
+        }
+      }
       push @{$new{'-' . $k} ||= []}, [
                                       $m, '',
                                       $def->{$k}{$m},
@@ -33,7 +42,7 @@ foreach my $k (sort keys %$def) {
   }
 }
 
-my $def_string = dump(\%new);
+my $def_string = Dumper(\%new);
 my $template = slurp("util-all.template") or die $!;
 
 $template =~s{###DEFINITION###}{$def_string};

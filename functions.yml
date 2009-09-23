@@ -11,7 +11,7 @@ hash:
 
 debug:
   Data::Dumper:
-    - Dumper: dumper
+    Dumper: dumper
   Data::Dump:
     - dump
 
@@ -48,7 +48,7 @@ uri:
     - uri_escape
     - uri_unescape
   URI::Split:
-    - uri_splict
+    - uri_split
     - uri_join
 
 base64:
@@ -66,7 +66,7 @@ http:
 
 mail:
   Mail::Sendmail:
-    - mail_send
+    sendmail: mail_send
 
 carp:
   Carp: *
@@ -88,6 +88,9 @@ json:
 datetime:
   Date::Parse:
     strptime: time_parse
+  DateTime:
+    today   : sub {sub { DateTime->today(@_) }}
+    now     : sub {sub { DateTime->now(@_) }}
 
 benchmark:
   Benchmark: *

@@ -9,7 +9,7 @@ our $Utils = ###DEFINITION###;
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them to appropliate kind.
+Util::All - collect perl utilities and group them to appropriate kind.
 
 =cut
 
@@ -63,7 +63,7 @@ Honestly speaking, I don't know so much utility functions, too.
 Even if I could search such functions,
 User have to remember its name and the module including it.
 
-Second, utlitiy functions are written by many authors.
+Second, utility functions are written by many authors.
 So, its naming rule/grouping rule/interface is defined by authors.
 It is hard to remember the name/usage.
 
@@ -72,7 +72,19 @@ It's very regrettable for Perl.
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
 and rename them by common naming rule.
 
-If you know good functions, pelase tell me. I want to add them into Util::All.
+If you know good functions, please tell me. I want to add them into Util::All.
+
+=head1 NAMING RULE
+
+Current naming rule is:
+
+ KIND_VERB(_OBJECT)
+
+For example:
+
+ YAML::Syck::Load ...  yml_load
+ YAML::Syck::LoadFile ... yml_load_file
+ Mail::Sendmail::sendmail ... mail_send
 
 =head1 EXPORT
 
@@ -127,7 +139,6 @@ And then do the following.
 To do this, the following modules are required.
 
  YAML::Syck
- Data::Dump
  File::Slurp
  Tie::IxHash
 
@@ -187,7 +198,7 @@ L<http://search.cpan.org/dist/Util-All/>
 =item L<Util::Any>
 
 This module is based on Util::Any.
-Util::Any helps you to create your own utilitiy module.
+Util::Any helps you to create your own utility module.
 
 =back
 
@@ -200,4 +211,4 @@ under the same terms as Perl itself.
 
 =cut
 
-"All utility function are blong to Util::All"; # End of Util::All
+"All utility function are belong to Util::All"; # End of Util::All

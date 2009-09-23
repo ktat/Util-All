@@ -6,121 +6,253 @@ use strict;
 use Util::Any -Base;
 
 our $Utils = {
-  # tied Tie::IxHash
-  "-base64"    => [
-                    [
-                      "MIME::Base64",
-                      "",
-                      { decode_base64 => "base64_decode", encode_base64 => "base64_encode" },
-                    ],
-                  ],
-  "-benchmark" => [["Benchmark"]],
-  "-bool"      => [
-                    ["Return::Value", "", { "-select" => ["success", "failure"] }],
-                  ],
-  "-carp"      => [["Carp"]],
-  "-cgi"       => [
-                    [
-                      "CGI",
-                      "",
-                      { escape => "cgi_escape", unescape => "cgi_unescape" },
-                    ],
-                  ],
-  "-char_enc"  => [
-                    [
-                      "Encode",
-                      "",
-                      {
-                        decode  => "char_decode",
-                        encode  => "char_encode",
-                        from_to => "char_convert",
-                      },
-                    ],
-                  ],
-  "-datetime"  => [["Date::Parse", "", { strptime => "time_parse" }]],
-  "-debug"     => [
-                    ["Data::Dump", "", { "-select" => ["dump"] }],
-                    ["Data::Dumper", "", { "-select" => [{ Dumper => "dumper" }] }],
-                  ],
-  "-file"      => [
-                    ["File::Copy", "", { copy => "file_copy", move => "file_move" }],
-                    ["File::Find", "", { fild => "file_find" }],
-                    ["File::Path"],
-                    [
-                      "File::Slurp",
-                      "",
-                      {
-                        read_file => "file_read",
-                        slurp => "file_slurp",
-                        write_file => "file_write",
-                      },
-                    ],
-                  ],
-  "-hash"      => [["Hash::Util"]],
-  "-http"      => [
-                    [
-                      "HTTP::Request::Common",
-                      "",
-                      {
-                        DELETE => "http_delete",
-                        GET    => "http_get",
-                        HEAD   => "http_head",
-                        POST   => "http_post",
-                        PUT    => "http_put",
-                      },
-                    ],
-                  ],
-  "-json"      => [
-                    [
-                      "JSON::Syck",
-                      "",
-                      {
-                        Dump => "json_dump",
-                        DumpFile => "json_dump_file",
-                        Load => "json_load",
-                        LoadFile => "json_load_file",
-                      },
-                    ],
-                  ],
-  "-list"      => [["List::MoreUtils"], ["List::Util"]],
-  "-mail"      => [["Mail::Sendmail", "", { "-select" => ["mail_send"] }]],
-  "-md5"       => [["Digest::MD5"]],
-  "-scalar"    => [["Scalar::Util"]],
-  "-sha"       => [["Digest::SHA"]],
-  "-string"    => [["String::CamelCase"], ["String::Util"]],
-  "-uri"       => [
-                    [
-                      "URI::Escape",
-                      "",
-                      { "-select" => ["uri_escape", "uri_unescape"] },
-                    ],
-                    ["URI::Split", "", { "-select" => ["uri_splict", "uri_join"] }],
-                  ],
-  "-utf8"      => [
-                    [
-                      "utf8",
-                      "",
-                      {
-                        downgrade => "utf8_downgrade",
-                        encode    => "utf8_encode",
-                        is_utf8   => "is_utf8",
-                        upgrade   => "utf8_upgrade",
-                      },
-                    ],
-                  ],
-  "-yaml"      => [
-                    [
-                      "YAML::Syck",
-                      "",
-                      {
-                        Dump => "yaml_dump",
-                        DumpFile => "yaml_dump_file",
-                        Load => "yaml_load",
-                        LoadFile => "yaml_load_file",
-                      },
-                    ],
-                  ],
-};
+  '-base64' => [
+    [
+      'MIME::Base64',
+      '',
+      {
+        'decode_base64' => 'base64_decode',
+        'encode_base64' => 'base64_encode'
+      }
+    ]
+  ],
+  '-benchmark' => [
+    [
+      'Benchmark'
+    ]
+  ],
+  '-bool' => [
+    [
+      'Return::Value',
+      '',
+      {
+        '-select' => [
+          'success',
+          'failure'
+        ]
+      }
+    ]
+  ],
+  '-carp' => [
+    [
+      'Carp'
+    ]
+  ],
+  '-cgi' => [
+    [
+      'CGI',
+      '',
+      {
+        'unescape' => 'cgi_unescape',
+        'escape' => 'cgi_escape'
+      }
+    ]
+  ],
+  '-char_enc' => [
+    [
+      'Encode',
+      '',
+      {
+        'from_to' => 'char_convert',
+        'decode' => 'char_decode',
+        'encode' => 'char_encode'
+      }
+    ]
+  ],
+  '-datetime' => [
+    [
+      'Date::Parse',
+      '',
+      {
+        'strptime' => 'time_parse'
+      }
+    ],
+    [
+      'DateTime',
+      '',
+      {
+        'now' => sub {
+            use strict 'refs';
+            sub {
+                'DateTime'->now(@_);
+            }
+            ;
+        },
+        'today' => sub {
+            use strict 'refs';
+            sub {
+                'DateTime'->today(@_);
+            }
+            ;
+        }
+      }
+    ]
+  ],
+  '-debug' => [
+    [
+      'Data::Dump',
+      '',
+      {
+        '-select' => [
+          'dump'
+        ]
+      }
+    ],
+    [
+      'Data::Dumper',
+      '',
+      {
+        'Dumper' => 'dumper'
+      }
+    ]
+  ],
+  '-file' => [
+    [
+      'File::Copy',
+      '',
+      {
+        'copy' => 'file_copy',
+        'move' => 'file_move'
+      }
+    ],
+    [
+      'File::Find',
+      '',
+      {
+        'fild' => 'file_find'
+      }
+    ],
+    [
+      'File::Path'
+    ],
+    [
+      'File::Slurp',
+      '',
+      {
+        'slurp' => 'file_slurp',
+        'write_file' => 'file_write',
+        'read_file' => 'file_read'
+      }
+    ]
+  ],
+  '-hash' => [
+    [
+      'Hash::Util'
+    ]
+  ],
+  '-http' => [
+    [
+      'HTTP::Request::Common',
+      '',
+      {
+        'DELETE' => 'http_delete',
+        'POST' => 'http_post',
+        'PUT' => 'http_put',
+        'GET' => 'http_get',
+        'HEAD' => 'http_head'
+      }
+    ]
+  ],
+  '-json' => [
+    [
+      'JSON::Syck',
+      '',
+      {
+        'DumpFile' => 'json_dump_file',
+        'Dump' => 'json_dump',
+        'Load' => 'json_load',
+        'LoadFile' => 'json_load_file'
+      }
+    ]
+  ],
+  '-list' => [
+    [
+      'List::MoreUtils'
+    ],
+    [
+      'List::Util'
+    ]
+  ],
+  '-mail' => [
+    [
+      'Mail::Sendmail',
+      '',
+      {
+        'sendmail' => 'mail_send'
+      }
+    ]
+  ],
+  '-md5' => [
+    [
+      'Digest::MD5'
+    ]
+  ],
+  '-scalar' => [
+    [
+      'Scalar::Util'
+    ]
+  ],
+  '-sha' => [
+    [
+      'Digest::SHA'
+    ]
+  ],
+  '-string' => [
+    [
+      'String::CamelCase'
+    ],
+    [
+      'String::Util'
+    ]
+  ],
+  '-uri' => [
+    [
+      'URI::Escape',
+      '',
+      {
+        '-select' => [
+          'uri_escape',
+          'uri_unescape'
+        ]
+      }
+    ],
+    [
+      'URI::Split',
+      '',
+      {
+        '-select' => [
+          'uri_split',
+          'uri_join'
+        ]
+      }
+    ]
+  ],
+  '-utf8' => [
+    [
+      'utf8',
+      '',
+      {
+        'downgrade' => 'utf8_downgrade',
+        'upgrade' => 'utf8_upgrade',
+        'encode' => 'utf8_encode',
+        'is_utf8' => 'is_utf8'
+      }
+    ]
+  ],
+  '-yaml' => [
+    [
+      'YAML::Syck',
+      '',
+      {
+        'DumpFile' => 'yaml_dump_file',
+        'Dump' => 'yaml_dump',
+        'Load' => 'yaml_load',
+        'LoadFile' => 'yaml_load_file'
+      }
+    ]
+  ]
+}
+;
 
 =head1 NAME
 
@@ -234,7 +366,7 @@ This file is functions.yml in distribution.
    
    debug:
      Data::Dumper:
-       - Dumper: dumper
+       Dumper: dumper
      Data::Dump:
        - dump
    
@@ -271,7 +403,7 @@ This file is functions.yml in distribution.
        - uri_escape
        - uri_unescape
      URI::Split:
-       - uri_splict
+       - uri_split
        - uri_join
    
    base64:
@@ -289,7 +421,7 @@ This file is functions.yml in distribution.
    
    mail:
      Mail::Sendmail:
-       - mail_send
+       sendmail: mail_send
    
    carp:
      Carp: *
@@ -311,6 +443,9 @@ This file is functions.yml in distribution.
    datetime:
      Date::Parse:
        strptime: time_parse
+     DateTime:
+       today   : sub {sub { DateTime->today(@_) }}
+       now     : sub {sub { DateTime->now(@_) }}
    
    benchmark:
      Benchmark: *
@@ -353,7 +488,6 @@ And then do the following.
 To do this, the following modules are required.
 
  YAML::Syck
- Data::Dump
  File::Slurp
  Tie::IxHash
 
