@@ -135,9 +135,13 @@ our $Utils = {
       'Data::Dump',
       '',
       {
-        '-select' => [
-          'dump'
-        ]
+        'p' => sub {
+            sub {
+                Data::Dump::dump(@_);
+            }
+            ;
+        },
+        'dump' => 'dump'
       }
     ],
     [
@@ -161,7 +165,7 @@ our $Utils = {
       'File::Find',
       '',
       {
-        'fild' => 'file_find'
+        'find' => 'file_find'
       }
     ],
     [
@@ -450,7 +454,8 @@ This file is functions.yml in distribution.
      Data::Dumper:
        Dumper: dumper
      Data::Dump:
-       - dump
+       dump: dump
+       p   : sub { sub { Data::Dump::dump(@_) } }
    
    string:
      String::Util: *
@@ -543,7 +548,7 @@ This file is functions.yml in distribution.
    
    file:
      File::Find:
-       fild : file_find
+       find : file_find
      File::Path: *
      File::Slurp:
        slurp     : file_slurp

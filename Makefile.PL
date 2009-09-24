@@ -14,6 +14,7 @@ WriteMakefile(
     PREREQ_PM => {
         'Test::More' => 0,
         'Util::Any'  => 0.13,
+        'Date::Manip' => 0,
 	'Benchmark' => 0,
 	'CGI' => 0,
 	'Carp' => 0,
