@@ -86,11 +86,20 @@ json:
     Dump:     json_dump	    
 
 datetime:
+  DateTime::Duration:
+    year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
+    month  : sub {sub () { DateTime::Duration->new(months  => 1) }}
+    day    : sub {sub () { DateTime::Duration->new(days    => 1) }}
+    hour   : sub {sub () { DateTime::Duration->new(hours   => 1) }}
+    minute : sub {sub () { DateTime::Duration->new(minutes => 1) }}
+    second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
+    datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
   Date::Parse:
-    strptime: time_parse
+    datetime_parse: sub {require Date::Manip; Date::Manip::Date_Init();sub {my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_); DateTime->new(year => $year + 1900, month => ++$month, day => $day, hour => $hh || 0, minute => $mm || 0, second => $ss || 0, time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)})} }
+    # strptime: time_parse
   DateTime:
-    today   : sub {sub { DateTime->today(@_) }}
-    now     : sub {sub { DateTime->now(@_) }}
+    today  : sub {sub () { DateTime->today(@_) }}
+    now    : sub {sub () { DateTime->now(@_) }}
 
 benchmark:
   Benchmark: *
@@ -107,8 +116,7 @@ file:
     copy: file_copy
     move: file_move
 
-bool:
+return:
   Return::Value:
     - success
     - failure
-

@@ -16,26 +16,32 @@ my $yaml = slurp("functions.yml");
 my $def = Load($yaml);
 my @modules;
 
+my $default_priority = 1000;
+
 foreach my $k (sort keys %$def) {
-  foreach my $m (sort keys %{$def->{$k}}) {
+  my %tmp;
+  foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
+                       ($tmp{$b} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
+                     } keys %{$def->{$k}}) {
     push @modules, $m;
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];
     } elsif (ref $def->{$k}{$m} eq 'HASH') {
       foreach my $f (keys  %{$def->{$k}->{$m}}) {
         if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
+          no strict; # for not including "use strict" when Dumper.
           $def->{$k}->{$m}->{$f} = eval "$def->{$k}->{$m}->{$f}";
         }
       }
       push @{$new{'-' . $k} ||= []}, [
                                       $m, '',
-                                      $def->{$k}{$m},
+                                      $def->{$k}->{$m},
                                      ];
     } else {
       push @{$new{'-' . $k} ||= []}, [
                                       $m, '',
                                       {
-                                       -select => $def->{$k}{$m}},
+                                       -select => $def->{$k}->{$m}},
                                      ];
 
     }
@@ -79,7 +85,8 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Util::Any'  => 0.08,
+        'Util::Any'  => 0.13,
+        'Date::Manip' => 0,
 ###DEPENDENT_MODULES###
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

@@ -21,18 +21,6 @@ our $Utils = {
       'Benchmark'
     ]
   ],
-  '-bool' => [
-    [
-      'Return::Value',
-      '',
-      {
-        '-select' => [
-          'success',
-          'failure'
-        ]
-      }
-    ]
-  ],
   '-carp' => [
     [
       'Carp'
@@ -61,27 +49,81 @@ our $Utils = {
   ],
   '-datetime' => [
     [
-      'Date::Parse',
-      '',
-      {
-        'strptime' => 'time_parse'
-      }
-    ],
-    [
       'DateTime',
       '',
       {
         'now' => sub {
-            use strict 'refs';
-            sub {
+            sub () {
                 'DateTime'->now(@_);
             }
             ;
         },
         'today' => sub {
-            use strict 'refs';
-            sub {
+            sub () {
                 'DateTime'->today(@_);
+            }
+            ;
+        }
+      }
+    ],
+    [
+      'DateTime::Duration',
+      '',
+      {
+        'hour' => sub {
+            sub () {
+                'DateTime::Duration'->new('hours', 1);
+            }
+            ;
+        },
+        'minute' => sub {
+            sub () {
+                'DateTime::Duration'->new('minutes', 1);
+            }
+            ;
+        },
+        'second' => sub {
+            sub () {
+                'DateTime::Duration'->new('seconds', 1);
+            }
+            ;
+        },
+        'month' => sub {
+            sub () {
+                'DateTime::Duration'->new('months', 1);
+            }
+            ;
+        },
+        'day' => sub {
+            sub () {
+                'DateTime::Duration'->new('days', 1);
+            }
+            ;
+        },
+        'datetime_duration' => sub {
+            sub {
+                'DateTime::Duration'->new(@_);
+            }
+            ;
+        },
+        'year' => sub {
+            sub () {
+                'DateTime::Duration'->new('years', 1);
+            }
+            ;
+        }
+      }
+    ],
+    [
+      'Date::Parse',
+      '',
+      {
+        'datetime_parse' => sub {
+            require Date::Manip;
+            Date::Manip::Date_Init();
+            sub {
+                my($ss, $mm, $hh, $day, $month, $year, $zone) = Date::Parse::strptime(@_);
+                'DateTime'->new('year', $year + 1900, 'month', ++$month, 'day', $day, 'hour', $hh || 0, 'minute', $mm || 0, 'second', $ss || 0, 'time_zone', $Date::Manip::Zone{'n2o'}{Time::Zone::tz_name($zone)});
             }
             ;
         }
@@ -167,10 +209,10 @@ our $Utils = {
   ],
   '-list' => [
     [
-      'List::MoreUtils'
+      'List::Util'
     ],
     [
-      'List::Util'
+      'List::MoreUtils'
     ]
   ],
   '-mail' => [
@@ -185,6 +227,18 @@ our $Utils = {
   '-md5' => [
     [
       'Digest::MD5'
+    ]
+  ],
+  '-return' => [
+    [
+      'Return::Value',
+      '',
+      {
+        '-select' => [
+          'success',
+          'failure'
+        ]
+      }
     ]
   ],
   '-scalar' => [
@@ -256,7 +310,7 @@ our $Utils = {
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them to appropliate kind.
+Util::All - collect perl utilities and group them to appropriate kind.
 
 =cut
 
@@ -310,7 +364,7 @@ Honestly speaking, I don't know so much utility functions, too.
 Even if I could search such functions,
 User have to remember its name and the module including it.
 
-Second, utlitiy functions are written by many authors.
+Second, utility functions are written by many authors.
 So, its naming rule/grouping rule/interface is defined by authors.
 It is hard to remember the name/usage.
 
@@ -319,7 +373,27 @@ It's very regrettable for Perl.
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
 and rename them by common naming rule.
 
-If you know good functions, pelase tell me. I want to add them into Util::All.
+If you know good functions, please tell me. I want to add them into Util::All.
+
+=head1 NAMING RULE
+
+Current planned naming rule is:
+
+ KIND_VERB(_OBJECT)
+
+For example:
+
+ YAML::Syck::Load ...  yml_load
+ YAML::Syck::LoadFile ... yml_load_file
+ Mail::Sendmail::sendmail ... mail_send
+
+But, some functions, which I think no need to add kind, are exception.
+For example:
+
+ today ... return today's DateTime object
+ now ... return now DateTime object
+
+etc.
 
 =head1 EXPORT
 
@@ -327,7 +401,7 @@ Instead of writing document,
 I'll show YAML file below.
 
 Its first level keys are kinds of functions.
-hashes of the kinds has three kind of structures.
+hashes of the kinds has four kinds of structures.
 
 First:
 
@@ -338,17 +412,25 @@ All functions in @EXPORT, @EXPORT_OK of Module::Name can be imported.
 Second:
 
  Module::Name:
-  - function_a
-  - function_b
+   - function_a
+   - function_b
 
 function_a and function_b of module::Name can be imported.
 
 Third:
 
  Module::Name:
-  - function_a : func_a
+   function_a: func_a
 
 function_a of Module::Name can be imported as func_a.
+
+Fourth:
+
+ Module::Name:
+   function_a: sub { sub { ... } }
+
+function_a is function enable to generate function.
+See L<Util::Any/Sub::Exporter's GENERATOR WAY>.
 
 The following is all definition of Util::All.
 This file is functions.yml in distribution.
@@ -441,11 +523,20 @@ This file is functions.yml in distribution.
        Dump:     json_dump	    
    
    datetime:
+     DateTime::Duration:
+       year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
+       month  : sub {sub () { DateTime::Duration->new(months  => 1) }}
+       day    : sub {sub () { DateTime::Duration->new(days    => 1) }}
+       hour   : sub {sub () { DateTime::Duration->new(hours   => 1) }}
+       minute : sub {sub () { DateTime::Duration->new(minutes => 1) }}
+       second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
+       datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
      Date::Parse:
-       strptime: time_parse
+       datetime_parse: sub {require Date::Manip; Date::Manip::Date_Init();sub {my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_); DateTime->new(year => $year + 1900, month => ++$month, day => $day, hour => $hh || 0, minute => $mm || 0, second => $ss || 0, time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)})} }
+       # strptime: time_parse
      DateTime:
-       today   : sub {sub { DateTime->today(@_) }}
-       now     : sub {sub { DateTime->now(@_) }}
+       today  : sub {sub () { DateTime->today(@_) }}
+       now    : sub {sub () { DateTime->now(@_) }}
    
    benchmark:
      Benchmark: *
@@ -462,11 +553,10 @@ This file is functions.yml in distribution.
        copy: file_copy
        move: file_move
    
-   bool:
+   return:
      Return::Value:
        - success
        - failure
-   
 
 
 =head1 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
@@ -547,7 +637,7 @@ L<http://search.cpan.org/dist/Util-All/>
 =item L<Util::Any>
 
 This module is based on Util::Any.
-Util::Any helps you to create your own utilitiy module.
+Util::Any helps you to create your own utility module.
 
 =back
 
@@ -560,4 +650,4 @@ under the same terms as Perl itself.
 
 =cut
 
-"All utility function are blong to Util::All"; # End of Util::All
+"All utility function are belong to Util::All"; # End of Util::All

@@ -13,7 +13,7 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Util::Any'  => 0.08,
+        'Util::Any'  => 0.13,
 	'Benchmark' => 0,
 	'CGI' => 0,
 	'Carp' => 0,
@@ -21,6 +21,7 @@ WriteMakefile(
 	'Data::Dumper' => 0,
 	'Date::Parse' => 0,
 	'DateTime' => 0,
+	'DateTime::Duration' => 0,
 	'Digest::MD5' => 0,
 	'Digest::SHA' => 0,
 	'Encode' => 0,
