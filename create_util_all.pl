@@ -30,7 +30,9 @@ foreach my $k (sort keys %$def) {
       foreach my $f (keys  %{$def->{$k}->{$m}}) {
         if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
           no strict; # for not including "use strict" when Dumper.
-          $def->{$k}->{$m}->{$f} = eval "$def->{$k}->{$m}->{$f}";
+          my $sub = eval "$def->{$k}->{$m}->{$f}";
+          die $@. $def->{$k}->{$m}->{$f} if $@;
+          $def->{$k}->{$m}->{$f} = $sub;
         }
       }
       push @{$new{'-' . $k} ||= []}, [
@@ -87,6 +89,7 @@ WriteMakefile(
         'Test::More' => 0,
         'Util::Any'  => 0.13,
         'Date::Manip' => 0,
+        'LWP::UserAgent' => 0,
 ###DEPENDENT_MODULES###
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

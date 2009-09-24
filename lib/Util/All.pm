@@ -18,17 +18,41 @@ our $Utils = {
   ],
   '-benchmark' => [
     [
-      'Benchmark'
+      'Benchmark',
+      '',
+      {
+        '-select' => [
+          'timeit',
+          'timethis',
+          'timethese',
+          'timediff',
+          'timestr',
+          'timesum',
+          'cmpthese',
+          'countit'
+        ]
+      }
     ]
   ],
   '-carp' => [
     [
-      'Carp'
+      'Carp',
+      '',
+      {
+        '-select' => [
+          'croak',
+          'cluck',
+          'carp',
+          'confess',
+          'shortmess',
+          'longmess'
+        ]
+      }
     ]
   ],
   '-cgi' => [
     [
-      'CGI',
+      'CGI::Util',
       '',
       {
         'unescape' => 'cgi_unescape',
@@ -169,7 +193,14 @@ our $Utils = {
       }
     ],
     [
-      'File::Path'
+      'File::Path',
+      '',
+      {
+        '-select' => [
+          'make_path',
+          'remove_tree'
+        ]
+      }
     ],
     [
       'File::Slurp',
@@ -183,7 +214,19 @@ our $Utils = {
   ],
   '-hash' => [
     [
-      'Hash::Util'
+      'Hash::Util',
+      '',
+      {
+        '-select' => [
+          'hash_seed',
+          'lock_hash',
+          'lock_keys',
+          'lock_value',
+          'unlock_hash',
+          'unlock_keys',
+          'unlock_value'
+        ]
+      }
     ]
   ],
   '-http' => [
@@ -191,11 +234,46 @@ our $Utils = {
       'HTTP::Request::Common',
       '',
       {
-        'DELETE' => 'http_delete',
-        'POST' => 'http_post',
-        'PUT' => 'http_put',
-        'GET' => 'http_get',
-        'HEAD' => 'http_head'
+        'http_post' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::POST(@_));
+            }
+            ;
+        },
+        'http_put' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::PUT(@_));
+            }
+            ;
+        },
+        'http_head' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::HEAD(@_));
+            }
+            ;
+        },
+        'http_get' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::GET(@_));
+            }
+            ;
+        },
+        'http_delete' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::DELETE(@_));
+            }
+            ;
+        }
       }
     ]
   ],
@@ -213,10 +291,59 @@ our $Utils = {
   ],
   '-list' => [
     [
-      'List::Util'
+      'List::Util',
+      '',
+      {
+        '-select' => [
+          'first',
+          'max',
+          'maxstr',
+          'min',
+          'minstr',
+          'reduce',
+          'shuffle',
+          'sum'
+        ]
+      }
     ],
     [
-      'List::MoreUtils'
+      'List::MoreUtils',
+      '',
+      {
+        '-select' => [
+          'after',
+          'after_incl',
+          'all',
+          'any',
+          'apply',
+          'before',
+          'before_incl',
+          'each_array',
+          'each_arrayref',
+          'false',
+          'first_index',
+          'first_value',
+          'firstidx',
+          'firstval',
+          'indexes',
+          'insert_after',
+          'insert_after_string',
+          'last_index',
+          'last_value',
+          'lastidx',
+          'lastval',
+          'mesh',
+          'minmax',
+          'natatime',
+          'none',
+          'notall',
+          'pairwise',
+          'part',
+          'true',
+          'uniq',
+          'zip'
+        ]
+      }
     ]
   ],
   '-mail' => [
@@ -230,7 +357,15 @@ our $Utils = {
   ],
   '-md5' => [
     [
-      'Digest::MD5'
+      'Digest::MD5',
+      '',
+      {
+        '-select' => [
+          'md5',
+          'md5_hex',
+          'md5_base64'
+        ]
+      }
     ]
   ],
   '-return' => [
@@ -247,20 +382,79 @@ our $Utils = {
   ],
   '-scalar' => [
     [
-      'Scalar::Util'
+      'Scalar::Util',
+      '',
+      {
+        '-select' => [
+          'blessed',
+          'dualvar',
+          'isvstring',
+          'isweak',
+          'looks_like_number',
+          'openhandle',
+          'readonly',
+          'refaddr',
+          'reftype',
+          'set_prototype',
+          'tainted',
+          'weaken'
+        ]
+      }
     ]
   ],
   '-sha' => [
     [
-      'Digest::SHA'
+      'Digest::SHA',
+      '',
+      {
+        '-select' => [
+          'sha1',
+          'sha1_hex',
+          'sha1_base64',
+          'sha256',
+          'sha256_hex',
+          'sha256_base64',
+          'sha384',
+          'sha384_hex',
+          'sha384_base64',
+          'sha512',
+          'sha512_hex',
+          'sha512_base64'
+        ]
+      }
     ]
   ],
   '-string' => [
     [
-      'String::CamelCase'
+      'String::CamelCase',
+      '',
+      {
+        '-select' => [
+          'camelize',
+          'decamelize',
+          'wordsplit'
+        ]
+      }
     ],
     [
-      'String::Util'
+      'String::Util',
+      '',
+      {
+        '-select' => [
+          'crunch',
+          'define',
+          'equndef',
+          'fullchomp',
+          'hascontent',
+          'htmlesc',
+          'neundef',
+          'nospace',
+          'randcrypt',
+          'randword',
+          'trim',
+          'unquote'
+        ]
+      }
     ]
   ],
   '-uri' => [
@@ -441,14 +635,72 @@ This file is functions.yml in distribution.
 
    ---
    scalar:
-     Scalar::Util: *
+     Scalar::Util:
+       - blessed
+       - dualvar
+       - isvstring
+       - isweak
+       - looks_like_number
+       - openhandle
+       - readonly
+       - refaddr
+       - reftype
+       - set_prototype
+       - tainted
+       - weaken
    
    list:
-     List::Util: *
-     List::MoreUtils: *
+     List::Util:
+       - first
+       - max
+       - maxstr
+       - min
+       - minstr
+       - reduce
+       - shuffle
+       - sum
+     List::MoreUtils:
+       - after
+       - after_incl
+       - all
+       - any
+       - apply
+       - before
+       - before_incl
+       - each_array
+       - each_arrayref
+       - false
+       - first_index
+       - first_value
+       - firstidx
+       - firstval
+       - indexes
+       - insert_after
+       - insert_after_string
+       - last_index
+       - last_value
+       - lastidx
+       - lastval
+       - mesh
+       - minmax
+       - natatime
+       - none
+       - notall
+       - pairwise
+       - part
+       - true
+       - uniq
+       - zip
    
    hash:
-     Hash::Util: *
+     Hash::Util:
+      - hash_seed
+      - lock_hash
+      - lock_keys
+      - lock_value
+      - unlock_hash
+      - unlock_keys
+      - unlock_value
    
    debug:
      Data::Dumper:
@@ -458,14 +710,43 @@ This file is functions.yml in distribution.
        p   : sub { sub { Data::Dump::dump(@_) } }
    
    string:
-     String::Util: *
-     String::CamelCase: *
+     String::Util:
+       - crunch
+       - define
+       - equndef
+       - fullchomp
+       - hascontent
+       - htmlesc
+       - neundef
+       - nospace
+       - randcrypt
+       - randword
+       - trim
+       - unquote
+     String::CamelCase:
+       - camelize
+       - decamelize
+       - wordsplit
    
    md5:
-     Digest::MD5: *
-   
+     Digest::MD5:
+       - md5
+       - md5_hex
+       - md5_base64
    sha:
-     Digest::SHA: *
+     Digest::SHA:
+       - sha1
+       - sha1_hex
+       - sha1_base64
+       - sha256
+       - sha256_hex
+       - sha256_base64
+       - sha384
+       - sha384_hex
+       - sha384_base64
+       - sha512
+       - sha512_hex
+       - sha512_base64
    
    utf8:
      utf8:
@@ -475,7 +756,7 @@ This file is functions.yml in distribution.
        encode   : utf8_encode
    
    cgi:
-     CGI:
+     CGI::Util:
        escape: cgi_escape
        unescape: cgi_unescape
    
@@ -500,18 +781,24 @@ This file is functions.yml in distribution.
    
    http:
      HTTP::Request::Common:
-       GET:    http_get
-       POST:   http_post
-       PUT:    http_put
-       DELETE: http_delete
-       HEAD:   http_head
+       http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
+       http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
+       http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
+       http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
+       http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
    
    mail:
      Mail::Sendmail:
        sendmail: mail_send
    
    carp:
-     Carp: *
+     Carp:
+       - croak
+       - cluck
+       - carp
+       - confess
+       - shortmess
+       - longmess
    
    yaml:
      YAML::Syck:
@@ -537,19 +824,38 @@ This file is functions.yml in distribution.
        second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
        datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
      Date::Parse:
-       datetime_parse: sub {require Date::Manip; Date::Manip::Date_Init();sub {my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_); DateTime->new(year => $year + 1900, month => ++$month, day => $day, hour => $hh || 0, minute => $mm || 0, second => $ss || 0, time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)})} }
-       # strptime: time_parse
+       datetime_parse: |
+         sub {
+           require Date::Manip;
+           Date::Manip::Date_Init();
+           sub {
+             my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
+             DateTime->new(year => $year + 1900, month => ++$month, day => $day,
+               hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
+               time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)});
+           }
+         }
      DateTime:
        today  : sub {sub () { DateTime->today(@_) }}
        now    : sub {sub () { DateTime->now(@_) }}
    
    benchmark:
-     Benchmark: *
+     Benchmark:
+       - timeit
+       - timethis
+       - timethese
+       - timediff
+       - timestr
+       - timesum
+       - cmpthese
+       - countit
    
    file:
      File::Find:
        find : file_find
-     File::Path: *
+     File::Path:
+       - make_path
+       - remove_tree
      File::Slurp:
        slurp     : file_slurp
        read_file : file_read
