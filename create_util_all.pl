@@ -27,14 +27,18 @@ foreach my $k (sort keys %$def) {
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];
     } elsif (ref $def->{$k}{$m} eq 'HASH') {
+      my @funcs;
       foreach my $f (keys  %{$def->{$k}->{$m}}) {
         if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
           no strict; # for not including "use strict" when Dumper.
           my $sub = eval "$def->{$k}->{$m}->{$f}";
           die $@. $def->{$k}->{$m}->{$f} if $@;
           $def->{$k}->{$m}->{$f} = $sub;
+        } elsif ($f eq $def->{$k}->{$m}->{$f}) {
+          push @funcs, delete $def->{$k}->{$m}->{$f};
         }
       }
+      $def->{$k}->{$m}->{-select} = \@funcs;
       push @{$new{'-' . $k} ||= []}, [
                                       $m, '',
                                       $def->{$k}->{$m},

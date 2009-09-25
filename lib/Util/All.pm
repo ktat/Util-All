@@ -11,6 +11,7 @@ our $Utils = {
       'MIME::Base64',
       '',
       {
+        '-select' => [],
         'decode_base64' => 'base64_decode',
         'encode_base64' => 'base64_encode'
       }
@@ -55,6 +56,7 @@ our $Utils = {
       'CGI::Util',
       '',
       {
+        '-select' => [],
         'unescape' => 'cgi_unescape',
         'escape' => 'cgi_escape'
       }
@@ -67,6 +69,7 @@ our $Utils = {
       {
         'from_to' => 'char_convert',
         'decode' => 'char_decode',
+        '-select' => [],
         'encode' => 'char_encode'
       }
     ]
@@ -87,6 +90,13 @@ our $Utils = {
                 'DateTime'->today(@_);
             }
             ;
+        },
+        '-select' => [],
+        'datetime' => sub {
+            sub {
+                'DateTime'->new(@_);
+            }
+            ;
         }
       }
     ],
@@ -100,12 +110,7 @@ our $Utils = {
             }
             ;
         },
-        'minute' => sub {
-            sub () {
-                'DateTime::Duration'->new('minutes', 1);
-            }
-            ;
-        },
+        '-select' => [],
         'second' => sub {
             sub () {
                 'DateTime::Duration'->new('seconds', 1);
@@ -115,6 +120,12 @@ our $Utils = {
         'month' => sub {
             sub () {
                 'DateTime::Duration'->new('months', 1);
+            }
+            ;
+        },
+        'minute' => sub {
+            sub () {
+                'DateTime::Duration'->new('minutes', 1);
             }
             ;
         },
@@ -142,10 +153,18 @@ our $Utils = {
       'Date::Parse',
       '',
       {
+        '-select' => [],
         'datetime_parse' => sub {
-            require Date::Manip;
-            Date::Manip::Date_Init();
+            my $i = 1;
+            unless ($INC{'Date/Manip.pm'}) {
+                require Date::Manip;
+                $i = 0;
+            }
             sub {
+                unless ($i) {
+                    $i = 1;
+                    Date::Manip::Date_Init();
+                }
                 my($ss, $mm, $hh, $day, $month, $year, $zone) = Date::Parse::strptime(@_);
                 'DateTime'->new('year', $year + 1900, 'month', ++$month, 'day', $day, 'hour', $hh || 0, 'minute', $mm || 0, 'second', $ss || 0, 'time_zone', $Date::Manip::Zone{'n2o'}{Time::Zone::tz_name($zone)});
             }
@@ -165,14 +184,17 @@ our $Utils = {
             }
             ;
         },
-        'dump' => 'dump'
+        '-select' => [
+          'dump'
+        ]
       }
     ],
     [
       'Data::Dumper',
       '',
       {
-        'Dumper' => 'dumper'
+        'Dumper' => 'dumper',
+        '-select' => []
       }
     ]
   ],
@@ -182,13 +204,15 @@ our $Utils = {
       '',
       {
         'copy' => 'file_copy',
-        'move' => 'file_move'
+        'move' => 'file_move',
+        '-select' => []
       }
     ],
     [
       'File::Find',
       '',
       {
+        '-select' => [],
         'find' => 'file_find'
       }
     ],
@@ -206,6 +230,7 @@ our $Utils = {
       'File::Slurp',
       '',
       {
+        '-select' => [],
         'slurp' => 'file_slurp',
         'write_file' => 'file_write',
         'read_file' => 'file_read'
@@ -236,40 +261,41 @@ our $Utils = {
       {
         'http_post' => sub {
             require LWP::UserAgent;
-            my $ua = 'LWP::UserAgent'->new;
             sub {
+                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::POST(@_));
             }
             ;
         },
         'http_put' => sub {
             require LWP::UserAgent;
-            my $ua = 'LWP::UserAgent'->new;
             sub {
+                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::PUT(@_));
             }
             ;
         },
+        '-select' => [],
         'http_head' => sub {
             require LWP::UserAgent;
-            my $ua = 'LWP::UserAgent'->new;
             sub {
+                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::HEAD(@_));
             }
             ;
         },
         'http_get' => sub {
             require LWP::UserAgent;
-            my $ua = 'LWP::UserAgent'->new;
             sub {
+                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::GET(@_));
             }
             ;
         },
         'http_delete' => sub {
             require LWP::UserAgent;
-            my $ua = 'LWP::UserAgent'->new;
             sub {
+                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::DELETE(@_));
             }
             ;
@@ -283,6 +309,7 @@ our $Utils = {
       '',
       {
         'DumpFile' => 'json_dump_file',
+        '-select' => [],
         'Dump' => 'json_dump',
         'Load' => 'json_load',
         'LoadFile' => 'json_load_file'
@@ -351,7 +378,8 @@ our $Utils = {
       'Mail::Sendmail',
       '',
       {
-        'sendmail' => 'mail_send'
+        'sendmail' => 'mail_send',
+        '-select' => []
       }
     ]
   ],
@@ -485,9 +513,11 @@ our $Utils = {
       '',
       {
         'downgrade' => 'utf8_downgrade',
+        '-select' => [
+          'is_utf8'
+        ],
         'upgrade' => 'utf8_upgrade',
-        'encode' => 'utf8_encode',
-        'is_utf8' => 'is_utf8'
+        'encode' => 'utf8_encode'
       }
     ]
   ],
@@ -497,6 +527,7 @@ our $Utils = {
       '',
       {
         'DumpFile' => 'yaml_dump_file',
+        '-select' => [],
         'Dump' => 'yaml_dump',
         'Load' => 'yaml_load',
         'LoadFile' => 'yaml_load_file'
@@ -544,26 +575,35 @@ When you want MD5 utilities
 
  md5_base64($str);
 
+When you want datetime utilities
+
+ use Util::All -datetime;
+ 
+ datetime(year => 2009, month => 9, day => 1); # eq DateTime->new(...)
+ today; # today DateTime object
+ now;   # now   DateTime object
+ datetime_parse("2009-09-10") + year + month + day; # 2010-10-11T00:00:00 DateTime object
+
 When you want all utilities
 
- use Util::All 'all';
+ use Util::All -all;
 
 etc.
 
 =head1 DESCRIPTION
 
 Perl has many modules on CPAN and many modules provide utility functions.
-Their utility functions are useful themself.
+Their utility functions are useful themselves.
 But there are two problems to use these utility functions.
 
 First, CPAN has too much modules to lookup useful utility functions.
 Newbie or even intermediate level programmers don't know such functions very much.
 Honestly speaking, I don't know so much utility functions, too.
 Even if I could search such functions,
-User have to remember its name and the module including it.
+users have to remember its name and the module including it.
 
 Second, utility functions are written by many authors.
-So, its naming rule/grouping rule/interface is defined by authors.
+So, its naming rule/grouping rule/interface is defined by each author.
 It is hard to remember the name/usage.
 
 It's very regrettable for Perl.
@@ -781,11 +821,11 @@ This file is functions.yml in distribution.
    
    http:
      HTTP::Request::Common:
-       http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
-       http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
-       http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
-       http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
-       http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
+       http_get   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::GET(@_)) } }
+       http_post  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::POST(@_)) } }
+       http_put   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::PUT(@_)) } }
+       http_delete: sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::DELETE(@_)) } }
+       http_head  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::HEAD(@_)) } }
    
    mail:
      Mail::Sendmail:
@@ -826,9 +866,16 @@ This file is functions.yml in distribution.
      Date::Parse:
        datetime_parse: |
          sub {
-           require Date::Manip;
-           Date::Manip::Date_Init();
+           my $i = 1;
+           unless ($INC{"Date/Manip.pm"}) {
+             require Date::Manip;
+             $i = 0;
+           }
            sub {
+             unless ($i) {
+               $i = 1;
+               Date::Manip::Date_Init();
+             }
              my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
              DateTime->new(year => $year + 1900, month => ++$month, day => $day,
                hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
@@ -836,8 +883,9 @@ This file is functions.yml in distribution.
            }
          }
      DateTime:
-       today  : sub {sub () { DateTime->today(@_) }}
-       now    : sub {sub () { DateTime->now(@_) }}
+       today   : sub {sub () { DateTime->today(@_) }}
+       now     : sub {sub () { DateTime->now(@_) }}
+       datetime: sub {sub { DateTime->new(@_) }}
    
    benchmark:
      Benchmark:
@@ -870,9 +918,18 @@ This file is functions.yml in distribution.
        - failure
 
 
-=head1 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
+=head1 QUESTIONS
+
+=head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
 No. the related module(s) of your selected kind(s) is/are loaded.
+
+=head2 WHY '-all' IS SLOW?
+
+Keyword '-all' as same as 'all' and ':all' is used,
+L<Util::Any> check exportable functions in  all modules defined in $Utils and
+some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
+So, it is slow a bit. But, it is only first time, not slow next C<use>.
 
 =head1 CREATE YOUR OWN Util::All
 

@@ -146,11 +146,11 @@ base64:
 
 http:
   HTTP::Request::Common:
-    http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
-    http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
-    http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
-    http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
-    http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
+    http_get   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::GET(@_)) } }
+    http_post  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::POST(@_)) } }
+    http_put   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::PUT(@_)) } }
+    http_delete: sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::DELETE(@_)) } }
+    http_head  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::HEAD(@_)) } }
 
 mail:
   Mail::Sendmail:
@@ -191,9 +191,16 @@ datetime:
   Date::Parse:
     datetime_parse: |
       sub {
-        require Date::Manip;
-        Date::Manip::Date_Init();
+        my $i = 1;
+        unless ($INC{"Date/Manip.pm"}) {
+          require Date::Manip;
+          $i = 0;
+        }
         sub {
+          unless ($i) {
+            $i = 1;
+            Date::Manip::Date_Init();
+          }
           my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
           DateTime->new(year => $year + 1900, month => ++$month, day => $day,
             hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
@@ -201,8 +208,9 @@ datetime:
         }
       }
   DateTime:
-    today  : sub {sub () { DateTime->today(@_) }}
-    now    : sub {sub () { DateTime->now(@_) }}
+    today   : sub {sub () { DateTime->today(@_) }}
+    now     : sub {sub () { DateTime->now(@_) }}
+    datetime: sub {sub { DateTime->new(@_) }}
 
 benchmark:
   Benchmark:

@@ -45,26 +45,35 @@ When you want MD5 utilities
 
  md5_base64($str);
 
+When you want datetime utilities
+
+ use Util::All -datetime;
+ 
+ datetime(year => 2009, month => 9, day => 1); # eq DateTime->new(...)
+ today; # today DateTime object
+ now;   # now   DateTime object
+ datetime_parse("2009-09-10") + year + month + day; # 2010-10-11T00:00:00 DateTime object
+
 When you want all utilities
 
- use Util::All 'all';
+ use Util::All -all;
 
 etc.
 
 =head1 DESCRIPTION
 
 Perl has many modules on CPAN and many modules provide utility functions.
-Their utility functions are useful themself.
+Their utility functions are useful themselves.
 But there are two problems to use these utility functions.
 
 First, CPAN has too much modules to lookup useful utility functions.
 Newbie or even intermediate level programmers don't know such functions very much.
 Honestly speaking, I don't know so much utility functions, too.
 Even if I could search such functions,
-User have to remember its name and the module including it.
+users have to remember its name and the module including it.
 
 Second, utility functions are written by many authors.
-So, its naming rule/grouping rule/interface is defined by authors.
+So, its naming rule/grouping rule/interface is defined by each author.
 It is hard to remember the name/usage.
 
 It's very regrettable for Perl.
@@ -136,9 +145,18 @@ This file is functions.yml in distribution.
 
 ###YAML_DEFINITION###
 
-=head1 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
+=head1 QUESTIONS
+
+=head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
 No. the related module(s) of your selected kind(s) is/are loaded.
+
+=head2 WHY '-all' IS SLOW?
+
+Keyword '-all' as same as 'all' and ':all' is used,
+L<Util::Any> check exportable functions in  all modules defined in $Utils and
+some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
+So, it is slow a bit. But, it is only first time, not slow next C<use>.
 
 =head1 CREATE YOUR OWN Util::All
 
