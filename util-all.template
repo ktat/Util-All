@@ -3,7 +3,7 @@ package Util::All;
 use warnings;
 use strict;
 
-use Util::Any -Base;
+use Util::Any -Base, -Pluggable;
 
 our $Utils = ###DEFINITION###;
 
@@ -27,11 +27,17 @@ When you want string utilities.
  use Util::All -string;
  camelize('abc_def'); # AbcDef
 
-When you want encode Utilities.
+When you want character encoding Utilities.
 
  use Util::All -char_enc;
- char_encode('utf8', $str);
- char_decode('utf8', $str);
+ $encoded = char_encode('utf8', $str); # Encode::encode
+ $decoded = char_decode('utf8', $str); # Encode::decode
+ char_from_to($str, $icode, 'utf8');   # Encode::from_to
+ char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess
+
+ # use Encode::Guess and pass encoding to guess
+ use Util::All -char_conv => {char_convert => {guess => ["sjis", "euc-jp"]}};
+ char_convert($str, "euc-jp");
 
 When you want CGI utilities.
 
@@ -81,7 +87,8 @@ It's very regrettable for Perl.
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
 and rename them by common naming rule.
 
-If you know good functions, please tell me. I want to add them into Util::All.
+If you know good utility functions, please tell me.
+I want to add them into Util::All.
 
 =head1 NAMING RULE
 
@@ -145,6 +152,33 @@ This file is functions.yml in distribution.
 
 ###YAML_DEFINITION###
 
+=head1 CREATE PLUGINS
+
+Create module whose package name is under Util::All::Plugin and
+define utils method. for example.
+
+  package Util::All::Plugin::Net;
+  
+  sub utils {
+    # This structure is as same as $Utils.
+    return {
+        -net => [
+                  [
+                   'Net::Amazon', '',
+                   {
+                    amazon => sub {
+                      my ($pkg, $class, $func, $args) = @_;
+                      my $amazon = Net::Amazon->new(token => $args->{token});
+                      sub { $amazon }
+                    },
+                   }
+                  ]
+                ]
+       };
+  }
+  
+  1;
+
 =head1 QUESTIONS
 
 =head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
@@ -154,7 +188,7 @@ No. the related module(s) of your selected kind(s) is/are loaded.
 =head2 WHY '-all' IS SLOW?
 
 Keyword '-all' as same as 'all' and ':all' is used,
-L<Util::Any> check exportable functions in  all modules defined in $Utils and
+L<Util::Any> checks exportable functions in  all modules defined in $Utils and
 some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
 So, it is slow a bit. But, it is only first time, not slow next C<use>.
 

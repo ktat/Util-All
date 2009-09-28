@@ -3,7 +3,7 @@ package Util::All;
 use warnings;
 use strict;
 
-use Util::Any -Base;
+use Util::Any -Base, -Pluggable;
 
 our $Utils = {
   '-base64' => [
@@ -67,10 +67,31 @@ our $Utils = {
       'Encode',
       '',
       {
-        'from_to' => 'char_convert',
+        'from_to' => 'char_from_to',
         'decode' => 'char_decode',
         '-select' => [],
-        'encode' => 'char_encode'
+        'encode' => 'char_encode',
+        'char_convert' => sub {
+            my($pkg, $class, $func, $args) = @_;
+            my $g_class = 0;
+            if (exists $$args{'guess'}) {
+                require Encode::Guess;
+                'Encode::Guess'->import(@{$$args{'guess'};});
+            }
+            elsif (not $INC{'Encode/Detect.pm'} and not $INC{'Encode/Guess.pm'}) {
+                require Encode::Guess unless eval {
+                    do {
+                        require Encode::Detect;
+                        $g_class = 1
+                    }
+                };
+            }
+            sub {
+                my($str, $to, $from) = @_;
+                Encode::from_to(shift @_, $from ? $from : ($g_class ? 'DETECT' : 'GUESS'), $to);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -305,14 +326,26 @@ our $Utils = {
   ],
   '-json' => [
     [
-      'JSON::Syck',
+      'JSON::XS',
       '',
       {
-        'DumpFile' => 'json_dump_file',
+        'decode_json' => 'json_load',
         '-select' => [],
-        'Dump' => 'json_dump',
-        'Load' => 'json_load',
-        'LoadFile' => 'json_load_file'
+        'json_load_file' => sub {
+            require File::Slurp;
+            sub {
+                JSON::XS::decode_json(File::Slurp::slurp(shift @_));
+            }
+            ;
+        },
+        'json_dump_file' => sub {
+            require File::Slurp;
+            sub {
+                File::Slurp::write_file(shift @_, JSON::XS::encode_json(shift @_));
+            }
+            ;
+        },
+        'encode_json' => 'json_dump'
       }
     ]
   ],
@@ -557,11 +590,17 @@ When you want string utilities.
  use Util::All -string;
  camelize('abc_def'); # AbcDef
 
-When you want encode Utilities.
+When you want character encoding Utilities.
 
  use Util::All -char_enc;
- char_encode('utf8', $str);
- char_decode('utf8', $str);
+ $encoded = char_encode('utf8', $str); # Encode::encode
+ $decoded = char_decode('utf8', $str); # Encode::decode
+ char_from_to($str, $icode, 'utf8');   # Encode::from_to
+ char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess
+
+ # use Encode::Guess and pass encoding to guess
+ use Util::All -char_conv => {char_convert => {guess => ["sjis", "euc-jp"]}};
+ char_convert($str, "euc-jp");
 
 When you want CGI utilities.
 
@@ -611,7 +650,8 @@ It's very regrettable for Perl.
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
 and rename them by common naming rule.
 
-If you know good functions, please tell me. I want to add them into Util::All.
+If you know good utility functions, please tell me.
+I want to add them into Util::All.
 
 =head1 NAMING RULE
 
@@ -802,9 +842,24 @@ This file is functions.yml in distribution.
    
    char_enc:
      Encode:
-       encode : char_encode
-       decode : char_decode
-       from_to: char_convert
+       encode: char_encode
+       decode: char_decode
+       char_convert: |
+         sub {
+            my ($pkg, $class, $func, $args) = @_;
+            my $g_class = 0;
+            if (exists $args->{guess}){
+              require Encode::Guess;
+              Encode::Guess->import(@{$args->{guess}});
+            } elsif (not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"}) {
+              eval {require Encode::Detect; $g_class = 1} or require Encode::Guess;
+            }
+            sub {
+              my ($str, $to, $from) = @_;
+              Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
+            } 
+         }
+       from_to: char_from_to
    
    uri:
      URI::Escape:
@@ -820,6 +875,7 @@ This file is functions.yml in distribution.
        decode_base64: base64_decode
    
    http:
+     -require : ['LWP::UserAgent']
      HTTP::Request::Common:
        http_get   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::GET(@_)) } }
        http_post  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::POST(@_)) } }
@@ -848,13 +904,21 @@ This file is functions.yml in distribution.
        Dump:     yaml_dump
    
    json:
-     JSON::Syck:
-       LoadFile: json_load_file
-       Load:     json_load	    
-       DumpFile: json_dump_file
-       Dump:     json_dump	    
+   #  JSON::Syck:
+   #    LoadFile: json_load_file
+   #    Load:     json_load	    
+   #    DumpFile: json_dump_file
+   #    Dump:     json_dump	    
+     -require: ['File::Slurp']
+     JSON::XS:
+       decode_json: json_load
+       encode_json: json_dump
+       json_load_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
+       json_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
+   
    
    datetime:
+     -require : ['Date::Manip']
      DateTime::Duration:
        year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
        month  : sub {sub () { DateTime::Duration->new(months  => 1) }}

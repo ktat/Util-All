@@ -124,12 +124,61 @@ cgi:
   CGI::Util:
     escape: cgi_escape
     unescape: cgi_unescape
+  HTML::Entities:
+    decode_entities: html_entity_decode
+    encode_entities: html_entity_encode
+
+html:
+  HTML::Entities:
+    decode_entities: html_entity_decode
+    encode_entities: html_entity_encode
+  CGI::Util:
+    escape: cgi_escape
+    unescape: cgi_unescape
+
+xml:
+  -as_plugin: 1
+  -require: ['XML::Parser']
+  XML::Simple:
+    xml_load: |
+      sub {
+        my ($pkg, $class, $func, $args) = @_;
+        local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser} || 'XML::Parser';
+        $args->{Forcearray} ||= $args->{force_array};
+        $args->{KeyAttr}    ||= $args->{key_attr};
+        sub {
+          XML::Simple::XMLin(shift, %$args);
+        }
+      }
+    xml_dump: |
+      sub {
+        my ($pkg, $class, $func, $args) = @_;
+        $args->{KeyAttr} ||= $args->{key_attr};
+        sub {
+          XML::Simple::XMLout(shift, %$args);
+        }
+      }
 
 char_enc:
   Encode:
-    encode : char_encode
-    decode : char_decode
-    from_to: char_convert
+    encode: char_encode
+    decode: char_decode
+    char_convert: |
+      sub {
+         my ($pkg, $class, $func, $args) = @_;
+         my $g_class = 0;
+         if (exists $args->{guess}){
+           require Encode::Guess;
+           Encode::Guess->import(@{$args->{guess}});
+         } elsif (not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"}) {
+           eval {require Encode::Detect; $g_class = 1} or require Encode::Guess;
+         }
+         sub {
+           my ($str, $to, $from) = @_;
+           Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
+         }
+      }
+    from_to: char_from_to
 
 uri:
   URI::Escape:
@@ -145,6 +194,7 @@ base64:
     decode_base64: base64_decode
 
 http:
+  -require : ['LWP::UserAgent']
   HTTP::Request::Common:
     http_get   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::GET(@_)) } }
     http_post  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::POST(@_)) } }
@@ -173,13 +223,22 @@ yaml:
     Dump:     yaml_dump
 
 json:
-  JSON::Syck:
-    LoadFile: json_load_file
-    Load:     json_load	    
-    DumpFile: json_dump_file
-    Dump:     json_dump	    
+#  JSON::Syck:
+#    LoadFile: json_load_file
+#    Load:     json_load	    
+#    DumpFile: json_dump_file
+#    Dump:     json_dump	    
+  -require: ['File::Slurp']
+  JSON::XS:
+    decode_json: json_load
+    encode_json: json_dump
+    json_load_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
+    json_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
+
 
 datetime:
+  -require: ['Date::Manip']
+  -as_plugin: 1
   DateTime::Duration:
     year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
     month  : sub {sub () { DateTime::Duration->new(months  => 1) }}
@@ -187,6 +246,12 @@ datetime:
     hour   : sub {sub () { DateTime::Duration->new(hours   => 1) }}
     minute : sub {sub () { DateTime::Duration->new(minutes => 1) }}
     second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
+    years  : sub {sub ($) { DateTime::Duration->new(years   => shift) }}
+    months : sub {sub ($) { DateTime::Duration->new(months  => shift) }}
+    days   : sub {sub ($) { DateTime::Duration->new(days    => shift) }}
+    hours  : sub {sub ($) { DateTime::Duration->new(hours   => shift) }}
+    minutes: sub {sub ($) { DateTime::Duration->new(minutes => shift) }}
+    seconds: sub {sub ($) { DateTime::Duration->new(seconds => shift) }}
     datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
   Date::Parse:
     datetime_parse: |

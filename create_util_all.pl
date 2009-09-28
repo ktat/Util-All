@@ -15,6 +15,7 @@ tie %new, 'Tie::IxHash';
 my $yaml = slurp("functions.yml");
 my $def = Load($yaml);
 my @modules;
+my @requires;
 
 my $default_priority = 1000;
 
@@ -23,6 +24,15 @@ foreach my $k (sort keys %$def) {
   foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
                        ($tmp{$b} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
                      } keys %{$def->{$k}}) {
+    if ($m eq '-require') {
+      push @requires, @{$def->{$k}->{$m}};
+      next;
+    }
+    if ($m eq '-as_plugin') {
+      push @as_plugins, {$k  => $def->{$k}};
+      next;
+    }
+
     push @modules, $m;
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];
@@ -67,7 +77,7 @@ close $out;
 print "Writing lib/Util/All.pm\n";
 
 my $makefile = do {local $/; <DATA>};
-my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort @modules;
+my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort @modules, @requires;
 $makefile =~s{###DEPENDENT_MODULES###}{$dependent_modules};
 
 open my $out, '>', 'Makefile.PL' or die $!;
@@ -91,9 +101,7 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Util::Any'  => 0.13,
-        'Date::Manip' => 0,
-        'LWP::UserAgent' => 0,
+        'Util::Any'  => 0.14,
 ###DEPENDENT_MODULES###
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
