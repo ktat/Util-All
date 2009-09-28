@@ -16,23 +16,19 @@ my $yaml = slurp("functions.yml");
 my $def = Load($yaml);
 my @modules;
 my @requires;
+my @as_plugins; # not yet
 
 my $default_priority = 1000;
 
 foreach my $k (sort keys %$def) {
   my %tmp;
+
+  push @requires, @{delete $def->{$k}->{'-require'} || []};
+  push @as_plugins, delete $def->{$k}->{'-as_plugin'} || ();
+
   foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
                        ($tmp{$b} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
                      } keys %{$def->{$k}}) {
-    if ($m eq '-require') {
-      push @requires, @{$def->{$k}->{$m}};
-      next;
-    }
-    if ($m eq '-as_plugin') {
-      push @as_plugins, {$k  => $def->{$k}};
-      next;
-    }
-
     push @modules, $m;
     if ($def->{$k}->{$m} eq '*') {
       push @{$new{'-' . $k} ||= []}, [$m];

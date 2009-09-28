@@ -137,8 +137,8 @@ html:
     unescape: cgi_unescape
 
 xml:
-  -as_plugin: 1
   -require: ['XML::Parser']
+  -as_plugin: 1
   XML::Simple:
     xml_load: |
       sub {

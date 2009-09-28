@@ -60,6 +60,15 @@ our $Utils = {
         'unescape' => 'cgi_unescape',
         'escape' => 'cgi_escape'
       }
+    ],
+    [
+      'HTML::Entities',
+      '',
+      {
+        'encode_entities' => 'html_entity_encode',
+        '-select' => [],
+        'decode_entities' => 'html_entity_decode'
+      }
     ]
   ],
   '-char_enc' => [
@@ -131,6 +140,12 @@ our $Utils = {
             }
             ;
         },
+        'hours' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('hours', shift @_);
+            }
+            ;
+        },
         '-select' => [],
         'second' => sub {
             sub () {
@@ -144,9 +159,33 @@ our $Utils = {
             }
             ;
         },
+        'minutes' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('minutes', shift @_);
+            }
+            ;
+        },
+        'days' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('days', shift @_);
+            }
+            ;
+        },
+        'seconds' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('seconds', shift @_);
+            }
+            ;
+        },
         'minute' => sub {
             sub () {
                 'DateTime::Duration'->new('minutes', 1);
+            }
+            ;
+        },
+        'years' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('years', shift @_);
             }
             ;
         },
@@ -165,6 +204,12 @@ our $Utils = {
         'year' => sub {
             sub () {
                 'DateTime::Duration'->new('years', 1);
+            }
+            ;
+        },
+        'months' => sub {
+            sub ($) {
+                'DateTime::Duration'->new('months', shift @_);
             }
             ;
         }
@@ -272,6 +317,26 @@ our $Utils = {
           'unlock_keys',
           'unlock_value'
         ]
+      }
+    ]
+  ],
+  '-html' => [
+    [
+      'CGI::Util',
+      '',
+      {
+        '-select' => [],
+        'unescape' => 'cgi_unescape',
+        'escape' => 'cgi_escape'
+      }
+    ],
+    [
+      'HTML::Entities',
+      '',
+      {
+        'encode_entities' => 'html_entity_encode',
+        '-select' => [],
+        'decode_entities' => 'html_entity_decode'
       }
     ]
   ],
@@ -551,6 +616,33 @@ our $Utils = {
         ],
         'upgrade' => 'utf8_upgrade',
         'encode' => 'utf8_encode'
+      }
+    ]
+  ],
+  '-xml' => [
+    [
+      'XML::Simple',
+      '',
+      {
+        'xml_dump' => sub {
+            my($pkg, $class, $func, $args) = @_;
+            $$args{'KeyAttr'} ||= $$args{'key_attr'};
+            sub {
+                XML::Simple::XMLout(shift @_, %$args);
+            }
+            ;
+        },
+        'xml_load' => sub {
+            my($pkg, $class, $func, $args) = @_;
+            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$args{'parser'} || 'XML::Parser';
+            $$args{'Forcearray'} ||= $$args{'force_array'};
+            $$args{'KeyAttr'} ||= $$args{'key_attr'};
+            sub {
+                XML::Simple::XMLin(shift @_, %$args);
+            }
+            ;
+        },
+        '-select' => []
       }
     ]
   ],
@@ -839,6 +931,40 @@ This file is functions.yml in distribution.
      CGI::Util:
        escape: cgi_escape
        unescape: cgi_unescape
+     HTML::Entities:
+       decode_entities: html_entity_decode
+       encode_entities: html_entity_encode
+   
+   html:
+     HTML::Entities:
+       decode_entities: html_entity_decode
+       encode_entities: html_entity_encode
+     CGI::Util:
+       escape: cgi_escape
+       unescape: cgi_unescape
+   
+   xml:
+     -require: ['XML::Parser']
+     -as_plugin: 1
+     XML::Simple:
+       xml_load: |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser} || 'XML::Parser';
+           $args->{Forcearray} ||= $args->{force_array};
+           $args->{KeyAttr}    ||= $args->{key_attr};
+           sub {
+             XML::Simple::XMLin(shift, %$args);
+           }
+         }
+       xml_dump: |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           $args->{KeyAttr} ||= $args->{key_attr};
+           sub {
+             XML::Simple::XMLout(shift, %$args);
+           }
+         }
    
    char_enc:
      Encode:
@@ -857,7 +983,7 @@ This file is functions.yml in distribution.
             sub {
               my ($str, $to, $from) = @_;
               Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
-            } 
+            }
          }
        from_to: char_from_to
    
@@ -918,7 +1044,8 @@ This file is functions.yml in distribution.
    
    
    datetime:
-     -require : ['Date::Manip']
+     -require: ['Date::Manip']
+     -as_plugin: 1
      DateTime::Duration:
        year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
        month  : sub {sub () { DateTime::Duration->new(months  => 1) }}
@@ -926,6 +1053,12 @@ This file is functions.yml in distribution.
        hour   : sub {sub () { DateTime::Duration->new(hours   => 1) }}
        minute : sub {sub () { DateTime::Duration->new(minutes => 1) }}
        second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
+       years  : sub {sub ($) { DateTime::Duration->new(years   => shift) }}
+       months : sub {sub ($) { DateTime::Duration->new(months  => shift) }}
+       days   : sub {sub ($) { DateTime::Duration->new(days    => shift) }}
+       hours  : sub {sub ($) { DateTime::Duration->new(hours   => shift) }}
+       minutes: sub {sub ($) { DateTime::Duration->new(minutes => shift) }}
+       seconds: sub {sub ($) { DateTime::Duration->new(seconds => shift) }}
        datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
      Date::Parse:
        datetime_parse: |
@@ -982,6 +1115,33 @@ This file is functions.yml in distribution.
        - failure
 
 
+=head1 CREATE PLUGINS
+
+Create module whose package name is under Util::All::Plugin and
+define utils method. for example.
+
+  package Util::All::Plugin::Net;
+  
+  sub utils {
+    # This structure is as same as $Utils.
+    return {
+        -net => [
+                  [
+                   'Net::Amazon', '',
+                   {
+                    amazon => sub {
+                      my ($pkg, $class, $func, $args) = @_;
+                      my $amazon = Net::Amazon->new(token => $args->{token});
+                      sub { $amazon }
+                    },
+                   }
+                  ]
+                ]
+       };
+  }
+  
+  1;
+
 =head1 QUESTIONS
 
 =head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
@@ -991,7 +1151,7 @@ No. the related module(s) of your selected kind(s) is/are loaded.
 =head2 WHY '-all' IS SLOW?
 
 Keyword '-all' as same as 'all' and ':all' is used,
-L<Util::Any> check exportable functions in  all modules defined in $Utils and
+L<Util::Any> checks exportable functions in  all modules defined in $Utils and
 some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
 So, it is slow a bit. But, it is only first time, not slow next C<use>.
 
