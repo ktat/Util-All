@@ -136,80 +136,80 @@ our $Utils = {
       {
         'hour' => sub {
             sub () {
-                'DateTime::Duration'->new('hours', 1);
+                'DateTime::Duration'->new('hours', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'hours' => sub {
             sub ($) {
-                'DateTime::Duration'->new('hours', shift @_);
+                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', 'limit');
             }
             ;
         },
         '-select' => [],
         'second' => sub {
             sub () {
-                'DateTime::Duration'->new('seconds', 1);
+                'DateTime::Duration'->new('seconds', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'month' => sub {
             sub () {
-                'DateTime::Duration'->new('months', 1);
+                'DateTime::Duration'->new('months', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'minutes' => sub {
             sub ($) {
-                'DateTime::Duration'->new('minutes', shift @_);
+                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', 'limit');
             }
             ;
         },
         'days' => sub {
             sub ($) {
-                'DateTime::Duration'->new('days', shift @_);
+                'DateTime::Duration'->new('days', shift @_, 'end_of_month', 'limit');
             }
             ;
         },
         'seconds' => sub {
             sub ($) {
-                'DateTime::Duration'->new('seconds', shift @_);
+                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', 'limit');
             }
             ;
         },
         'minute' => sub {
             sub () {
-                'DateTime::Duration'->new('minutes', 1);
+                'DateTime::Duration'->new('minutes', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'years' => sub {
             sub ($) {
-                'DateTime::Duration'->new('years', shift @_);
+                'DateTime::Duration'->new('years', shift @_, 'end_of_month', 'limit');
             }
             ;
         },
         'day' => sub {
             sub () {
-                'DateTime::Duration'->new('days', 1);
+                'DateTime::Duration'->new('days', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'datetime_duration' => sub {
             sub {
-                'DateTime::Duration'->new(@_);
+                'DateTime::Duration'->new('end_of_month', 'limit', @_);
             }
             ;
         },
         'year' => sub {
             sub () {
-                'DateTime::Duration'->new('years', 1);
+                'DateTime::Duration'->new('years', 1, 'end_of_month', 'limit');
             }
             ;
         },
         'months' => sub {
             sub ($) {
-                'DateTime::Duration'->new('months', shift @_);
+                'DateTime::Duration'->new('months', shift @_, 'end_of_month', 'limit');
             }
             ;
         }
@@ -1047,19 +1047,19 @@ This file is functions.yml in distribution.
      -require: ['Date::Manip']
      -as_plugin: 1
      DateTime::Duration:
-       year   : sub {sub () { DateTime::Duration->new(years   => 1) }}
-       month  : sub {sub () { DateTime::Duration->new(months  => 1) }}
-       day    : sub {sub () { DateTime::Duration->new(days    => 1) }}
-       hour   : sub {sub () { DateTime::Duration->new(hours   => 1) }}
-       minute : sub {sub () { DateTime::Duration->new(minutes => 1) }}
-       second : sub {sub () { DateTime::Duration->new(seconds => 1) }}
-       years  : sub {sub ($) { DateTime::Duration->new(years   => shift) }}
-       months : sub {sub ($) { DateTime::Duration->new(months  => shift) }}
-       days   : sub {sub ($) { DateTime::Duration->new(days    => shift) }}
-       hours  : sub {sub ($) { DateTime::Duration->new(hours   => shift) }}
-       minutes: sub {sub ($) { DateTime::Duration->new(minutes => shift) }}
-       seconds: sub {sub ($) { DateTime::Duration->new(seconds => shift) }}
-       datetime_duration: sub {sub {DateTime::Duration->new(@_)}}
+       year   : sub {sub () { DateTime::Duration->new(years   => 1, end_of_month => "limit") }}
+       month  : sub {sub () { DateTime::Duration->new(months  => 1, end_of_month => "limit") }}
+       day    : sub {sub () { DateTime::Duration->new(days    => 1, end_of_month => "limit") }}
+       hour   : sub {sub () { DateTime::Duration->new(hours   => 1, end_of_month => "limit") }}
+       minute : sub {sub () { DateTime::Duration->new(minutes => 1, end_of_month => "limit") }}
+       second : sub {sub () { DateTime::Duration->new(seconds => 1, end_of_month => "limit") }}
+       years  : sub {sub ($) { DateTime::Duration->new(years   => shift, end_of_month => "limit") }}
+       months : sub {sub ($) { DateTime::Duration->new(months  => shift, end_of_month => "limit") }}
+       days   : sub {sub ($) { DateTime::Duration->new(days    => shift, end_of_month => "limit") }}
+       hours  : sub {sub ($) { DateTime::Duration->new(hours   => shift, end_of_month => "limit") }}
+       minutes: sub {sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => "limit") }}
+       seconds: sub {sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => "limit") }}
+       datetime_duration: sub {sub {DateTime::Duration->new(end_of_month => "limit", @_)}}
      Date::Parse:
        datetime_parse: |
          sub {
