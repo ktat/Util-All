@@ -22,6 +22,17 @@ our $Utils = {
       'Benchmark',
       '',
       {
+        'timesamearg' => sub {
+            sub {
+                my($num, $codes, @args) = @_;
+                Benchmark::timethese($num, {map({my $code = $$codes{$_};
+                $_, sub {
+                    &$code(@args);
+                }
+                ;} keys %$codes)});
+            }
+            ;
+        },
         '-select' => [
           'timeit',
           'timethis',
@@ -31,7 +42,18 @@ our $Utils = {
           'timesum',
           'cmpthese',
           'countit'
-        ]
+        ],
+        'cmpsamearg' => sub {
+            sub {
+                my($num, $codes, @args) = @_;
+                Benchmark::cmpthese($num, {map({my $code = $$codes{$_};
+                $_, sub {
+                    &$code(@args);
+                }
+                ;} keys %$codes)});
+            }
+            ;
+        }
       }
     ]
   ],
@@ -135,81 +157,94 @@ our $Utils = {
       '',
       {
         'hour' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('hours', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'hours' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         '-select' => [],
         'second' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('seconds', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'month' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('months', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('months', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minutes' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'days' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('days', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'seconds' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minute' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('minutes', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'years' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('years', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'day' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('days', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('days', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'datetime_duration' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub {
-                'DateTime::Duration'->new('end_of_month', 'limit', @_);
+                'DateTime::Duration'->new('end_of_month', $$args{'end_of_month'} || 'limit', @_);
             }
             ;
         },
         'year' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub () {
-                'DateTime::Duration'->new('years', 1, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('years', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'months' => sub {
+            my($pkg, $class, $func, $args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('months', shift @_, 'end_of_month', 'limit');
+                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
             }
             ;
         }
@@ -260,7 +295,14 @@ our $Utils = {
       '',
       {
         'Dumper' => 'dumper',
-        '-select' => []
+        '-select' => [],
+        'deparse' => sub {
+            sub (&) {
+                local $Data::Dumper::Deparse = 1;
+                Data::Dumper::Dumper(@_);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -305,6 +347,20 @@ our $Utils = {
   ],
   '-hash' => [
     [
+      'Tie::IxHash',
+      '',
+      {
+        'indexed' => sub {
+            sub (\%) {
+                my($hash) = @_;
+                tie %$hash, 'Tie::IxHash';
+            }
+            ;
+        },
+        '-select' => []
+      }
+    ],
+    [
       'Hash::Util',
       '',
       {
@@ -346,10 +402,10 @@ our $Utils = {
       '',
       {
         'http_post' => sub {
-            require LWP::UserAgent;
+            require WWW::Curl::Simple;
             sub {
-                my $ua = 'LWP::UserAgent'->new;
-                $ua->request(HTTP::Request::Common::POST(@_));
+                my $ua = 'WWW::Curl::Simple'->new;
+                $ua->post(@_);
             }
             ;
         },
@@ -371,10 +427,10 @@ our $Utils = {
             ;
         },
         'http_get' => sub {
-            require LWP::UserAgent;
+            require WWW::Curl::Simple;
             sub {
-                my $ua = 'LWP::UserAgent'->new;
-                $ua->request(HTTP::Request::Common::GET(@_));
+                my $ua = 'WWW::Curl::Simple'->new;
+                $ua->get(@_);
             }
             ;
         },
@@ -476,8 +532,16 @@ our $Utils = {
       'Mail::Sendmail',
       '',
       {
-        'sendmail' => 'mail_send',
-        '-select' => []
+        '-select' => [],
+        'mail_send' => sub {
+            sub {
+                my(%args) = @_;
+                my %new;
+                $new{ucfirst $_} = $args{$_} foreach (keys %args);
+                Mail::Sendmail::sendmail(%new);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -491,6 +555,25 @@ our $Utils = {
           'md5_hex',
           'md5_base64'
         ]
+      }
+    ]
+  ],
+  '-number' => [
+    [
+      'Util::All',
+      '',
+      {
+        'commify' => sub {
+            sub {
+                local $_ = shift @_;
+                while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) {
+                    ();
+                }
+                return $_;
+            }
+            ;
+        },
+        '-select' => []
       }
     ]
   ],
@@ -583,7 +666,43 @@ our $Utils = {
       }
     ]
   ],
+  '-time' => [
+    [
+      'Time::HiRes',
+      '',
+      {
+        '-select' => [
+          'usleep',
+          'nanosleep',
+          'ualarm'
+        ]
+      }
+    ]
+  ],
   '-uri' => [
+    [
+      'URI',
+      '',
+      {
+        '-select' => [],
+        'uri_make' => sub {
+            sub {
+                my($url, $form) = @_;
+                my %form;
+                foreach my $k (keys %$form) {
+                    my($key, $value) = ($k, $$form{$k});
+                    utf8::decode($key) unless utf8::is_utf8($k);
+                    utf8::decode($value) unless utf8::is_utf8($value);
+                    $form{$key} = $value;
+                }
+                my $u = 'URI'->new($url);
+                $u->query_form(%form);
+                $u->as_string;
+            }
+            ;
+        }
+      }
+    ],
     [
       'URI::Escape',
       '',
@@ -866,17 +985,27 @@ This file is functions.yml in distribution.
    
    hash:
      Hash::Util:
-      - hash_seed
-      - lock_hash
-      - lock_keys
-      - lock_value
-      - unlock_hash
-      - unlock_keys
-      - unlock_value
+       -select:
+        - hash_seed
+        - lock_hash
+        - lock_keys
+        - lock_value
+        - unlock_hash
+        - unlock_keys
+        - unlock_value
+     Tie::IxHash:
+       indexed: |
+         sub {
+           sub (\%) {
+             my ($hash) = @_;
+             tie %$hash, "Tie::IxHash";
+           }
+         }
    
    debug:
      Data::Dumper:
        Dumper: dumper
+       deparse: sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
      Data::Dump:
        dump: dump
        p   : sub { sub { Data::Dump::dump(@_) } }
@@ -994,6 +1123,24 @@ This file is functions.yml in distribution.
      URI::Split:
        - uri_split
        - uri_join
+     URI:
+       uri_make: |
+         sub {
+           sub {
+             use utf8;
+             my ($url, $form) = @_;
+             my %form;
+             foreach my $k (keys %$form) {
+               my ($key, $value) = ($k, $form->{$k});
+               utf8::decode($key)   unless utf8::is_utf8($k);
+               utf8::decode($value) unless utf8::is_utf8($value);
+               $form{$key} = $value;
+             }
+             my $u = URI->new($url);
+             $u->query_form(%form);
+             $u->as_string;
+           }
+         }
    
    base64:
      MIME::Base64:
@@ -1001,17 +1148,27 @@ This file is functions.yml in distribution.
        decode_base64: base64_decode
    
    http:
-     -require : ['LWP::UserAgent']
+     -require : ['LWP::UserAgent', 'WWW::Curl::Simple']
      HTTP::Request::Common:
-       http_get   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::GET(@_)) } }
-       http_post  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::POST(@_)) } }
+       http_get   : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->get(@_) } }
+       http_post  : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->post(@_) } }
        http_put   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::PUT(@_)) } }
        http_delete: sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::DELETE(@_)) } }
        http_head  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::HEAD(@_)) } }
    
    mail:
      Mail::Sendmail:
-       sendmail: mail_send
+       mail_send: |
+         sub {
+           sub {
+             my (%args) = @_;
+             my %new;
+             $new{ucfirst $_} = $args{$_} for keys %args;
+             Mail::Sendmail::sendmail(%new);
+             # error $Mail::Sendmail::error;
+             # log   $Mail::Sendmail::log;
+           }
+         }
    
    carp:
      Carp:
@@ -1047,19 +1204,71 @@ This file is functions.yml in distribution.
      -require: ['Date::Manip']
      -as_plugin: 1
      DateTime::Duration:
-       year   : sub {sub () { DateTime::Duration->new(years   => 1, end_of_month => "limit") }}
-       month  : sub {sub () { DateTime::Duration->new(months  => 1, end_of_month => "limit") }}
-       day    : sub {sub () { DateTime::Duration->new(days    => 1, end_of_month => "limit") }}
-       hour   : sub {sub () { DateTime::Duration->new(hours   => 1, end_of_month => "limit") }}
-       minute : sub {sub () { DateTime::Duration->new(minutes => 1, end_of_month => "limit") }}
-       second : sub {sub () { DateTime::Duration->new(seconds => 1, end_of_month => "limit") }}
-       years  : sub {sub ($) { DateTime::Duration->new(years   => shift, end_of_month => "limit") }}
-       months : sub {sub ($) { DateTime::Duration->new(months  => shift, end_of_month => "limit") }}
-       days   : sub {sub ($) { DateTime::Duration->new(days    => shift, end_of_month => "limit") }}
-       hours  : sub {sub ($) { DateTime::Duration->new(hours   => shift, end_of_month => "limit") }}
-       minutes: sub {sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => "limit") }}
-       seconds: sub {sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => "limit") }}
-       datetime_duration: sub {sub {DateTime::Duration->new(end_of_month => "limit", @_)}}
+       year   : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(years  => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       month  : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(months => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       day    : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(days   => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       hour   : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(hours  => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       minute : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(minutes => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       second : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub () { DateTime::Duration->new(seconds => 1, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       years  : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       months : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(months => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       days   : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       hours  : |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       minutes: |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       seconds: |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $args->{end_of_month} || "limit") }
+         }
+       datetime_duration: |
+         sub {
+           my ($pkg, $class, $func, $args) = @_;
+           sub {DateTime::Duration->new(end_of_month => $args->{end_of_month} || "limit", @_)}
+         }
      Date::Parse:
        datetime_parse: |
          sub {
@@ -1086,14 +1295,29 @@ This file is functions.yml in distribution.
    
    benchmark:
      Benchmark:
-       - timeit
-       - timethis
-       - timethese
-       - timediff
-       - timestr
-       - timesum
-       - cmpthese
-       - countit
+       -select: 
+         - timeit
+         - timethis
+         - timethese
+         - timediff
+         - timestr
+         - timesum
+         - cmpthese
+         - countit
+       cmpsamearg: |
+         sub {
+           sub {
+             my ($num, $codes, @args) = @_;
+             Benchmark::cmpthese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+           }
+         }
+       timesamearg: |
+         sub {
+           sub {
+             my ($num, $codes, @args) = @_;
+             Benchmark::timethese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+           }
+         }
    
    file:
      File::Find:
@@ -1113,6 +1337,25 @@ This file is functions.yml in distribution.
      Return::Value:
        - success
        - failure
+   
+   time:
+     Time::HiRes:
+       - usleep
+       - nanosleep
+       - ualarm
+   
+   number:
+     # dummy
+     Util::All:
+       commify: |
+         sub {
+           # code is borrowed from Template::Plugin::Comma
+           sub {
+             local $_ = shift;
+             while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s){}
+             return $_;
+           }
+         }
 
 
 =head1 CREATE PLUGINS

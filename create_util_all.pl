@@ -19,15 +19,17 @@ my @requires;
 my @as_plugins; # not yet
 
 my $default_priority = 1000;
+my %usage;
 
 foreach my $k (sort keys %$def) {
   my %tmp;
 
   push @requires, @{delete $def->{$k}->{'-require'} || []};
-  push @as_plugins, delete $def->{$k}->{'-as_plugin'} || ();
+  push @as_plugins, delete $def->{$k}->{'-as_plugin'} || (); # do nothing
+  $usage{$k} = delete $def->{$k}->{'-usage'};
 
   foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
-                       ($tmp{$b} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
+                       ($tmp{$b} ||= (ref $def->{$k}{$b} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
                      } keys %{$def->{$k}}) {
     push @modules, $m;
     if ($def->{$k}->{$m} eq '*') {
@@ -37,6 +39,7 @@ foreach my $k (sort keys %$def) {
       foreach my $f (keys  %{$def->{$k}->{$m}}) {
         if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
           no strict; # for not including "use strict" when Dumper.
+	  # print Data::Dumper::Dumper(eval"$def->{$k}->{$m}->{$f}");
           my $sub = eval "$def->{$k}->{$m}->{$f}";
           die $@. $def->{$k}->{$m}->{$f} if $@;
           $def->{$k}->{$m}->{$f} = $sub;
@@ -44,7 +47,7 @@ foreach my $k (sort keys %$def) {
           push @funcs, delete $def->{$k}->{$m}->{$f};
         }
       }
-      $def->{$k}->{$m}->{-select} = \@funcs;
+      push @{$def->{$k}->{$m}->{-select} ||= []}, @funcs;
       push @{$new{'-' . $k} ||= []}, [
                                       $m, '',
                                       $def->{$k}->{$m},
