@@ -68,21 +68,34 @@ hash:
      - unlock_keys
      - unlock_value
   Tie::IxHash:
-    indexed: |
-      sub {
-        sub (\%) {
-          my ($hash) = @_;
-          tie %$hash, "Tie::IxHash";
+    indexed:
+      - |
+        sub {
+          sub (\%@) {
+            my $hash = shift;
+            tie %$hash, "Tie::IxHash";
+            %$hash = @_;
+          }
         }
-      }
+      - indexed my %hash = (a => 1, b => 2);
+      - %hash is indexed.
 
 debug:
   Data::Dumper:
-    Dumper: dumper
-    deparse: sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
+    Dumper:
+      - dumper
+      - ''
+      - Dumper in Data::Dumper.
+    deparse:
+      - sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
+      - deparse(sub { print "hello World" })
+      - dump code reference as string. 
   Data::Dump:
-    dump: dump
-    p   : sub { sub { Data::Dump::dump(@_) } }
+    -select: [dump]
+    p   :
+      - sub { sub { Data::Dump::dump(@_) } }
+      - p($variable)
+      - as same as dumper(function name is as same as one in Ruby).
 
 string:
   String::Util:
@@ -223,6 +236,14 @@ base64:
 
 http:
   -require : ['LWP::UserAgent', 'WWW::Curl::Simple']
+  -usage : |
+      do http method and get HTTP::Response object.
+      
+        http_get($url, \%query);
+        http_post($url, \%query);
+        http_put($url, \%query);
+        http_delete($url, \%query);
+        http_head($url, \%query);
   HTTP::Request::Common:
     http_get   : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->get(@_) } }
     http_post  : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->post(@_) } }
@@ -254,11 +275,11 @@ carp:
     - longmess
 
 yaml:
-  YAML::Syck:
-    LoadFile: yaml_load_file
+  YAML::XS:
     Load:     yaml_load
-    DumpFile: yaml_dump_file
     Dump:     yaml_dump
+    yaml_load_file: sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
+    yaml_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
 
 json:
 #  JSON::Syck:
@@ -274,74 +295,115 @@ json:
     json_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
 
 
+basecalc:
+  Math::BaseCalc:
+    from_base: |
+             sub {
+                my($pkg, $class, $func, $args, $kind_args) = @_;
+                sub {
+                   Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
+               }
+             }
+    to_base  : |
+             sub {
+                my($pkg, $class, $func, $args, $kind_args) = @_;
+                sub {
+                   Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
+                }
+             }
+
 datetime:
   -require: ['Date::Manip']
   -as_plugin: 1
+  -usage: |
+    =head3 functions to return DateTime object
+    
+      $dt = datetime(year => .., month => ..,);
+      $dt = datetime_parse("2009/09/09");
+    
+    =head3 functions to return DateTime::Duration object
+    
+      year
+      month
+      day
+      hour
+      minute
+      second
+    
+    They return DateTime::Duration object. So you can use them for calcuration.
+    
+      $duration = year + month + day
+    
+    You can use plural form of these functions, too which can take number.
+    
+      years 5;
+      months 5;
+
   DateTime::Duration:
     year   : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(years  => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(years  => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     month  : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(months => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(months => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     day    : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(days   => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(days   => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     hour   : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(hours  => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(hours  => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     minute : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(minutes => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(minutes => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     second : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub () { DateTime::Duration->new(seconds => 1, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub () { DateTime::Duration->new(seconds => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     years  : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     months : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(months => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(months => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     days   : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     hours  : |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     minutes: |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     seconds: |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $args->{end_of_month} || "limit") }
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
       }
     datetime_duration: |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
-        sub {DateTime::Duration->new(end_of_month => $args->{end_of_month} || "limit", @_)}
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        sub {DateTime::Duration->new(end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit", @_)}
       }
   Date::Parse:
     datetime_parse: |
@@ -372,26 +434,34 @@ benchmark:
     -select: 
       - timeit
       - timethis
+#     -
+#        - timethis
+#        - timethis($count, \&code)
+#        - timethis repeat &code $count times
       - timethese
       - timediff
       - timestr
       - timesum
       - cmpthese
       - countit
-    cmpsamearg: |
-      sub {
+    cmpsamearg:
+      - | 
         sub {
-          my ($num, $codes, @args) = @_;
-          Benchmark::cmpthese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+          sub {
+            my ($num, $codes, @args) = @_;
+            Benchmark::cmpthese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+          }
         }
-      }
-    timesamearg: |
-      sub {
+      - cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+    timesamearg:
+      - |
         sub {
-          my ($num, $codes, @args) = @_;
-          Benchmark::timethese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+          sub {
+            my ($num, $codes, @args) = @_;
+            Benchmark::timethese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
+          }
         }
-      }
+      - timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
 file:
   File::Find:
@@ -419,8 +489,8 @@ time:
     - ualarm
 
 number:
-  # dummy
-  Util::All:
+  -as_plugin: 1
+  Number::Format:
     commify: |
       sub {
         # code is borrowed from Template::Plugin::Comma
@@ -428,5 +498,45 @@ number:
           local $_ = shift;
           while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s){}
           return $_;
+        }
+      }
+    number_round: |
+      sub {
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        my $n = Number::Format->new(%$kind_args);
+        sub {
+          $n->round(@_);
+        }
+      }
+    number_format: |
+      sub {
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        my $n = Number::Format->new(%$kind_args, %$args);
+        sub {
+          $n->format_number(@_);
+        }
+      }
+    number_price: |
+      sub {
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        my $n = Number::Format->new(%$kind_args, %$args);
+        sub {
+          $n->format_price(@_);
+        }
+      }
+    number_unit: |
+      sub {
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        my $n = Number::Format->new(%$kind_args, %$args);
+        sub {
+          $n->format_unit(@_);
+        }
+      }
+    to_number: |
+      sub {
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
+        my $n = Number::Format->new(%$kind_args, %$args);
+        sub {
+          $n->unformat_number(@_);
         }
       }

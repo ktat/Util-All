@@ -17,6 +17,29 @@ our $Utils = {
       }
     ]
   ],
+  '-basecalc' => [
+    [
+      'Math::BaseCalc',
+      '',
+      {
+        'to_base' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+                'Math::BaseCalc'->new('digits', $$kind_args{'digits'} || $$args{'digits'})->to_base(shift @_);
+            }
+            ;
+        },
+        '-select' => [],
+        'from_base' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+                'Math::BaseCalc'->new('digits', $$kind_args{'digits'} || $$args{'digits'})->from_base(shift @_);
+            }
+            ;
+        }
+      }
+    ]
+  ],
   '-benchmark' => [
     [
       'Benchmark',
@@ -157,94 +180,94 @@ our $Utils = {
       '',
       {
         'hour' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'hours' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         '-select' => [],
         'second' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'month' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('months', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('months', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minutes' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'days' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'seconds' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minute' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'years' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'day' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('days', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('days', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'datetime_duration' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
-                'DateTime::Duration'->new('end_of_month', $$args{'end_of_month'} || 'limit', @_);
+                'DateTime::Duration'->new('end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit', @_);
             }
             ;
         },
         'year' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('years', 1, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('years', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         },
         'months' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
             }
             ;
         }
@@ -351,9 +374,10 @@ our $Utils = {
       '',
       {
         'indexed' => sub {
-            sub (\%) {
-                my($hash) = @_;
+            sub (\%@) {
+                my $hash = shift @_;
                 tie %$hash, 'Tie::IxHash';
+                (%$hash) = @_;
             }
             ;
         },
@@ -560,9 +584,17 @@ our $Utils = {
   ],
   '-number' => [
     [
-      'Util::All',
+      'Number::Format',
       '',
       {
+        'number_price' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $n = 'Number::Format'->new(%$kind_args, %$args);
+            sub {
+                $n->format_price(@_);
+            }
+            ;
+        },
         'commify' => sub {
             sub {
                 local $_ = shift @_;
@@ -573,7 +605,39 @@ our $Utils = {
             }
             ;
         },
-        '-select' => []
+        'number_unit' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $n = 'Number::Format'->new(%$kind_args, %$args);
+            sub {
+                $n->format_unit(@_);
+            }
+            ;
+        },
+        '-select' => [],
+        'to_number' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $n = 'Number::Format'->new(%$kind_args, %$args);
+            sub {
+                $n->unformat_number(@_);
+            }
+            ;
+        },
+        'number_round' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $n = 'Number::Format'->new(%$kind_args);
+            sub {
+                $n->round(@_);
+            }
+            ;
+        },
+        'number_format' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $n = 'Number::Format'->new(%$kind_args, %$args);
+            sub {
+                $n->format_number(@_);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -767,14 +831,26 @@ our $Utils = {
   ],
   '-yaml' => [
     [
-      'YAML::Syck',
+      'YAML::XS',
       '',
       {
-        'DumpFile' => 'yaml_dump_file',
         '-select' => [],
+        'yaml_load_file' => sub {
+            require File::Slurp;
+            sub {
+                YAML::XS::Load(File::Slurp::slurp(shift @_));
+            }
+            ;
+        },
         'Dump' => 'yaml_dump',
         'Load' => 'yaml_load',
-        'LoadFile' => 'yaml_load_file'
+        'yaml_dump_file' => sub {
+            require File::Slurp;
+            sub {
+                File::Slurp::write_file(shift @_, YAML::XS::Dump(shift @_));
+            }
+            ;
+        }
       }
     ]
   ]
@@ -886,476 +962,691 @@ etc.
 
 =head1 EXPORT
 
-Instead of writing document,
-I'll show YAML file below.
+=head2 -base64
 
-Its first level keys are kinds of functions.
-hashes of the kinds has four kinds of structures.
+=head3 base64_encode
 
-First:
+encode_base64 in MIME::Base64
 
- Module::Name: *
+=head3 base64_decode
 
-All functions in @EXPORT, @EXPORT_OK of Module::Name can be imported.
+decode_base64 in MIME::Base64
 
-Second:
+=head2 -basecalc
 
- Module::Name:
-   - function_a
-   - function_b
+=head3 to_base
 
-function_a and function_b of module::Name can be imported.
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    sub {
+        Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+          ->to_base(shift);
+      }
+  }
 
-Third:
 
- Module::Name:
-   function_a: func_a
+=head3 from_base
 
-function_a of Module::Name can be imported as func_a.
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    sub {
+        Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+          ->from_base(shift);
+      }
+  }
 
-Fourth:
 
- Module::Name:
-   function_a: sub { sub { ... } }
+=head2 -benchmark
 
-function_a is function enable to generate function.
-See L<Util::Any/Sub::Exporter's GENERATOR WAY>.
+=head3 functions in Benchmark
 
-The following is all definition of Util::All.
-This file is functions.yml in distribution.
+=head4 timeit
 
-   ---
-   scalar:
-     Scalar::Util:
-       - blessed
-       - dualvar
-       - isvstring
-       - isweak
-       - looks_like_number
-       - openhandle
-       - readonly
-       - refaddr
-       - reftype
-       - set_prototype
-       - tainted
-       - weaken
-   
-   list:
-     List::Util:
-       - first
-       - max
-       - maxstr
-       - min
-       - minstr
-       - reduce
-       - shuffle
-       - sum
-     List::MoreUtils:
-       - after
-       - after_incl
-       - all
-       - any
-       - apply
-       - before
-       - before_incl
-       - each_array
-       - each_arrayref
-       - false
-       - first_index
-       - first_value
-       - firstidx
-       - firstval
-       - indexes
-       - insert_after
-       - insert_after_string
-       - last_index
-       - last_value
-       - lastidx
-       - lastval
-       - mesh
-       - minmax
-       - natatime
-       - none
-       - notall
-       - pairwise
-       - part
-       - true
-       - uniq
-       - zip
-   
-   hash:
-     Hash::Util:
-       -select:
-        - hash_seed
-        - lock_hash
-        - lock_keys
-        - lock_value
-        - unlock_hash
-        - unlock_keys
-        - unlock_value
-     Tie::IxHash:
-       indexed: |
-         sub {
-           sub (\%) {
-             my ($hash) = @_;
-             tie %$hash, "Tie::IxHash";
-           }
-         }
-   
-   debug:
-     Data::Dumper:
-       Dumper: dumper
-       deparse: sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
-     Data::Dump:
-       dump: dump
-       p   : sub { sub { Data::Dump::dump(@_) } }
-   
-   string:
-     String::Util:
-       - crunch
-       - define
-       - equndef
-       - fullchomp
-       - hascontent
-       - htmlesc
-       - neundef
-       - nospace
-       - randcrypt
-       - randword
-       - trim
-       - unquote
-     String::CamelCase:
-       - camelize
-       - decamelize
-       - wordsplit
-   
-   md5:
-     Digest::MD5:
-       - md5
-       - md5_hex
-       - md5_base64
-   sha:
-     Digest::SHA:
-       - sha1
-       - sha1_hex
-       - sha1_base64
-       - sha256
-       - sha256_hex
-       - sha256_base64
-       - sha384
-       - sha384_hex
-       - sha384_base64
-       - sha512
-       - sha512_hex
-       - sha512_base64
-   
-   utf8:
-     utf8:
-       is_utf8  : is_utf8
-       upgrade  : utf8_upgrade
-       downgrade: utf8_downgrade
-       encode   : utf8_encode
-   
-   cgi:
-     CGI::Util:
-       escape: cgi_escape
-       unescape: cgi_unescape
-     HTML::Entities:
-       decode_entities: html_entity_decode
-       encode_entities: html_entity_encode
-   
-   html:
-     HTML::Entities:
-       decode_entities: html_entity_decode
-       encode_entities: html_entity_encode
-     CGI::Util:
-       escape: cgi_escape
-       unescape: cgi_unescape
-   
-   xml:
-     -require: ['XML::Parser']
-     -as_plugin: 1
-     XML::Simple:
-       xml_load: |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser} || 'XML::Parser';
-           $args->{Forcearray} ||= $args->{force_array};
-           $args->{KeyAttr}    ||= $args->{key_attr};
-           sub {
-             XML::Simple::XMLin(shift, %$args);
-           }
-         }
-       xml_dump: |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           $args->{KeyAttr} ||= $args->{key_attr};
-           sub {
-             XML::Simple::XMLout(shift, %$args);
-           }
-         }
-   
-   char_enc:
-     Encode:
-       encode: char_encode
-       decode: char_decode
-       char_convert: |
-         sub {
-            my ($pkg, $class, $func, $args) = @_;
-            my $g_class = 0;
-            if (exists $args->{guess}){
-              require Encode::Guess;
-              Encode::Guess->import(@{$args->{guess}});
-            } elsif (not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"}) {
-              eval {require Encode::Detect; $g_class = 1} or require Encode::Guess;
-            }
-            sub {
-              my ($str, $to, $from) = @_;
-              Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
-            }
-         }
-       from_to: char_from_to
-   
-   uri:
-     URI::Escape:
-       - uri_escape
-       - uri_unescape
-     URI::Split:
-       - uri_split
-       - uri_join
-     URI:
-       uri_make: |
-         sub {
-           sub {
-             use utf8;
-             my ($url, $form) = @_;
-             my %form;
-             foreach my $k (keys %$form) {
-               my ($key, $value) = ($k, $form->{$k});
-               utf8::decode($key)   unless utf8::is_utf8($k);
-               utf8::decode($value) unless utf8::is_utf8($value);
-               $form{$key} = $value;
-             }
-             my $u = URI->new($url);
-             $u->query_form(%form);
-             $u->as_string;
-           }
-         }
-   
-   base64:
-     MIME::Base64:
-       encode_base64: base64_encode
-       decode_base64: base64_decode
-   
-   http:
-     -require : ['LWP::UserAgent', 'WWW::Curl::Simple']
-     HTTP::Request::Common:
-       http_get   : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->get(@_) } }
-       http_post  : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->post(@_) } }
-       http_put   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::PUT(@_)) } }
-       http_delete: sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::DELETE(@_)) } }
-       http_head  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::HEAD(@_)) } }
-   
-   mail:
-     Mail::Sendmail:
-       mail_send: |
-         sub {
-           sub {
-             my (%args) = @_;
-             my %new;
-             $new{ucfirst $_} = $args{$_} for keys %args;
-             Mail::Sendmail::sendmail(%new);
-             # error $Mail::Sendmail::error;
-             # log   $Mail::Sendmail::log;
-           }
-         }
-   
-   carp:
-     Carp:
-       - croak
-       - cluck
-       - carp
-       - confess
-       - shortmess
-       - longmess
-   
-   yaml:
-     YAML::Syck:
-       LoadFile: yaml_load_file
-       Load:     yaml_load
-       DumpFile: yaml_dump_file
-       Dump:     yaml_dump
-   
-   json:
-   #  JSON::Syck:
-   #    LoadFile: json_load_file
-   #    Load:     json_load	    
-   #    DumpFile: json_dump_file
-   #    Dump:     json_dump	    
-     -require: ['File::Slurp']
-     JSON::XS:
-       decode_json: json_load
-       encode_json: json_dump
-       json_load_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
-       json_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
-   
-   
-   datetime:
-     -require: ['Date::Manip']
-     -as_plugin: 1
-     DateTime::Duration:
-       year   : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(years  => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       month  : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(months => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       day    : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(days   => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       hour   : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(hours  => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       minute : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(minutes => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       second : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub () { DateTime::Duration->new(seconds => 1, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       years  : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       months : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(months => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       days   : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       hours  : |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       minutes: |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       seconds: |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $args->{end_of_month} || "limit") }
-         }
-       datetime_duration: |
-         sub {
-           my ($pkg, $class, $func, $args) = @_;
-           sub {DateTime::Duration->new(end_of_month => $args->{end_of_month} || "limit", @_)}
-         }
-     Date::Parse:
-       datetime_parse: |
-         sub {
-           my $i = 1;
-           unless ($INC{"Date/Manip.pm"}) {
-             require Date::Manip;
-             $i = 0;
-           }
-           sub {
-             unless ($i) {
-               $i = 1;
-               Date::Manip::Date_Init();
-             }
-             my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
-             DateTime->new(year => $year + 1900, month => ++$month, day => $day,
-               hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
-               time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)});
-           }
-         }
-     DateTime:
-       today   : sub {sub () { DateTime->today(@_) }}
-       now     : sub {sub () { DateTime->now(@_) }}
-       datetime: sub {sub { DateTime->new(@_) }}
-   
-   benchmark:
-     Benchmark:
-       -select: 
-         - timeit
-         - timethis
-         - timethese
-         - timediff
-         - timestr
-         - timesum
-         - cmpthese
-         - countit
-       cmpsamearg: |
-         sub {
-           sub {
-             my ($num, $codes, @args) = @_;
-             Benchmark::cmpthese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
-           }
-         }
-       timesamearg: |
-         sub {
-           sub {
-             my ($num, $codes, @args) = @_;
-             Benchmark::timethese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
-           }
-         }
-   
-   file:
-     File::Find:
-       find : file_find
-     File::Path:
-       - make_path
-       - remove_tree
-     File::Slurp:
-       slurp     : file_slurp
-       read_file : file_read
-       write_file: file_write
-     File::Copy:
-       copy: file_copy
-       move: file_move
-   
-   return:
-     Return::Value:
-       - success
-       - failure
-   
-   time:
-     Time::HiRes:
-       - usleep
-       - nanosleep
-       - ualarm
-   
-   number:
-     # dummy
-     Util::All:
-       commify: |
-         sub {
-           # code is borrowed from Template::Plugin::Comma
-           sub {
-             local $_ = shift;
-             while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s){}
-             return $_;
-           }
-         }
+=head4 timethis
+
+=head4 timethese
+
+=head4 timediff
+
+=head4 timestr
+
+=head4 timesum
+
+=head4 cmpthese
+
+=head4 countit
+
+=head3 timesamearg
+
+  timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+
+=head3 cmpsamearg
+
+  cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+
+=head2 -carp
+
+=head3 functions in Carp
+
+=head4 croak
+
+=head4 cluck
+
+=head4 carp
+
+=head4 confess
+
+=head4 shortmess
+
+=head4 longmess
+
+=head2 -cgi
+
+=head3 html_entity_decode
+
+decode_entities in HTML::Entities
+
+=head3 cgi_escape
+
+escape in CGI::Util
+
+=head3 cgi_unescape
+
+unescape in CGI::Util
+
+=head3 html_entity_encode
+
+encode_entities in HTML::Entities
+
+=head2 -char_enc
+
+=head3 char_from_to
+
+from_to in Encode
+
+=head3 char_convert
+
+  sub {
+    my ( $pkg, $class, $func, $args ) = @_;
+    my $g_class = 0;
+    if ( exists $args->{guess} ) {
+        require Encode::Guess;
+        Encode::Guess->import( @{ $args->{guess} } );
+    }
+    elsif ( not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"} ) {
+        eval { require Encode::Detect; $g_class = 1 } or require Encode::Guess;
+    }
+    sub {
+        my ( $str, $to, $from ) = @_;
+        Encode::from_to( shift, $from ? $from : $g_class ? "DETECT" : "GUESS",
+            $to );
+      }
+  }
+
+
+=head3 char_encode
+
+encode in Encode
+
+=head3 char_decode
+
+decode in Encode
+
+=head2 -datetime
+
+=head3 functions to return DateTime object
+
+  $dt = datetime(year => .., month => ..,);
+  $dt = datetime_parse("2009/09/09");
+
+=head3 functions to return DateTime::Duration object
+
+  year
+  month
+  day
+  hour
+  minute
+  second
+
+They return DateTime::Duration object. So you can use them for calcuration.
+
+  $duration = year + month + day
+
+You can use plural form of these functions, too which can take number.
+
+  years 5;
+  months 5;
+
+
+=head2 -debug
+
+=head3 functions in Data::Dump
+
+=head4 dump
+
+=head3 p
+
+  p($variable)
+
+as same as dumper(function name is as same as one in Ruby).
+
+=head3 deparse
+
+  deparse(sub { print "hello World" })
+
+dump code reference as string.
+
+=head3 dumper
+
+Dumper in Data::Dumper
+
+=head2 -file
+
+=head3 file_read
+
+read_file in File::Slurp
+
+=head3 file_write
+
+write_file in File::Slurp
+
+=head3 functions in File::Path
+
+=head4 make_path
+
+=head4 remove_tree
+
+=head3 file_find
+
+find in File::Find
+
+=head3 file_copy
+
+copy in File::Copy
+
+=head3 file_move
+
+move in File::Copy
+
+=head3 file_slurp
+
+slurp in File::Slurp
+
+=head2 -hash
+
+=head3 indexed
+
+  indexed my %hash = (a => 1, b => 2);
+
+%hash is indexed.
+
+=head3 functions in Hash::Util
+
+=head4 hash_seed
+
+=head4 lock_hash
+
+=head4 lock_keys
+
+=head4 lock_value
+
+=head4 unlock_hash
+
+=head4 unlock_keys
+
+=head4 unlock_value
+
+=head2 -html
+
+=head3 html_entity_decode
+
+decode_entities in HTML::Entities
+
+=head3 cgi_escape
+
+escape in CGI::Util
+
+=head3 cgi_unescape
+
+unescape in CGI::Util
+
+=head3 html_entity_encode
+
+encode_entities in HTML::Entities
+
+=head2 -http
+
+do http method and get HTTP::Response object.
+
+  http_get($url, \%query);
+  http_post($url, \%query);
+  http_put($url, \%query);
+  http_delete($url, \%query);
+  http_head($url, \%query);
+
+
+=head2 -json
+
+=head3 json_dump
+
+encode_json in JSON::XS
+
+=head3 json_load_file
+
+  sub {
+    require File::Slurp;
+    sub { JSON::XS::decode_json( File::Slurp::slurp(shift) ) }
+  }
+
+
+=head3 json_dump_file
+
+  sub {
+    require File::Slurp;
+    sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
+  }
+
+
+=head3 json_load
+
+decode_json in JSON::XS
+
+=head2 -list
+
+=head3 functions in List::Util
+
+=head4 first
+
+=head4 max
+
+=head4 maxstr
+
+=head4 min
+
+=head4 minstr
+
+=head4 reduce
+
+=head4 shuffle
+
+=head4 sum
+
+=head3 functions in List::MoreUtils
+
+=head4 after
+
+=head4 after_incl
+
+=head4 all
+
+=head4 any
+
+=head4 apply
+
+=head4 before
+
+=head4 before_incl
+
+=head4 each_array
+
+=head4 each_arrayref
+
+=head4 false
+
+=head4 first_index
+
+=head4 first_value
+
+=head4 firstidx
+
+=head4 firstval
+
+=head4 indexes
+
+=head4 insert_after
+
+=head4 insert_after_string
+
+=head4 last_index
+
+=head4 last_value
+
+=head4 lastidx
+
+=head4 lastval
+
+=head4 mesh
+
+=head4 minmax
+
+=head4 natatime
+
+=head4 none
+
+=head4 notall
+
+=head4 pairwise
+
+=head4 part
+
+=head4 true
+
+=head4 uniq
+
+=head4 zip
+
+=head2 -mail
+
+=head3 mail_send
+
+  sub {
+    sub {
+        my (%args) = @_;
+        my %new;
+        $new{ ucfirst $_ } = $args{$_} for keys %args;
+        Mail::Sendmail::sendmail(%new);
+
+        # error $Mail::Sendmail::error;
+        # log   $Mail::Sendmail::log;
+      }
+  }
+
+
+=head2 -md5
+
+=head3 functions in Digest::MD5
+
+=head4 md5
+
+=head4 md5_hex
+
+=head4 md5_base64
+
+=head2 -number
+
+=head3 number_price
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new( %$kind_args, %$args );
+    sub {
+        $n->format_price(@_);
+      }
+  }
+
+
+=head3 commify
+
+  sub {
+
+    # code is borrowed from Template::Plugin::Comma
+    sub {
+        local $_ = shift;
+        while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
+        return $_;
+      }
+  }
+
+
+=head3 number_unit
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new( %$kind_args, %$args );
+    sub {
+        $n->format_unit(@_);
+      }
+  }
+
+
+=head3 number_round
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new(%$kind_args);
+    sub {
+        $n->round(@_);
+      }
+  }
+
+
+=head3 to_number
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new( %$kind_args, %$args );
+    sub {
+        $n->unformat_number(@_);
+      }
+  }
+
+
+=head3 number_format
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new( %$kind_args, %$args );
+    sub {
+        $n->format_number(@_);
+      }
+  }
+
+
+=head2 -return
+
+=head3 functions in Return::Value
+
+=head4 success
+
+=head4 failure
+
+=head2 -scalar
+
+=head3 functions in Scalar::Util
+
+=head4 blessed
+
+=head4 dualvar
+
+=head4 isvstring
+
+=head4 isweak
+
+=head4 looks_like_number
+
+=head4 openhandle
+
+=head4 readonly
+
+=head4 refaddr
+
+=head4 reftype
+
+=head4 set_prototype
+
+=head4 tainted
+
+=head4 weaken
+
+=head2 -sha
+
+=head3 functions in Digest::SHA
+
+=head4 sha1
+
+=head4 sha1_hex
+
+=head4 sha1_base64
+
+=head4 sha256
+
+=head4 sha256_hex
+
+=head4 sha256_base64
+
+=head4 sha384
+
+=head4 sha384_hex
+
+=head4 sha384_base64
+
+=head4 sha512
+
+=head4 sha512_hex
+
+=head4 sha512_base64
+
+=head2 -string
+
+=head3 functions in String::CamelCase
+
+=head4 camelize
+
+=head4 decamelize
+
+=head4 wordsplit
+
+=head3 functions in String::Util
+
+=head4 crunch
+
+=head4 define
+
+=head4 equndef
+
+=head4 fullchomp
+
+=head4 hascontent
+
+=head4 htmlesc
+
+=head4 neundef
+
+=head4 nospace
+
+=head4 randcrypt
+
+=head4 randword
+
+=head4 trim
+
+=head4 unquote
+
+=head2 -time
+
+=head3 functions in Time::HiRes
+
+=head4 usleep
+
+=head4 nanosleep
+
+=head4 ualarm
+
+=head2 -uri
+
+=head3 functions in URI::Escape
+
+=head4 uri_escape
+
+=head4 uri_unescape
+
+=head3 functions in URI::Split
+
+=head4 uri_split
+
+=head4 uri_join
+
+=head3 uri_make
+
+  sub {
+    sub {
+        use utf8;
+        my ( $url, $form ) = @_;
+        my %form;
+        foreach my $k ( keys %$form ) {
+            my ( $key, $value ) = ( $k, $form->{$k} );
+            utf8::decode($key)   unless utf8::is_utf8($k);
+            utf8::decode($value) unless utf8::is_utf8($value);
+            $form{$key} = $value;
+        }
+        my $u = URI->new($url);
+        $u->query_form(%form);
+        $u->as_string;
+      }
+  }
+
+
+=head2 -utf8
+
+=head3 functions in utf8
+
+=head4 is_utf8
+
+=head3 utf8_encode
+
+encode in utf8
+
+=head3 utf8_upgrade
+
+upgrade in utf8
+
+=head3 utf8_downgrade
+
+downgrade in utf8
+
+=head2 -xml
+
+=head3 xml_dump
+
+  sub {
+    my ( $pkg, $class, $func, $args ) = @_;
+    $args->{KeyAttr} ||= $args->{key_attr};
+    sub {
+        XML::Simple::XMLout( shift, %$args );
+      }
+  }
+
+
+=head3 xml_load
+
+  sub {
+    my ( $pkg, $class, $func, $args ) = @_;
+    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser}
+      || 'XML::Parser';
+    $args->{Forcearray} ||= $args->{force_array};
+    $args->{KeyAttr}    ||= $args->{key_attr};
+    sub {
+        XML::Simple::XMLin( shift, %$args );
+      }
+  }
+
+
+=head2 -yaml
+
+=head3 yaml_load
+
+Load in YAML::XS
+
+=head3 yaml_dump
+
+Dump in YAML::XS
+
+=head3 yaml_load_file
+
+  sub {
+    require File::Slurp;
+    sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
+  }
+
+
+=head3 yaml_dump_file
+
+  sub {
+    require File::Slurp;
+    sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
+  }
+
+
 
 
 =head1 CREATE PLUGINS
@@ -1415,6 +1706,7 @@ To do this, the following modules are required.
  YAML::Syck
  File::Slurp
  Tie::IxHash
+ Perl::Tidy
 
 If you think more functions should be in Util::All, please tell me them.
 
