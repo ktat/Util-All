@@ -1216,6 +1216,8 @@ encode_entities in HTML::Entities
 
 =head2 -http
 
+=head3 http_* functions
+
 do http method and get HTTP::Response object.
 
   http_get($url, \%query);
@@ -1647,6 +1649,46 @@ Dump in YAML::XS
   }
 
 
+
+
+=head1 YAML FILE STRUCTURE
+
+Util::All is generated from YAML file(functions.yml in distribution file).
+
+Its first level keys are kinds of functions.
+hashes of the kinds has four kinds of structures.
+
+First:
+
+ Module::Name: *
+
+All functions in @EXPORT, @EXPORT_OK of Module::Name can be imported.
+
+Second:
+
+ Module::Name:
+   - function_a
+   - function_b
+
+function_a and function_b of module::Name can be imported.
+
+Third:
+
+ Module::Name:
+   function_a: func_a
+
+function_a of Module::Name can be imported as func_a.
+
+Fourth:
+
+ Module::Name:
+   function_a: sub { sub { ... } }
+
+function_a is function enable to generate function.
+See L<Util::Any/Sub::Exporter's GENERATOR WAY>.
+
+The following is all definition of Util::All.
+This file is functions.yml in distribution.
 
 
 =head1 CREATE PLUGINS

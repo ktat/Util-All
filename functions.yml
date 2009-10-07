@@ -166,9 +166,9 @@ xml:
     xml_load: |
       sub {
         my ($pkg, $class, $func, $args) = @_;
-        local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser} || 'XML::Parser';
-        $args->{Forcearray} ||= $args->{force_array};
-        $args->{KeyAttr}    ||= $args->{key_attr};
+        local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
+        $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
+        $args->{KeyAttr}    ||= $kind_args->{key_attr} || $args->{key_attr};
         sub {
           XML::Simple::XMLin(shift, %$args);
         }
@@ -176,7 +176,7 @@ xml:
     xml_dump: |
       sub {
         my ($pkg, $class, $func, $args) = @_;
-        $args->{KeyAttr} ||= $args->{key_attr};
+        $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
         sub {
           XML::Simple::XMLout(shift, %$args);
         }
@@ -237,6 +237,8 @@ base64:
 http:
   -require : ['LWP::UserAgent', 'WWW::Curl::Simple']
   -usage : |
+      =head3 http_* functions
+      
       do http method and get HTTP::Response object.
       
         http_get($url, \%query);
@@ -491,7 +493,7 @@ time:
 number:
   -as_plugin: 1
   Number::Format:
-    commify: |
+    number_commify: |
       sub {
         # code is borrowed from Template::Plugin::Comma
         sub {

@@ -58,7 +58,7 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage{$k}{$f};
-            $usage{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f in $m"];
+            $usage{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of $m"];
           }
         }
         my (@selected, $pre_func);
@@ -136,7 +136,7 @@ sub usage {
       foreach my $f (keys %{$usage->{$kind}}) {
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
-            $c .= "=head3 functions in $m\n\n";
+            $c .= "=head3 functions of $m\n\n";
             foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
               $c .= "=head4 $func\n\n";
             }
