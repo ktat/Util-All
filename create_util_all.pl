@@ -44,8 +44,13 @@ sub def_usage_from_file {
           }
           if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
             # print Data::Dumper::Dumper(eval"$def->{$k}->{$m}->{$f}");
-            if(not $usage{$k}->{'-all'} or not $usage{$k}->{$f}) {
+            if(exists $usage{$k}->{'-all'}) {
+              push @{$usage{$k}->{-renames} ||= []}, $f;
+            } elsif (exists $usage{$k}->{$f}) {
+              $usage{$k}->{-rename}->{$f} = 1;
+            } else {
               my $dest = '';
+              $usage{$k}->{-rename}->{$f} = 1;
               perltidy(source => \$def->{$k}->{$m}->{$f}, destination => \$dest);
               $usage{$k}{$f} ||= [$dest];
               # $usage{$k}{$f} = [$def->{$k}->{$m}->{$f}];
@@ -132,8 +137,14 @@ sub usage {
     $c .= '=head2 -' . $kind . "\n\n";
     if (exists $usage->{$kind}->{'-all'}) {
       $c .= $usage->{$kind}->{'-all'} . "\n\n";
+      if ($usage->{$kind}->{-renames}) {
+        $c .= "=head3 function enable to rename\n\n";
+        $c .= join ", ", @{$usage->{$kind}->{-renames}};
+        $c .= "\n\n";
+      }
     } else {
       foreach my $f (keys %{$usage->{$kind}}) {
+        next if $f eq '-rename' or $f eq '-renames';
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of $m\n\n";
@@ -142,7 +153,7 @@ sub usage {
             }
           }
         } else {
-          $c .= '=head3 ' . $f . "\n\n";
+          $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
           if ($usage->{$kind}->{$f}->[0]) {
             $usage->{$kind}->{$f}->[0] =~s{^}{  };
             $c .= $usage->{$kind}->{$f}->[0] . "\n\n";;

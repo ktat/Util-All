@@ -20,6 +20,7 @@ WriteMakefile(
 	'Carp' => 0,
 	'Data::Dump' => 0,
 	'Data::Dumper' => 0,
+	'Data::Visitor::Encode' => 0,
 	'Date::Manip' => 0,
 	'Date::Parse' => 0,
 	'DateTime' => 0,

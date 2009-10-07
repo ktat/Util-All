@@ -9,7 +9,7 @@ our $Utils = ###DEFINITION###;
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them to appropriate kind.
+Util::All - collect perl utilities and group them by appropriate kind.
 
 =cut
 

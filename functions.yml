@@ -142,6 +142,9 @@ utf8:
     upgrade  : utf8_upgrade
     downgrade: utf8_downgrade
     encode   : utf8_encode
+  Data::Visitor::Encode:
+    utf8_on  : sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
+    utf8_off : sub {sub {Data::Visitor::Encode->new->Utf8_off(@_)}}
 
 cgi:
   CGI::Util:

@@ -595,7 +595,7 @@ our $Utils = {
             }
             ;
         },
-        'commify' => sub {
+        'number_commify' => sub {
             sub {
                 local $_ = shift @_;
                 while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) {
@@ -790,6 +790,25 @@ our $Utils = {
   ],
   '-utf8' => [
     [
+      'Data::Visitor::Encode',
+      '',
+      {
+        'utf8_off' => sub {
+            sub {
+                'Data::Visitor::Encode'->new->Utf8_off(@_);
+            }
+            ;
+        },
+        '-select' => [],
+        'utf8_on' => sub {
+            sub {
+                'Data::Visitor::Encode'->new->utf8_on(@_);
+            }
+            ;
+        }
+      }
+    ],
+    [
       'utf8',
       '',
       {
@@ -809,7 +828,7 @@ our $Utils = {
       {
         'xml_dump' => sub {
             my($pkg, $class, $func, $args) = @_;
-            $$args{'KeyAttr'} ||= $$args{'key_attr'};
+            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
             sub {
                 XML::Simple::XMLout(shift @_, %$args);
             }
@@ -817,9 +836,9 @@ our $Utils = {
         },
         'xml_load' => sub {
             my($pkg, $class, $func, $args) = @_;
-            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$args{'parser'} || 'XML::Parser';
-            $$args{'Forcearray'} ||= $$args{'force_array'};
-            $$args{'KeyAttr'} ||= $$args{'key_attr'};
+            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
+            $$args{'Forcearray'} ||= $$kind_args{'force_array'} || $$args{'force_array'};
+            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
             sub {
                 XML::Simple::XMLin(shift @_, %$args);
             }
@@ -966,15 +985,15 @@ etc.
 
 =head3 base64_encode
 
-encode_base64 in MIME::Base64
+encode_base64 of MIME::Base64
 
 =head3 base64_decode
 
-decode_base64 in MIME::Base64
+decode_base64 of MIME::Base64
 
 =head2 -basecalc
 
-=head3 to_base
+=head3 to_base *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -985,7 +1004,7 @@ decode_base64 in MIME::Base64
   }
 
 
-=head3 from_base
+=head3 from_base *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -998,7 +1017,7 @@ decode_base64 in MIME::Base64
 
 =head2 -benchmark
 
-=head3 functions in Benchmark
+=head3 functions of Benchmark
 
 =head4 timeit
 
@@ -1016,17 +1035,17 @@ decode_base64 in MIME::Base64
 
 =head4 countit
 
-=head3 timesamearg
+=head3 timesamearg *
 
   timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
-=head3 cmpsamearg
+=head3 cmpsamearg *
 
   cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
 =head2 -carp
 
-=head3 functions in Carp
+=head3 functions of Carp
 
 =head4 croak
 
@@ -1044,27 +1063,27 @@ decode_base64 in MIME::Base64
 
 =head3 html_entity_decode
 
-decode_entities in HTML::Entities
+decode_entities of HTML::Entities
 
 =head3 cgi_escape
 
-escape in CGI::Util
+escape of CGI::Util
 
 =head3 cgi_unescape
 
-unescape in CGI::Util
+unescape of CGI::Util
 
 =head3 html_entity_encode
 
-encode_entities in HTML::Entities
+encode_entities of HTML::Entities
 
 =head2 -char_enc
 
 =head3 char_from_to
 
-from_to in Encode
+from_to of Encode
 
-=head3 char_convert
+=head3 char_convert *
 
   sub {
     my ( $pkg, $class, $func, $args ) = @_;
@@ -1086,11 +1105,11 @@ from_to in Encode
 
 =head3 char_encode
 
-encode in Encode
+encode of Encode
 
 =head3 char_decode
 
-decode in Encode
+decode of Encode
 
 =head2 -datetime
 
@@ -1118,19 +1137,23 @@ You can use plural form of these functions, too which can take number.
   months 5;
 
 
+=head3 function enable to rename
+
+now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute, years, day, datetime_duration, year, months, datetime_parse
+
 =head2 -debug
 
-=head3 functions in Data::Dump
+=head3 functions of Data::Dump
 
 =head4 dump
 
-=head3 p
+=head3 p *
 
   p($variable)
 
 as same as dumper(function name is as same as one in Ruby).
 
-=head3 deparse
+=head3 deparse *
 
   deparse(sub { print "hello World" })
 
@@ -1138,19 +1161,19 @@ dump code reference as string.
 
 =head3 dumper
 
-Dumper in Data::Dumper
+Dumper of Data::Dumper
 
 =head2 -file
 
 =head3 file_read
 
-read_file in File::Slurp
+read_file of File::Slurp
 
 =head3 file_write
 
-write_file in File::Slurp
+write_file of File::Slurp
 
-=head3 functions in File::Path
+=head3 functions of File::Path
 
 =head4 make_path
 
@@ -1158,29 +1181,29 @@ write_file in File::Slurp
 
 =head3 file_find
 
-find in File::Find
+find of File::Find
 
 =head3 file_copy
 
-copy in File::Copy
+copy of File::Copy
 
 =head3 file_move
 
-move in File::Copy
+move of File::Copy
 
 =head3 file_slurp
 
-slurp in File::Slurp
+slurp of File::Slurp
 
 =head2 -hash
 
-=head3 indexed
+=head3 indexed *
 
   indexed my %hash = (a => 1, b => 2);
 
 %hash is indexed.
 
-=head3 functions in Hash::Util
+=head3 functions of Hash::Util
 
 =head4 hash_seed
 
@@ -1200,19 +1223,19 @@ slurp in File::Slurp
 
 =head3 html_entity_decode
 
-decode_entities in HTML::Entities
+decode_entities of HTML::Entities
 
 =head3 cgi_escape
 
-escape in CGI::Util
+escape of CGI::Util
 
 =head3 cgi_unescape
 
-unescape in CGI::Util
+unescape of CGI::Util
 
 =head3 html_entity_encode
 
-encode_entities in HTML::Entities
+encode_entities of HTML::Entities
 
 =head2 -http
 
@@ -1227,13 +1250,17 @@ do http method and get HTTP::Response object.
   http_head($url, \%query);
 
 
+=head3 function enable to rename
+
+http_post, http_put, http_head, http_get, http_delete
+
 =head2 -json
 
 =head3 json_dump
 
-encode_json in JSON::XS
+encode_json of JSON::XS
 
-=head3 json_load_file
+=head3 json_load_file *
 
   sub {
     require File::Slurp;
@@ -1241,7 +1268,7 @@ encode_json in JSON::XS
   }
 
 
-=head3 json_dump_file
+=head3 json_dump_file *
 
   sub {
     require File::Slurp;
@@ -1251,11 +1278,11 @@ encode_json in JSON::XS
 
 =head3 json_load
 
-decode_json in JSON::XS
+decode_json of JSON::XS
 
 =head2 -list
 
-=head3 functions in List::Util
+=head3 functions of List::Util
 
 =head4 first
 
@@ -1273,7 +1300,7 @@ decode_json in JSON::XS
 
 =head4 sum
 
-=head3 functions in List::MoreUtils
+=head3 functions of List::MoreUtils
 
 =head4 after
 
@@ -1339,7 +1366,7 @@ decode_json in JSON::XS
 
 =head2 -mail
 
-=head3 mail_send
+=head3 mail_send *
 
   sub {
     sub {
@@ -1356,7 +1383,7 @@ decode_json in JSON::XS
 
 =head2 -md5
 
-=head3 functions in Digest::MD5
+=head3 functions of Digest::MD5
 
 =head4 md5
 
@@ -1366,18 +1393,7 @@ decode_json in JSON::XS
 
 =head2 -number
 
-=head3 number_price
-
-  sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new( %$kind_args, %$args );
-    sub {
-        $n->format_price(@_);
-      }
-  }
-
-
-=head3 commify
+=head3 number_commify *
 
   sub {
 
@@ -1390,7 +1406,18 @@ decode_json in JSON::XS
   }
 
 
-=head3 number_unit
+=head3 number_price *
+
+  sub {
+    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my $n = Number::Format->new( %$kind_args, %$args );
+    sub {
+        $n->format_price(@_);
+      }
+  }
+
+
+=head3 number_unit *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -1401,7 +1428,7 @@ decode_json in JSON::XS
   }
 
 
-=head3 number_round
+=head3 number_round *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -1412,7 +1439,7 @@ decode_json in JSON::XS
   }
 
 
-=head3 to_number
+=head3 to_number *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -1423,7 +1450,7 @@ decode_json in JSON::XS
   }
 
 
-=head3 number_format
+=head3 number_format *
 
   sub {
     my ( $pkg, $class, $func, $args, $kind_args ) = @_;
@@ -1436,7 +1463,7 @@ decode_json in JSON::XS
 
 =head2 -return
 
-=head3 functions in Return::Value
+=head3 functions of Return::Value
 
 =head4 success
 
@@ -1444,7 +1471,7 @@ decode_json in JSON::XS
 
 =head2 -scalar
 
-=head3 functions in Scalar::Util
+=head3 functions of Scalar::Util
 
 =head4 blessed
 
@@ -1472,7 +1499,7 @@ decode_json in JSON::XS
 
 =head2 -sha
 
-=head3 functions in Digest::SHA
+=head3 functions of Digest::SHA
 
 =head4 sha1
 
@@ -1500,7 +1527,7 @@ decode_json in JSON::XS
 
 =head2 -string
 
-=head3 functions in String::CamelCase
+=head3 functions of String::CamelCase
 
 =head4 camelize
 
@@ -1508,7 +1535,7 @@ decode_json in JSON::XS
 
 =head4 wordsplit
 
-=head3 functions in String::Util
+=head3 functions of String::Util
 
 =head4 crunch
 
@@ -1536,7 +1563,7 @@ decode_json in JSON::XS
 
 =head2 -time
 
-=head3 functions in Time::HiRes
+=head3 functions of Time::HiRes
 
 =head4 usleep
 
@@ -1546,19 +1573,19 @@ decode_json in JSON::XS
 
 =head2 -uri
 
-=head3 functions in URI::Escape
+=head3 functions of URI::Escape
 
 =head4 uri_escape
 
 =head4 uri_unescape
 
-=head3 functions in URI::Split
+=head3 functions of URI::Split
 
 =head4 uri_split
 
 =head4 uri_join
 
-=head3 uri_make
+=head3 uri_make *
 
   sub {
     sub {
@@ -1580,43 +1607,59 @@ decode_json in JSON::XS
 
 =head2 -utf8
 
-=head3 functions in utf8
+=head3 functions of utf8
 
 =head4 is_utf8
 
 =head3 utf8_encode
 
-encode in utf8
+encode of utf8
+
+=head3 utf8_off *
+
+  sub {
+    sub { Data::Visitor::Encode->new->Utf8_off(@_) }
+  }
+
 
 =head3 utf8_upgrade
 
-upgrade in utf8
+upgrade of utf8
 
 =head3 utf8_downgrade
 
-downgrade in utf8
+downgrade of utf8
+
+=head3 utf8_on *
+
+  sub {
+    sub { Data::Visitor::Encode->new->utf8_on(@_) }
+  }
+
 
 =head2 -xml
 
-=head3 xml_dump
+=head3 xml_dump *
 
   sub {
     my ( $pkg, $class, $func, $args ) = @_;
-    $args->{KeyAttr} ||= $args->{key_attr};
+    $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
     sub {
         XML::Simple::XMLout( shift, %$args );
       }
   }
 
 
-=head3 xml_load
+=head3 xml_load *
 
   sub {
     my ( $pkg, $class, $func, $args ) = @_;
-    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser}
+    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
+         $kind_args->{parser}
+      || $args->{parser}
       || 'XML::Parser';
-    $args->{Forcearray} ||= $args->{force_array};
-    $args->{KeyAttr}    ||= $args->{key_attr};
+    $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
+    $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
     sub {
         XML::Simple::XMLin( shift, %$args );
       }
@@ -1627,13 +1670,13 @@ downgrade in utf8
 
 =head3 yaml_load
 
-Load in YAML::XS
+Load of YAML::XS
 
 =head3 yaml_dump
 
-Dump in YAML::XS
+Dump of YAML::XS
 
-=head3 yaml_load_file
+=head3 yaml_load_file *
 
   sub {
     require File::Slurp;
@@ -1641,7 +1684,7 @@ Dump in YAML::XS
   }
 
 
-=head3 yaml_dump_file
+=head3 yaml_dump_file *
 
   sub {
     require File::Slurp;
