@@ -6,6 +6,7 @@ use File::Slurp 'slurp';
 use Tie::IxHash;
 use Data::Dumper;
 use Perl::Tidy qw/perltidy/;
+use List::MoreUtils ();
 
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
@@ -16,6 +17,7 @@ write_file(def_usage_from_file("functions.yml"));
 sub def_usage_from_file {
   tie my %new, 'Tie::IxHash';
   tie my %usage, 'Tie::IxHash';
+  tie my %test , 'Tie::IxHash';
 
   my $def = LoadFile(shift);
   my @modules;
@@ -40,7 +42,14 @@ sub def_usage_from_file {
         foreach my $f (keys  %{$def->{$k}->{$m}}) {
           next if $f eq '-select';
           if (ref $def->{$k}->{$m}->{$f} eq 'ARRAY') {
-            ($def->{$k}->{$m}->{$f}, @{$usage{$k}{$f} ||= []}) = (@{$def->{$k}->{$m}->{$f}});
+            my @usage;
+            ($def->{$k}->{$m}->{$f}, @usage) = (@{$def->{$k}->{$m}->{$f}});
+            if (@usage) {
+              @{$usage{$k}{$f} ||= []} = @usage;
+              if (ref $usage[0] eq 'HASH') {
+                $usage{$k}{$f} = $usage[0]->{usage};
+              }
+            }
           }
           if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
             # print Data::Dumper::Dumper(eval"$def->{$k}->{$m}->{$f}");
@@ -63,13 +72,18 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage{$k}{$f};
-            $usage{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of $m"];
+            $usage{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of L<$m>"];
           }
         }
         my (@selected, $pre_func);
         foreach my $func (@{$def->{$k}->{$m}->{-select} ||= []}, @funcs) {
             if (ref $func eq 'HASH') {
-              $usage{$k}->{$pre_func} = $func->{usage};
+              if ($func->{usage}) {
+                $usage{$k}->{$pre_func} = $func->{usage};
+              }
+              if ($func->{test}) {
+                $test{$k}->{$pre_func} = $func->{test};
+              }
             } else {
               if (ref $func eq 'ARRAY') {
                 my $usage = $func;
@@ -117,10 +131,16 @@ sub write_file {
     print $out $template;
     close $out;
     print "Writing lib/Util/All.pm\n";
+    print "try perl -Ilib -MUtil::All=-all -e ''\n";
+    unless(system("perl -Ilib -MUtil::All=-all -e '';")) {
+      print "OK\n";
+    } else {
+      print "NG\n";
+    }
   }
 
   my $makefile = do {local $/; <DATA>};
-  my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort @$modules, @$requires;
+  my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort(List::MoreUtils::uniq(@$modules, @$requires));
   $makefile =~s{###DEPENDENT_MODULES###}{$dependent_modules};
   {
     open my $out, '>', 'Makefile.PL' or die $!;
@@ -138,7 +158,7 @@ sub usage {
     if (exists $usage->{$kind}->{'-all'}) {
       $c .= $usage->{$kind}->{'-all'} . "\n\n";
       if ($usage->{$kind}->{-renames}) {
-        $c .= "=head3 function enable to rename\n\n";
+        $c .= "=head3 function enable to rename *\n\n";
         $c .= join ", ", @{$usage->{$kind}->{-renames}};
         $c .= "\n\n";
       }
@@ -147,7 +167,7 @@ sub usage {
         next if $f eq '-rename' or $f eq '-renames';
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
-            $c .= "=head3 functions of $m\n\n";
+            $c .= "=head3 functions of L<$m>\n\n";
             foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
               $c .= "=head4 $func\n\n";
             }
@@ -155,7 +175,10 @@ sub usage {
         } else {
           $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
           if ($usage->{$kind}->{$f}->[0]) {
-            $usage->{$kind}->{$f}->[0] =~s{^}{  };
+            if (ref $usage->{$kind}->{$f}->[0] eq 'ARRAY') {
+              $usage->{$kind}->{$f}->[0] = join "\n", @{$usage->{$kind}->{$f}->[0]};
+            }
+            $usage->{$kind}->{$f}->[0] =~s{^}{  }mg;
             $c .= $usage->{$kind}->{$f}->[0] . "\n\n";;
           }
           if ($usage->{$kind}->{$f}->[1]) {

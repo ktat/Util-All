@@ -299,18 +299,42 @@ our $Utils = {
   ],
   '-debug' => [
     [
+      'Tie::Trace',
+      '',
+      {
+        '-select' => [
+          'watch'
+        ]
+      }
+    ],
+    [
       'Data::Dump',
       '',
       {
         'p' => sub {
-            sub {
+            sub (@) {
                 Data::Dump::dump(@_);
             }
             ;
         },
         '-select' => [
-          'dump'
-        ]
+          'dump',
+          'pp',
+          'dd',
+          'ddx'
+        ],
+        'dump_code' => sub {
+            sub (&) {
+                if (wantarray) {
+                    local $Data::Dumper::Deparse = 1;
+                    Data::Dumper::Dumper(@_);
+                }
+                else {
+                    print STDERR Data::Dumper::Dumper(@_);
+                }
+            }
+            ;
+        }
       }
     ],
     [
@@ -319,7 +343,7 @@ our $Utils = {
       {
         'Dumper' => 'dumper',
         '-select' => [],
-        'deparse' => sub {
+        'code_dumper' => sub {
             sub (&) {
                 local $Data::Dumper::Deparse = 1;
                 Data::Dumper::Dumper(@_);
@@ -334,8 +358,8 @@ our $Utils = {
       'File::Copy',
       '',
       {
-        'copy' => 'file_copy',
-        'move' => 'file_move',
+        'copy' => 'copy_file',
+        'move' => 'move_file',
         '-select' => []
       }
     ],
@@ -344,7 +368,7 @@ our $Utils = {
       '',
       {
         '-select' => [],
-        'find' => 'file_find'
+        'find' => 'find_file'
       }
     ],
     [
@@ -361,10 +385,11 @@ our $Utils = {
       'File::Slurp',
       '',
       {
-        '-select' => [],
-        'slurp' => 'file_slurp',
-        'write_file' => 'file_write',
-        'read_file' => 'file_read'
+        'slurp' => 'slurp_file',
+        '-select' => [
+          'read_file',
+          'write_file'
+        ]
       }
     ]
   ],
@@ -422,21 +447,36 @@ our $Utils = {
   ],
   '-http' => [
     [
-      'HTTP::Request::Common',
+      'WWW::Curl::Simple',
       '',
       {
         'http_post' => sub {
             require WWW::Curl::Simple;
+            my $ua = 'WWW::Curl::Simple'->new;
             sub {
-                my $ua = 'WWW::Curl::Simple'->new;
                 $ua->post(@_);
             }
             ;
         },
+        '-select' => [],
+        'http_get' => sub {
+            require WWW::Curl::Simple;
+            my $ua = 'WWW::Curl::Simple'->new;
+            sub {
+                $ua->get(@_);
+            }
+            ;
+        }
+      }
+    ],
+    [
+      'HTTP::Request::Common',
+      '',
+      {
         'http_put' => sub {
             require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
             sub {
-                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::PUT(@_));
             }
             ;
@@ -444,24 +484,16 @@ our $Utils = {
         '-select' => [],
         'http_head' => sub {
             require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
             sub {
-                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::HEAD(@_));
-            }
-            ;
-        },
-        'http_get' => sub {
-            require WWW::Curl::Simple;
-            sub {
-                my $ua = 'WWW::Curl::Simple'->new;
-                $ua->get(@_);
             }
             ;
         },
         'http_delete' => sub {
             require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
             sub {
-                my $ua = 'LWP::UserAgent'->new;
                 $ua->request(HTTP::Request::Common::DELETE(@_));
             }
             ;
@@ -474,23 +506,16 @@ our $Utils = {
       'JSON::XS',
       '',
       {
-        'decode_json' => 'json_load',
-        '-select' => [],
-        'json_load_file' => sub {
-            require File::Slurp;
-            sub {
-                JSON::XS::decode_json(File::Slurp::slurp(shift @_));
-            }
-            ;
-        },
-        'json_dump_file' => sub {
+        'to_json_file' => sub {
             require File::Slurp;
             sub {
                 File::Slurp::write_file(shift @_, JSON::XS::encode_json(shift @_));
             }
             ;
         },
-        'encode_json' => 'json_dump'
+        'decode_json' => 'from_json',
+        '-select' => [],
+        'encode_json' => 'to_json'
       }
     ]
   ],
@@ -557,7 +582,7 @@ our $Utils = {
       '',
       {
         '-select' => [],
-        'mail_send' => sub {
+        'send_mail' => sub {
             sub {
                 my(%args) = @_;
                 my %new;
@@ -566,6 +591,19 @@ our $Utils = {
             }
             ;
         }
+      }
+    ],
+    [
+      'Email::MIME',
+      '',
+      {
+        'parse_mail' => sub {
+            sub {
+                my $message = 'Email::MIME'->new(@_);
+            }
+            ;
+        },
+        '-select' => []
       }
     ]
   ],
@@ -827,7 +865,7 @@ our $Utils = {
       '',
       {
         'xml_dump' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
             sub {
                 XML::Simple::XMLout(shift @_, %$args);
@@ -835,7 +873,7 @@ our $Utils = {
             ;
         },
         'xml_load' => sub {
-            my($pkg, $class, $func, $args) = @_;
+            my($pkg, $class, $func, $args, $kind_args) = @_;
             local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
             $$args{'Forcearray'} ||= $$kind_args{'force_array'} || $$args{'force_array'};
             $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
@@ -853,23 +891,23 @@ our $Utils = {
       'YAML::XS',
       '',
       {
+        'to_yaml_file' => sub {
+            require File::Slurp;
+            sub {
+                File::Slurp::write_file(shift @_, YAML::XS::Dump(shift @_));
+            }
+            ;
+        },
         '-select' => [],
-        'yaml_load_file' => sub {
+        'from_yaml_file' => sub {
             require File::Slurp;
             sub {
                 YAML::XS::Load(File::Slurp::slurp(shift @_));
             }
             ;
         },
-        'Dump' => 'yaml_dump',
-        'Load' => 'yaml_load',
-        'yaml_dump_file' => sub {
-            require File::Slurp;
-            sub {
-                File::Slurp::write_file(shift @_, YAML::XS::Dump(shift @_));
-            }
-            ;
-        }
+        'Dump' => 'to_yaml',
+        'Load' => 'from_yaml'
       }
     ]
   ]
@@ -878,7 +916,7 @@ our $Utils = {
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them to appropriate kind.
+Util::All - collect perl utilities and group them by appropriate kind.
 
 =cut
 
@@ -939,7 +977,7 @@ etc.
 
 Perl has many modules on CPAN and many modules provide utility functions.
 Their utility functions are useful themselves.
-But there are two problems to use these utility functions.
+But there are three problems to use these utility functions.
 
 First, CPAN has too much modules to lookup useful utility functions.
 Newbie or even intermediate level programmers don't know such functions very much.
@@ -951,10 +989,14 @@ Second, utility functions are written by many authors.
 So, its naming rule/grouping rule/interface is defined by each author.
 It is hard to remember the name/usage.
 
+Third, in CPAN, new module are released daily.
+One module is fast, but new faster one will be released(like JSON::Syck and JSON::XS).
+If it's api is different, can you check and replace all of existing code? 
+
 It's very regrettable for Perl.
 
 Util::All aims to collect utility functions on CPAN and group them to appropriate kind
-and rename them by common naming rule.
+and rename them and/or change their api by common way.
 
 If you know good utility functions, please tell me.
 I want to add them into Util::All.
@@ -963,13 +1005,22 @@ I want to add them into Util::All.
 
 Current planned naming rule is:
 
- KIND_VERB(_OBJECT)
+ MODIFICATION_VERB(_OBJECT)
+ KIND_VERBE
+ to_OBJECT
+ from_OBJECT
 
 For example:
 
- YAML::Syck::Load ...  yml_load
- YAML::Syck::LoadFile ... yml_load_file
- Mail::Sendmail::sendmail ... mail_send
+ cgi_escape ... CGI's escape
+ cgi_unescape ... CGI's unescape
+ base64_encode ... encode string by base64
+ base64_unencode ... decode string by base64
+ decode_html_entities  ... decode html entities
+ encode_html_entities  ... encode html entities
+ YAML::Syck::Load ...  from_yaml
+ YAML::Syck::LoadFile ... to_yaml_file
+ Mail::Sendmail::sendmail ... send_mail
 
 But, some functions, which I think no need to add kind, are exception.
 For example:
@@ -981,43 +1032,46 @@ etc.
 
 =head1 EXPORT
 
+functions which C<*> follows are generated by the way like Sub::Exporter.
+see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
+
 =head2 -base64
 
 =head3 base64_encode
 
-encode_base64 of MIME::Base64
+encode_base64 of L<MIME::Base64>
 
 =head3 base64_decode
 
-decode_base64 of MIME::Base64
+decode_base64 of L<MIME::Base64>
 
 =head2 -basecalc
 
 =head3 to_base *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    sub {
-        Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-          ->to_base(shift);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      sub {
+          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+            ->to_base(shift);
+        }
+    }
 
 
 =head3 from_base *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    sub {
-        Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-          ->from_base(shift);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      sub {
+          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+            ->from_base(shift);
+        }
+    }
 
 
 =head2 -benchmark
 
-=head3 functions of Benchmark
+=head3 functions of L<Benchmark>
 
 =head4 timeit
 
@@ -1039,13 +1093,17 @@ decode_base64 of MIME::Base64
 
   timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
+like timethese but compare 2 code with same argument
+
 =head3 cmpsamearg *
 
   cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
+like cmpthese but compare 2 code with same argument
+
 =head2 -carp
 
-=head3 functions of Carp
+=head3 functions of L<Carp>
 
 =head4 croak
 
@@ -1063,53 +1121,42 @@ decode_base64 of MIME::Base64
 
 =head3 html_entity_decode
 
-decode_entities of HTML::Entities
+decode_entities of L<HTML::Entities>
 
 =head3 cgi_escape
 
-escape of CGI::Util
+escape of L<CGI::Util>
 
 =head3 cgi_unescape
 
-unescape of CGI::Util
+unescape of L<CGI::Util>
 
 =head3 html_entity_encode
 
-encode_entities of HTML::Entities
+encode_entities of L<HTML::Entities>
 
 =head2 -char_enc
 
 =head3 char_from_to
 
-from_to of Encode
+from_to of L<Encode>
 
 =head3 char_convert *
 
-  sub {
-    my ( $pkg, $class, $func, $args ) = @_;
-    my $g_class = 0;
-    if ( exists $args->{guess} ) {
-        require Encode::Guess;
-        Encode::Guess->import( @{ $args->{guess} } );
-    }
-    elsif ( not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"} ) {
-        eval { require Encode::Detect; $g_class = 1 } or require Encode::Guess;
-    }
-    sub {
-        my ( $str, $to, $from ) = @_;
-        Encode::from_to( shift, $from ? $from : $g_class ? "DETECT" : "GUESS",
-            $to );
-      }
-  }
+  char_convert($str, "euc-jp");
+  char_convert($str, "euc-jp", "sjis");
+
+convert $str to second argument charset. third argument is charset of $str.
+when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
 
 
 =head3 char_encode
 
-encode of Encode
+encode of L<Encode>
 
 =head3 char_decode
 
-decode of Encode
+decode of L<Encode>
 
 =head2 -datetime
 
@@ -1117,8 +1164,12 @@ decode of Encode
 
   $dt = datetime(year => .., month => ..,);
   $dt = datetime_parse("2009/09/09");
+  $dt = now;
+  $dt = today;
 
 =head3 functions to return DateTime::Duration object
+
+NOTE THAT: end_of_month is set as limit.
 
   year
   month
@@ -1136,64 +1187,109 @@ You can use plural form of these functions, too which can take number.
   years 5;
   months 5;
 
+example:
 
-=head3 function enable to rename
+  $after_five_year_from_now = now + years 5;
+
+
+=head3 function enable to rename *
 
 now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute, years, day, datetime_duration, year, months, datetime_parse
 
 =head2 -debug
 
-=head3 functions of Data::Dump
+=head3 functions of L<Tie::Trace>
+
+=head4 watch
+
+=head3 functions of L<Data::Dump>
 
 =head4 dump
 
-=head3 p *
+=head4 pp
 
-  p($variable)
+=head4 dd
 
-as same as dumper(function name is as same as one in Ruby).
+=head4 ddx
 
-=head3 deparse *
+=head3 dump
 
-  deparse(sub { print "hello World" })
+  print dump(@vars);
+  dump(@vars);
+
+dump of L<Data::Dumper>. 
+dump strucutre. In later case, result is dumped to STDERR.
+
+
+=head3 code_dumper *
+
+  code_dumper(sub { print "hello World" })
 
 dump code reference as string.
 
 =head3 dumper
 
-Dumper of Data::Dumper
+Dumper of L<Data::Dumper>
+
+=head3 ddx
+
+  dd(@vars);
+
+as same as dd but output to STDOUT with line number.
+
+=head3 dd
+
+  dd(@vars);
+
+as same as dump but output to STDOUT.
+
+=head3 pp
+
+  pp("{ x => 1, y => 2, z => 3}");
+
+dump after given string is evaled.
+
+=head3 dump_code *
+
+  dump_code( sub { ... } );
+
+dump code reference as string.
+
+=head3 p *
+
+  p($variable)
+
+as same as dump(function name is borrowed from Ruby).
 
 =head2 -file
 
-=head3 file_read
-
-read_file of File::Slurp
-
-=head3 file_write
-
-write_file of File::Slurp
-
-=head3 functions of File::Path
+=head3 functions of L<File::Path>
 
 =head4 make_path
 
 =head4 remove_tree
 
-=head3 file_find
+=head3 functions of L<File::Slurp>
 
-find of File::Find
+=head4 read_file
 
-=head3 file_copy
+=head4 write_file
 
-copy of File::Copy
+=head3 find_file
 
-=head3 file_move
+find of L<File::Find>
 
-move of File::Copy
+=head3 move_file
 
-=head3 file_slurp
+move of L<File::Copy>
 
-slurp of File::Slurp
+=head3 slurp_file
+
+slurp of L<File::Slurp>
+
+=head3 copy_file
+
+copy of L<File::Copy>
 
 =head2 -hash
 
@@ -1203,7 +1299,7 @@ slurp of File::Slurp
 
 %hash is indexed.
 
-=head3 functions of Hash::Util
+=head3 functions of L<Hash::Util>
 
 =head4 hash_seed
 
@@ -1223,19 +1319,19 @@ slurp of File::Slurp
 
 =head3 html_entity_decode
 
-decode_entities of HTML::Entities
+decode_entities of L<HTML::Entities>
 
 =head3 cgi_escape
 
-escape of CGI::Util
+escape of L<CGI::Util>
 
 =head3 cgi_unescape
 
-unescape of CGI::Util
+unescape of L<CGI::Util>
 
 =head3 html_entity_encode
 
-encode_entities of HTML::Entities
+encode_entities of L<HTML::Entities>
 
 =head2 -http
 
@@ -1250,39 +1346,31 @@ do http method and get HTTP::Response object.
   http_head($url, \%query);
 
 
-=head3 function enable to rename
+=head3 function enable to rename *
 
-http_post, http_put, http_head, http_get, http_delete
+http_post, http_get, http_put, http_head, http_delete
 
 =head2 -json
 
-=head3 json_dump
-
-encode_json of JSON::XS
-
-=head3 json_load_file *
+=head3 to_json_file *
 
   sub {
-    require File::Slurp;
-    sub { JSON::XS::decode_json( File::Slurp::slurp(shift) ) }
-  }
+      require File::Slurp;
+      sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
+    }
 
 
-=head3 json_dump_file *
+=head3 from_json
 
-  sub {
-    require File::Slurp;
-    sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
-  }
+decode_json of L<JSON::XS>
 
+=head3 to_json
 
-=head3 json_load
-
-decode_json of JSON::XS
+encode_json of L<JSON::XS>
 
 =head2 -list
 
-=head3 functions of List::Util
+=head3 functions of L<List::Util>
 
 =head4 first
 
@@ -1300,7 +1388,7 @@ decode_json of JSON::XS
 
 =head4 sum
 
-=head3 functions of List::MoreUtils
+=head3 functions of L<List::MoreUtils>
 
 =head4 after
 
@@ -1366,24 +1454,31 @@ decode_json of JSON::XS
 
 =head2 -mail
 
-=head3 mail_send *
+=head3 parse_mail *
 
   sub {
-    sub {
-        my (%args) = @_;
-        my %new;
-        $new{ ucfirst $_ } = $args{$_} for keys %args;
-        Mail::Sendmail::sendmail(%new);
+      sub { my $message = Email::MIME->new(@_) }
+    }
 
-        # error $Mail::Sendmail::error;
-        # log   $Mail::Sendmail::log;
-      }
-  }
+
+=head3 send_mail *
+
+  sub {
+      sub {
+          my (%args) = @_;
+          my %new;
+          $new{ ucfirst $_ } = $args{$_} for keys %args;
+          Mail::Sendmail::sendmail(%new);
+  
+          # error $Mail::Sendmail::error;
+          # log   $Mail::Sendmail::log;
+        }
+    }
 
 
 =head2 -md5
 
-=head3 functions of Digest::MD5
+=head3 functions of L<Digest::MD5>
 
 =head4 md5
 
@@ -1396,74 +1491,74 @@ decode_json of JSON::XS
 =head3 number_commify *
 
   sub {
-
-    # code is borrowed from Template::Plugin::Comma
-    sub {
-        local $_ = shift;
-        while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
-        return $_;
-      }
-  }
+  
+      # code is borrowed from Template::Plugin::Comma
+      sub {
+          local $_ = shift;
+          while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
+          return $_;
+        }
+    }
 
 
 =head3 number_price *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new( %$kind_args, %$args );
-    sub {
-        $n->format_price(@_);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_price(@_);
+        }
+    }
 
 
 =head3 number_unit *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new( %$kind_args, %$args );
-    sub {
-        $n->format_unit(@_);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_unit(@_);
+        }
+    }
 
 
 =head3 number_round *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new(%$kind_args);
-    sub {
-        $n->round(@_);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new(%$kind_args);
+      sub {
+          $n->round(@_);
+        }
+    }
 
 
 =head3 to_number *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new( %$kind_args, %$args );
-    sub {
-        $n->unformat_number(@_);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->unformat_number(@_);
+        }
+    }
 
 
 =head3 number_format *
 
   sub {
-    my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-    my $n = Number::Format->new( %$kind_args, %$args );
-    sub {
-        $n->format_number(@_);
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_number(@_);
+        }
+    }
 
 
 =head2 -return
 
-=head3 functions of Return::Value
+=head3 functions of L<Return::Value>
 
 =head4 success
 
@@ -1471,7 +1566,7 @@ decode_json of JSON::XS
 
 =head2 -scalar
 
-=head3 functions of Scalar::Util
+=head3 functions of L<Scalar::Util>
 
 =head4 blessed
 
@@ -1499,7 +1594,7 @@ decode_json of JSON::XS
 
 =head2 -sha
 
-=head3 functions of Digest::SHA
+=head3 functions of L<Digest::SHA>
 
 =head4 sha1
 
@@ -1527,7 +1622,7 @@ decode_json of JSON::XS
 
 =head2 -string
 
-=head3 functions of String::CamelCase
+=head3 functions of L<String::CamelCase>
 
 =head4 camelize
 
@@ -1535,7 +1630,7 @@ decode_json of JSON::XS
 
 =head4 wordsplit
 
-=head3 functions of String::Util
+=head3 functions of L<String::Util>
 
 =head4 crunch
 
@@ -1563,7 +1658,7 @@ decode_json of JSON::XS
 
 =head2 -time
 
-=head3 functions of Time::HiRes
+=head3 functions of L<Time::HiRes>
 
 =head4 usleep
 
@@ -1573,13 +1668,13 @@ decode_json of JSON::XS
 
 =head2 -uri
 
-=head3 functions of URI::Escape
+=head3 functions of L<URI::Escape>
 
 =head4 uri_escape
 
 =head4 uri_unescape
 
-=head3 functions of URI::Split
+=head3 functions of L<URI::Split>
 
 =head4 uri_split
 
@@ -1588,53 +1683,53 @@ decode_json of JSON::XS
 =head3 uri_make *
 
   sub {
-    sub {
-        use utf8;
-        my ( $url, $form ) = @_;
-        my %form;
-        foreach my $k ( keys %$form ) {
-            my ( $key, $value ) = ( $k, $form->{$k} );
-            utf8::decode($key)   unless utf8::is_utf8($k);
-            utf8::decode($value) unless utf8::is_utf8($value);
-            $form{$key} = $value;
+      sub {
+          use utf8;
+          my ( $url, $form ) = @_;
+          my %form;
+          foreach my $k ( keys %$form ) {
+              my ( $key, $value ) = ( $k, $form->{$k} );
+              utf8::decode($key)   unless utf8::is_utf8($k);
+              utf8::decode($value) unless utf8::is_utf8($value);
+              $form{$key} = $value;
+          }
+          my $u = URI->new($url);
+          $u->query_form(%form);
+          $u->as_string;
         }
-        my $u = URI->new($url);
-        $u->query_form(%form);
-        $u->as_string;
-      }
-  }
+    }
 
 
 =head2 -utf8
 
-=head3 functions of utf8
+=head3 functions of L<utf8>
 
 =head4 is_utf8
 
 =head3 utf8_encode
 
-encode of utf8
+encode of L<utf8>
 
 =head3 utf8_off *
 
   sub {
-    sub { Data::Visitor::Encode->new->Utf8_off(@_) }
-  }
+      sub { Data::Visitor::Encode->new->Utf8_off(@_) }
+    }
 
 
 =head3 utf8_upgrade
 
-upgrade of utf8
+upgrade of L<utf8>
 
 =head3 utf8_downgrade
 
-downgrade of utf8
+downgrade of L<utf8>
 
 =head3 utf8_on *
 
   sub {
-    sub { Data::Visitor::Encode->new->utf8_on(@_) }
-  }
+      sub { Data::Visitor::Encode->new->utf8_on(@_) }
+    }
 
 
 =head2 -xml
@@ -1642,55 +1737,55 @@ downgrade of utf8
 =head3 xml_dump *
 
   sub {
-    my ( $pkg, $class, $func, $args ) = @_;
-    $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
-    sub {
-        XML::Simple::XMLout( shift, %$args );
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
+      sub {
+          XML::Simple::XMLout( shift, %$args );
+        }
+    }
 
 
 =head3 xml_load *
 
   sub {
-    my ( $pkg, $class, $func, $args ) = @_;
-    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
-         $kind_args->{parser}
-      || $args->{parser}
-      || 'XML::Parser';
-    $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
-    $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
-    sub {
-        XML::Simple::XMLin( shift, %$args );
-      }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
+           $kind_args->{parser}
+        || $args->{parser}
+        || 'XML::Parser';
+      $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
+      $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
+      sub {
+          XML::Simple::XMLin( shift, %$args );
+        }
+    }
 
 
 =head2 -yaml
 
-=head3 yaml_load
+=head3 to_yaml
 
-Load of YAML::XS
+Dump of L<YAML::XS>
 
-=head3 yaml_dump
-
-Dump of YAML::XS
-
-=head3 yaml_load_file *
+=head3 to_yaml_file *
 
   sub {
-    require File::Slurp;
-    sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
-  }
+      require File::Slurp;
+      sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
+    }
 
 
-=head3 yaml_dump_file *
+=head3 from_yaml_file *
 
   sub {
-    require File::Slurp;
-    sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
-  }
+      require File::Slurp;
+      sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
+    }
 
+
+=head3 from_yaml
+
+Load of L<YAML::XS>
 
 
 
@@ -1701,38 +1796,112 @@ Util::All is generated from YAML file(functions.yml in distribution file).
 Its first level keys are kinds of functions.
 hashes of the kinds has four kinds of structures.
 
-First:
-
- Module::Name: *
+=head2 First:
 
 All functions in @EXPORT, @EXPORT_OK of Module::Name can be imported.
 
-Second:
+ Module::Name: *
+
+=head2 Second:
+
+function_a and function_b of module::Name can be imported.
 
  Module::Name:
    - function_a
    - function_b
 
-function_a and function_b of module::Name can be imported.
+If you want to embed usage.
 
-Third:
+ Module::Name:
+   - function_a
+   - usage: 
+     - exapmle
+     - explanation
+   - function_b
+   - usage:
+     - 
+       - example1
+       - example2
+     - explanation
+
+=head2 Third:
+
+function_a of Module::Name can be imported as func_a.
 
  Module::Name:
    function_a: func_a
 
-function_a of Module::Name can be imported as func_a.
-
-Fourth:
+If you want to embed usage.
 
  Module::Name:
-   function_a: sub { sub { ... } }
+   function_a:
+     - func_a
+     - usage:
+       - example
+       - explanation
+
+example can be array ref.
+
+=head2 Fourth:
 
 function_a is function enable to generate function.
 See L<Util::Any/Sub::Exporter's GENERATOR WAY>.
 
-The following is all definition of Util::All.
-This file is functions.yml in distribution.
+ Module::Name:
+   function_a: sub { sub { ... } }
 
+If you want ot embed usage
+
+ Module::Name:
+   - function_a: sub { sub { ... } }
+   - usage:
+     - example
+     - explanation
+
+example can be array ref.
+
+=head2 Automatically generated document
+
+If not defined usage for functions, usage is automatically generated.
+
+=over 4
+
+=item selected functions
+
+Module name is written.
+
+=item renamed functions
+
+Module name and original name are written.
+
+=item generator functions
+
+The source code is written.
+
+=back
+
+=head2 write all of usage for the kind?
+
+use -usage key.
+
+ datetime:
+   -usage: |
+     =head3 functions to return DateTime object
+     
+       $dt = datetime(year => .., month => ..,);
+       $dt = datetime_parse("2009/09/09");
+     
+     =head3 functions to return DateTime::Duration object
+     
+       year
+       month
+       day
+       hour
+       minute
+       second
+     
+
+If this is defined, all of other usage expressions, I showed you then in this section, are ignored.
 
 =head1 CREATE PLUGINS
 
@@ -1766,6 +1935,7 @@ define utils method. for example.
 =head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
 No. the related module(s) of your selected kind(s) is/are loaded.
+But, of cource, -all loads all modules.
 
 =head2 WHY '-all' IS SLOW?
 
@@ -1815,7 +1985,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Util::All
+ perldoc Util::All
 
 
 You can also look for information at:
@@ -1862,4 +2032,4 @@ under the same terms as Perl itself.
 
 =cut
 
-"All utility function are belong to Util::All"; # End of Util::All
+"All utility function are belong to Util::All";

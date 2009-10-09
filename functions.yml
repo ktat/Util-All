@@ -77,25 +77,64 @@ hash:
             %$hash = @_;
           }
         }
-      - indexed my %hash = (a => 1, b => 2);
-      - %hash is indexed.
+      - usage:
+        - indexed my %hash = (a => 1, b => 2);
+        - %hash is indexed.
 
 debug:
   Data::Dumper:
     Dumper:
       - dumper
-      - ''
-      - Dumper in Data::Dumper.
-    deparse:
+      - usage:
+        - dumper(@variables)
+        - Dumper in L<Data::Dumper>.
+    code_dumper:
       - sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
-      - deparse(sub { print "hello World" })
-      - dump code reference as string. 
+      - usage:
+        - code_dumper(sub { print "hello World" })
+        - dump code reference as string. 
   Data::Dump:
-    -select: [dump]
-    p   :
-      - sub { sub { Data::Dump::dump(@_) } }
+    -select: 
+      - dump
+      - usage:
+        - 
+          - print dump(@vars);
+          - dump(@vars);
+        - |
+          dump of L<Data::Dumper>. 
+          dump strucutre. In later case, result is dumped to STDERR.
+      - pp
+      - usage:
+        - pp("{ x => 1, y => 2, z => 3}");
+        - dump after given string is evaled.
+      - dd
+      - usage:
+        - dd(@vars);
+        - as same as dump but output to STDOUT.
+      - ddx
+      - usage:
+        - dd(@vars);
+        - as same as dd but output to STDOUT with line number.
+    p:
+      - sub { sub(@) { Data::Dump::dump(@_) } }
       - p($variable)
-      - as same as dumper(function name is as same as one in Ruby).
+      - as same as dump(function name is borrowed from Ruby).
+    dump_code:
+      - |
+        sub {
+           sub(&) {
+            if (wantarray) {
+              local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)
+            } else {
+              print STDERR Data::Dumper::Dumper(@_);
+            }
+          }
+        }
+      - usage:
+        - dump_code( sub { ... } );
+        - dump code reference as string. 
+  Tie::Trace:
+    -select: ['watch']
 
 string:
   String::Util:
@@ -168,7 +207,7 @@ xml:
   XML::Simple:
     xml_load: |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
         local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
         $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
         $args->{KeyAttr}    ||= $kind_args->{key_attr} || $args->{key_attr};
@@ -178,7 +217,7 @@ xml:
       }
     xml_dump: |
       sub {
-        my ($pkg, $class, $func, $args) = @_;
+        my ($pkg, $class, $func, $args, $kind_args) = @_;
         $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
         sub {
           XML::Simple::XMLout(shift, %$args);
@@ -189,21 +228,29 @@ char_enc:
   Encode:
     encode: char_encode
     decode: char_decode
-    char_convert: |
-      sub {
-         my ($pkg, $class, $func, $args) = @_;
-         my $g_class = 0;
-         if (exists $args->{guess}){
-           require Encode::Guess;
-           Encode::Guess->import(@{$args->{guess}});
-         } elsif (not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"}) {
-           eval {require Encode::Detect; $g_class = 1} or require Encode::Guess;
-         }
-         sub {
-           my ($str, $to, $from) = @_;
-           Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
-         }
-      }
+    char_convert:
+      - |
+        sub {
+           my ($pkg, $class, $func, $args) = @_;
+           my $g_class = 0;
+           if (exists $args->{guess}){
+             require Encode::Guess;
+             Encode::Guess->import(@{$args->{guess}});
+           } elsif (not $INC{"Encode/Detect.pm"} and not $INC{"Encode/Guess.pm"}) {
+             eval {require Encode::Detect; $g_class = 1} or require Encode::Guess;
+           }
+           sub {
+             my ($str, $to, $from) = @_;
+             Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
+           }
+        }
+      - usage:
+        -
+          - char_convert($str, "euc-jp"); # to euc-jp
+          - char_convert($str, "euc-jp", "sjis"); # to euc-jp from sjis
+        - |
+           convert $str to second argument charset. third argument is charset of $str.
+           when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
     from_to: char_from_to
 
 uri:
@@ -238,7 +285,7 @@ base64:
     decode_base64: base64_decode
 
 http:
-  -require : ['LWP::UserAgent', 'WWW::Curl::Simple']
+  -require : ['LWP::UserAgent']
   -usage : |
       =head3 http_* functions
       
@@ -250,15 +297,17 @@ http:
         http_delete($url, \%query);
         http_head($url, \%query);
   HTTP::Request::Common:
-    http_get   : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->get(@_) } }
-    http_post  : sub { require WWW::Curl::Simple; sub { my $ua = WWW::Curl::Simple->new(); $ua->post(@_) } }
-    http_put   : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::PUT(@_)) } }
-    http_delete: sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::DELETE(@_)) } }
-    http_head  : sub { require LWP::UserAgent; sub { my $ua = LWP::UserAgent->new(); $ua->request(HTTP::Request::Common::HEAD(@_)) } }
+    http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
+    http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
+    http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
+  WWW::Curl::Simple:
+    http_get   : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->get(@_) } }
+    http_post  : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->post(@_) } }
+
 
 mail:
   Mail::Sendmail:
-    mail_send: |
+    send_mail: |
       sub {
         sub {
           my (%args) = @_;
@@ -269,6 +318,13 @@ mail:
           # log   $Mail::Sendmail::log;
         }
       }
+  Email::MIME:
+     parse_mail: |
+       sub {
+         sub {my $message = Email::MIME->new(@_)}
+       }
+ # Email::Sender:
+ # Email::MIME::Creator:
 
 carp:
   Carp:
@@ -280,24 +336,20 @@ carp:
     - longmess
 
 yaml:
+  -require: ['File::Slurp']
   YAML::XS:
-    Load:     yaml_load
-    Dump:     yaml_dump
-    yaml_load_file: sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
-    yaml_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
+    Load: from_yaml
+    Dump: to_yaml
+    from_yaml_file: sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
+    to_yaml_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
 
 json:
-#  JSON::Syck:
-#    LoadFile: json_load_file
-#    Load:     json_load	    
-#    DumpFile: json_dump_file
-#    Dump:     json_dump	    
   -require: ['File::Slurp']
   JSON::XS:
-    decode_json: json_load
-    encode_json: json_dump
-    json_load_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
-    json_dump_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
+    decode_json: from_json
+    encode_json: to_json
+    to_json_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
+    to_json_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
 
 
 basecalc:
@@ -325,9 +377,13 @@ datetime:
     
       $dt = datetime(year => .., month => ..,);
       $dt = datetime_parse("2009/09/09");
+      $dt = now;
+      $dt = today;
     
     =head3 functions to return DateTime::Duration object
     
+    NOTE THAT: end_of_month is set as limit.
+      
       year
       month
       day
@@ -343,6 +399,10 @@ datetime:
     
       years 5;
       months 5;
+
+    example:
+    
+      $after_five_year_from_now = now + years 5;
 
   DateTime::Duration:
     year   : |
@@ -439,7 +499,7 @@ benchmark:
     -select: 
       - timeit
       - timethis
-#     -
+#     - usage:
 #        - timethis
 #        - timethis($count, \&code)
 #        - timethis repeat &code $count times
@@ -457,7 +517,9 @@ benchmark:
             Benchmark::cmpthese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
           }
         }
-      - cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+      - usage:
+        - cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+        - like cmpthese but compare 2 code with same argument
     timesamearg:
       - |
         sub {
@@ -466,21 +528,24 @@ benchmark:
             Benchmark::timethese($num, {map {my $code = $codes->{$_}; $_ => sub {$code->(@args)} } keys %$codes});
           }
         }
-      - timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+      - usage:
+        - timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
+        - like timethese but compare 2 code with same argument
 
 file:
   File::Find:
-    find : file_find
+    find : find_file
   File::Path:
     - make_path
     - remove_tree
   File::Slurp:
-    slurp     : file_slurp
-    read_file : file_read
-    write_file: file_write
+    -select   :
+      - read_file
+      - write_file
+    slurp     : slurp_file
   File::Copy:
-    copy: file_copy
-    move: file_move
+    copy: copy_file
+    move: move_file
 
 return:
   Return::Value:
