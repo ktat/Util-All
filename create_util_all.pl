@@ -11,13 +11,16 @@ use List::MoreUtils ();
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
 local $Data::Dumper::Indent  = 1;
+my $USE_PERLTIDY = (@ARGV and $ARGV[0] eq '-tidy') ? 1 : 0;
 
 write_file(def_usage_from_file("functions.yml"));
+system("perl Makefile.PL && make && make test;");
 
 sub def_usage_from_file {
   tie my %new, 'Tie::IxHash';
-  tie my %usage, 'Tie::IxHash';
-  tie my %test , 'Tie::IxHash';
+  my %usage_test;
+  tie %{$usage_test{usage} ||= {}}, 'Tie::IxHash';
+  tie %{$usage_test{test} ||= {}}, 'Tie::IxHash';
 
   my $def = LoadFile(shift);
   my @modules;
@@ -29,7 +32,7 @@ sub def_usage_from_file {
     my %tmp;
     push @requires, @{delete $def->{$k}->{'-require'} || []};
     push @as_plugins, delete $def->{$k}->{'-as_plugin'} || (); # do nothing
-    $usage{$k}->{'-all'} = delete $def->{$k}->{'-usage'} if exists $def->{$k}->{'-usage'};
+    $usage_test{usage}->{$k}->{'-all'} = delete $def->{$k}->{'-usage'} if exists $def->{$k}->{'-usage'};
 
     foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
                          ($tmp{$b} ||= (ref $def->{$k}{$b} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
@@ -42,27 +45,37 @@ sub def_usage_from_file {
         foreach my $f (keys  %{$def->{$k}->{$m}}) {
           next if $f eq '-select';
           if (ref $def->{$k}->{$m}->{$f} eq 'ARRAY') {
-            my @usage;
-            ($def->{$k}->{$m}->{$f}, @usage) = (@{$def->{$k}->{$m}->{$f}});
-            if (@usage) {
-              @{$usage{$k}{$f} ||= []} = @usage;
-              if (ref $usage[0] eq 'HASH') {
-                $usage{$k}{$f} = $usage[0]->{usage};
+            my @usage_or_test;
+            ($def->{$k}->{$m}->{$f}, @usage_or_test) = (@{$def->{$k}->{$m}->{$f}});
+            if (@usage_or_test) {
+              foreach my $usage_or_test (@usage_or_test) {
+                if (ref $usage_or_test eq 'HASH') {
+                  foreach my $ut ("usage", "test") {
+                    if (exists $usage_or_test->{$ut}) {
+                      $usage_test{$ut}{$k}{$f} = $usage_or_test->{$ut};
+                    }
+                  }
+                } else {
+                  push @{$usage_test{usage}{$k}{$f} ||= []}, $usage_or_test;
+                }
               }
             }
           }
           if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
             # print Data::Dumper::Dumper(eval"$def->{$k}->{$m}->{$f}");
-            if(exists $usage{$k}->{'-all'}) {
-              push @{$usage{$k}->{-renames} ||= []}, $f;
-            } elsif (exists $usage{$k}->{$f}) {
-              $usage{$k}->{-rename}->{$f} = 1;
+            if(exists $usage_test{usage}{$k}->{'-all'}) {
+              push @{$usage_test{usage}{$k}->{-renames} ||= []}, $f;
+            } elsif (exists $usage_test{usage}{$k}->{$f}) {
+              $usage_test{usage}{$k}->{-rename}->{$f} = 1;
             } else {
               my $dest = '';
-              $usage{$k}->{-rename}->{$f} = 1;
-              perltidy(source => \$def->{$k}->{$m}->{$f}, destination => \$dest);
-              $usage{$k}{$f} ||= [$dest];
-              # $usage{$k}{$f} = [$def->{$k}->{$m}->{$f}];
+              $usage_test{usage}{$k}->{-rename}->{$f} = 1;
+              if ($USE_PERLTIDY) {
+                perltidy(source => \$def->{$k}->{$m}->{$f}, destination => \$dest);
+                $usage_test{usage}{$k}{$f} ||= [$dest];
+              } else {
+                $usage_test{usage}{$k}{$f} = [$def->{$k}->{$m}->{$f}];
+              }
             }
             no strict; # for not including "use strict" when Dumper.
             my $sub = eval "$def->{$k}->{$m}->{$f}";
@@ -71,26 +84,26 @@ sub def_usage_from_file {
           } elsif ($f eq $def->{$k}->{$m}->{$f}) {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
-            delete $usage{$k}{$f};
-            $usage{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of L<$m>"];
+            delete $usage_test{usage}{$k}{$f};
+            $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of L<$m>"];
           }
         }
         my (@selected, $pre_func);
         foreach my $func (@{$def->{$k}->{$m}->{-select} ||= []}, @funcs) {
             if (ref $func eq 'HASH') {
               if ($func->{usage}) {
-                $usage{$k}->{$pre_func} = $func->{usage};
+                $usage_test{usage}{$k}->{$pre_func} = $func->{usage};
               }
               if ($func->{test}) {
-                $test{$k}->{$pre_func} = $func->{test};
+                $usage_test{test}{$k}->{$pre_func} = $func->{test};
               }
             } else {
               if (ref $func eq 'ARRAY') {
                 my $usage = $func;
                 $func = shift @$usage;
-                $usage{$k}->{$func} = $usage;
+                $usage_test{usage}{$k}->{$func} = $usage;
               } else {
-                push @{$usage{$k}->{'-rest'}->{$m} ||= []}, $func;
+                push @{$usage_test{usage}{$k}->{'-rest'}->{$m} ||= []}, $func;
               }
               push @selected, $func;
               $pre_func = $func;
@@ -102,7 +115,7 @@ sub def_usage_from_file {
                                         $def->{$k}->{$m},
                                        ];
       } else {
-        $usage{$k}->{-rest}->{$m} = $def->{$k}->{$m};
+        $usage_test{usage}{$k}->{-rest}->{$m} = $def->{$k}->{$m};
         push @{$new{'-' . $k} ||= []}, [
                                         $m, '',
                                         {
@@ -111,19 +124,19 @@ sub def_usage_from_file {
       }
     }
   }
-  return \%new, \%usage, \@modules, \@requires;
+  return \%new, $usage_test{usage}, \@modules, \@requires, $usage_test{test};
 }
 
 sub write_file {
-  my ($new, $usage, $modules, $requires) = @_;
+  my ($new, $usage, $modules, $requires, $test) = @_;
   my $def_string = Dumper($new);
+
   my $template = slurp("util-all.template") or die $!;
 
-  $usage = usage($usage);
+  $usage = usage($usage, $test);
+  generate_test($test);
 
   $template =~s{###DEFINITION###}{$def_string};
-  # $yaml =~s{^}{   }gm;
-  # $template =~s{###YAML_DEFINITION###}{$yaml};
   $template =~s{###USAGE###}{$usage};
 
   {
@@ -151,7 +164,7 @@ sub write_file {
 }
 
 sub usage {
-  my ($usage) = @_;
+  my ($usage, $test) = @_;
   my $c;
   foreach my $kind (keys %$usage) {
     $c .= '=head2 -' . $kind . "\n\n";
@@ -163,6 +176,7 @@ sub usage {
         $c .= "\n\n";
       }
     } else {
+      my %tmp;
       foreach my $f (keys %{$usage->{$kind}}) {
         next if $f eq '-rename' or $f eq '-renames';
         if ($f eq '-rest') {
@@ -175,6 +189,7 @@ sub usage {
         } else {
           $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
           if ($usage->{$kind}->{$f}->[0]) {
+            $tmp{$f} = 1;
             if (ref $usage->{$kind}->{$f}->[0] eq 'ARRAY') {
               $usage->{$kind}->{$f}->[0] = join "\n", @{$usage->{$kind}->{$f}->[0]};
             }
@@ -182,13 +197,76 @@ sub usage {
             $c .= $usage->{$kind}->{$f}->[0] . "\n\n";;
           }
           if ($usage->{$kind}->{$f}->[1]) {
+            $tmp{$f} = 1;
             $c .= $usage->{$kind}->{$f}->[1] . "\n\n";;
           }
+        }
+      }
+      foreach my $f (keys %{$test->{$kind}}) {
+        # next if exists $tmp{$f};
+
+        my $t = $test->{$kind}{$f};
+        $c .= "=head4 test code\n\n";
+        foreach my $test (@$t) {
+          my ($_test, $_r) = @$test == 3 ? @{$test}[1,2] : @{$test}[0,1];
+          $_test =~s{;}{;\n}g;
+          $_test =~s{^\s*}{ }mg;
+          $c .= $_test;
+          chomp($c);
+          $c .= "\n # equal to: " . $_r . "\n\n";
         }
       }
     }
   }
   return $c;
+}
+
+sub generate_test {
+  my ($test) = @_;
+  my $i = 0;
+  unless (-d "t/auto") {
+    mkdir 't/auto';
+  } else {
+    unlink <t/auto/*>;
+  }
+  foreach my $kind (keys %$test) {
+    foreach my $func (sort keys %{$test->{$kind}}) {
+      my $defs = $test->{$kind}->{$func};
+      next if !$defs or !@$defs;
+
+      open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
+      print $fh <<__EOL;
+use Test::More qw/no_plan/;
+use strict;
+
+use Util::All -$kind;
+
+__EOL
+      foreach my $def (@$defs) {
+        if (ref $def) {
+          if (@$def == 3) {
+            print $fh <<EOL
+${$def}[0](
+  [do {${$def}[1]}],
+  [do {${$def}[2]}],
+);
+EOL
+          } elsif(@$def == 2) {
+            print $fh <<EOL
+is_deeply(
+  [do {${$def}[0]}],
+  [do {${$def}[1]}],
+);
+EOL
+          }
+        } else {
+          print $fh "ok((do {${$def}[0]})->())\n";
+        }
+      }
+      close $fh;
+    }
+    $i++
+  }
 }
 
 __END__
@@ -201,6 +279,7 @@ WriteMakefile(
     AUTHOR              => 'Ktat <ktat@cpan.org>',
     VERSION_FROM        => 'lib/Util/All.pm',
     ABSTRACT_FROM       => 'lib/Util/All.pm',
+    test                => { TESTS => 't/*.t t/*/*.t'},
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),

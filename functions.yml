@@ -80,7 +80,10 @@ hash:
       - usage:
         - indexed my %hash = (a => 1, b => 2);
         - %hash is indexed.
-
+      - test:
+        -
+          - indexed my %hash; %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;  keys %hash
+          - qw/5 4 3 2 1 0/
 debug:
   Data::Dumper:
     Dumper:
@@ -183,7 +186,7 @@ utf8:
     encode   : utf8_encode
   Data::Visitor::Encode:
     utf8_on  : sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
-    utf8_off : sub {sub {Data::Visitor::Encode->new->Utf8_off(@_)}}
+    utf8_off : sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
 
 cgi:
   CGI::Util:
@@ -251,6 +254,13 @@ char_enc:
         - |
            convert $str to second argument charset. third argument is charset of $str.
            when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
+      - test:
+        - 
+          - char_convert(my $s = "あ", "euc-jp"); $s
+          - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
+        - 
+          - char_convert(my $s = "あ", "cp932", "utf8"); $s
+          - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
     from_to: char_from_to
 
 uri:
@@ -261,28 +271,38 @@ uri:
     - uri_split
     - uri_join
   URI:
-    uri_make: |
-      sub {
+    uri_make:
+      - |
         sub {
-          use utf8;
-          my ($url, $form) = @_;
-          my %form;
-          foreach my $k (keys %$form) {
-            my ($key, $value) = ($k, $form->{$k});
-            utf8::decode($key)   unless utf8::is_utf8($k);
-            utf8::decode($value) unless utf8::is_utf8($value);
-            $form{$key} = $value;
+          sub {
+            use utf8;
+            my ($url, $form) = @_;
+            my %form;
+            foreach my $k (keys %$form) {
+              my ($key, $value) = ($k, $form->{$k});
+              utf8::decode($key)   unless utf8::is_utf8($k);
+              utf8::decode($value) unless utf8::is_utf8($value);
+              $form{$key} = $value;
+            }
+            my $u = URI->new($url);
+            $u->query_form(%form);
+            $u->as_string;
           }
-          my $u = URI->new($url);
-          $u->query_form(%form);
-          $u->as_string;
         }
-      }
-
+      - test:
+        - 
+          - uri_make('http://example.com/', { foo => "あ", bar => "い"});
+          - ('http://example.com/?bar=%E3%81%84&foo=%E3%81%82')
+        - 
+          - my $x = "あ"; utf8::decode($x); uri_make('http://example.com/', { foo => $x});
+          - ('http://example.com/?foo=%E3%81%82')
 base64:
   MIME::Base64:
     encode_base64: base64_encode
     decode_base64: base64_decode
+  MIME::Base64::URLSafe:
+    urlsafe_b64encode: urlsafe_base64_encode
+    urlsafe_b64decode: urlsafe_base64_decode
 
 http:
   -require : ['LWP::UserAgent']
@@ -354,20 +374,32 @@ json:
 
 basecalc:
   Math::BaseCalc:
-    from_base: |
-             sub {
-                my($pkg, $class, $func, $args, $kind_args) = @_;
-                sub {
-                   Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
-               }
-             }
-    to_base  : |
-             sub {
-                my($pkg, $class, $func, $args, $kind_args) = @_;
-                sub {
-                   Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
-                }
-             }
+    from_base:
+      - |
+        sub {
+          my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+            Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
+          }
+        }
+    to_base :
+      - |
+        sub {
+           my($pkg, $class, $func, $args, $kind_args) = @_;
+           sub {
+              Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
+           }
+        }
+      - test:
+         -
+           - package test_basecalc1; use Util::All -basecalc => {-args => {digits => [0,1]}}; (to_base(4), from_base(100));
+           - 100, 4
+         -
+           - package test_basecalc2; use Util::All -basecalc => [to_base => {digits => [0,1], -as => 'to_base2'}]; to_base2(4);
+           - 100
+         -
+           - package test_basecalc3; use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}]; from_base2(100);
+           - 4
 
 datetime:
   -require: ['Date::Manip']

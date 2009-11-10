@@ -15,6 +15,15 @@ our $Utils = {
         'decode_base64' => 'base64_decode',
         'encode_base64' => 'base64_encode'
       }
+    ],
+    [
+      'MIME::Base64::URLSafe',
+      '',
+      {
+        '-select' => [],
+        'urlsafe_b64decode' => 'urlsafe_base64_decode',
+        'urlsafe_b64encode' => 'urlsafe_base64_encode'
+      }
     ]
   ],
   '-basecalc' => [
@@ -833,7 +842,7 @@ our $Utils = {
       {
         'utf8_off' => sub {
             sub {
-                'Data::Visitor::Encode'->new->Utf8_off(@_);
+                'Data::Visitor::Encode'->new->utf8_off(@_);
             }
             ;
         },
@@ -1037,9 +1046,17 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head2 -base64
 
+=head3 urlsafe_base64_decode
+
+urlsafe_b64decode of L<MIME::Base64::URLSafe>
+
 =head3 base64_encode
 
 encode_base64 of L<MIME::Base64>
+
+=head3 urlsafe_base64_encode
+
+urlsafe_b64encode of L<MIME::Base64::URLSafe>
 
 =head3 base64_decode
 
@@ -1050,24 +1067,39 @@ decode_base64 of L<MIME::Base64>
 =head3 to_base *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      sub {
-          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-            ->to_base(shift);
-        }
-    }
+     my($pkg, $class, $func, $args, $kind_args) = @_;
+     sub {
+        Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
+     }
+  }
 
 
 =head3 from_base *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+    my($pkg, $class, $func, $args, $kind_args) = @_;
       sub {
-          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-            ->from_base(shift);
-        }
+      Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
     }
+  }
 
+
+=head4 test code
+
+ package test_basecalc1;
+ use Util::All -basecalc => {-args => {digits => [0,1]}};
+ (to_base(4), from_base(100));
+ # equal to: 100, 4
+
+ package test_basecalc2;
+ use Util::All -basecalc => [to_base => {digits => [0,1], -as => 'to_base2'}];
+ to_base2(4);
+ # equal to: 100
+
+ package test_basecalc3;
+ use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}];
+ from_base2(100);
+ # equal to: 4
 
 =head2 -benchmark
 
@@ -1157,6 +1189,16 @@ encode of L<Encode>
 =head3 char_decode
 
 decode of L<Encode>
+
+=head4 test code
+
+ char_convert(my $s = "あ", "euc-jp");
+ $s
+ # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
+
+ char_convert(my $s = "あ", "cp932", "utf8");
+ $s
+ # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
 
 =head2 -datetime
 
@@ -1315,6 +1357,13 @@ copy of L<File::Copy>
 
 =head4 unlock_value
 
+=head4 test code
+
+ indexed my %hash;
+ %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;
+ keys %hash
+ # equal to: qw/5 4 3 2 1 0/
+
 =head2 -html
 
 =head3 html_entity_decode
@@ -1354,11 +1403,7 @@ http_post, http_get, http_put, http_head, http_delete
 
 =head3 to_json_file *
 
-  sub {
-      require File::Slurp;
-      sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
-    }
-
+  sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
 
 =head3 from_json
 
@@ -1457,23 +1502,22 @@ encode_json of L<JSON::XS>
 =head3 parse_mail *
 
   sub {
-      sub { my $message = Email::MIME->new(@_) }
-    }
+    sub {my $message = Email::MIME->new(@_)}
+  }
 
 
 =head3 send_mail *
 
   sub {
-      sub {
-          my (%args) = @_;
-          my %new;
-          $new{ ucfirst $_ } = $args{$_} for keys %args;
-          Mail::Sendmail::sendmail(%new);
-  
-          # error $Mail::Sendmail::error;
-          # log   $Mail::Sendmail::log;
-        }
+    sub {
+      my (%args) = @_;
+      my %new;
+      $new{ucfirst $_} = $args{$_} for keys %args;
+      Mail::Sendmail::sendmail(%new);
+      # error $Mail::Sendmail::error;
+      # log   $Mail::Sendmail::log;
     }
+  }
 
 
 =head2 -md5
@@ -1491,69 +1535,68 @@ encode_json of L<JSON::XS>
 =head3 number_commify *
 
   sub {
-  
-      # code is borrowed from Template::Plugin::Comma
-      sub {
-          local $_ = shift;
-          while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
-          return $_;
-        }
+    # code is borrowed from Template::Plugin::Comma
+    sub {
+      local $_ = shift;
+      while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s){}
+      return $_;
     }
+  }
 
 
 =head3 number_price *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_price(@_);
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    my $n = Number::Format->new(%$kind_args, %$args);
+    sub {
+      $n->format_price(@_);
     }
+  }
 
 
 =head3 number_unit *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_unit(@_);
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    my $n = Number::Format->new(%$kind_args, %$args);
+    sub {
+      $n->format_unit(@_);
     }
+  }
 
 
 =head3 number_round *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new(%$kind_args);
-      sub {
-          $n->round(@_);
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    my $n = Number::Format->new(%$kind_args);
+    sub {
+      $n->round(@_);
     }
+  }
 
 
 =head3 to_number *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->unformat_number(@_);
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    my $n = Number::Format->new(%$kind_args, %$args);
+    sub {
+      $n->unformat_number(@_);
     }
+  }
 
 
 =head3 number_format *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_number(@_);
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    my $n = Number::Format->new(%$kind_args, %$args);
+    sub {
+      $n->format_number(@_);
     }
+  }
 
 
 =head2 -return
@@ -1683,22 +1726,32 @@ encode_json of L<JSON::XS>
 =head3 uri_make *
 
   sub {
-      sub {
-          use utf8;
-          my ( $url, $form ) = @_;
-          my %form;
-          foreach my $k ( keys %$form ) {
-              my ( $key, $value ) = ( $k, $form->{$k} );
-              utf8::decode($key)   unless utf8::is_utf8($k);
-              utf8::decode($value) unless utf8::is_utf8($value);
-              $form{$key} = $value;
-          }
-          my $u = URI->new($url);
-          $u->query_form(%form);
-          $u->as_string;
-        }
+    sub {
+      use utf8;
+      my ($url, $form) = @_;
+      my %form;
+      foreach my $k (keys %$form) {
+        my ($key, $value) = ($k, $form->{$k});
+        utf8::decode($key)   unless utf8::is_utf8($k);
+        utf8::decode($value) unless utf8::is_utf8($value);
+        $form{$key} = $value;
+      }
+      my $u = URI->new($url);
+      $u->query_form(%form);
+      $u->as_string;
     }
+  }
 
+
+=head4 test code
+
+ uri_make('http://example.com/', { foo => "あ", bar => "い"});
+ # equal to: ('http://example.com/?bar=%E3%81%84&foo=%E3%81%82')
+
+ my $x = "あ";
+ utf8::decode($x);
+ uri_make('http://example.com/', { foo => $x});
+ # equal to: ('http://example.com/?foo=%E3%81%82')
 
 =head2 -utf8
 
@@ -1712,10 +1765,7 @@ encode of L<utf8>
 
 =head3 utf8_off *
 
-  sub {
-      sub { Data::Visitor::Encode->new->Utf8_off(@_) }
-    }
-
+  sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
 
 =head3 utf8_upgrade
 
@@ -1727,38 +1777,32 @@ downgrade of L<utf8>
 
 =head3 utf8_on *
 
-  sub {
-      sub { Data::Visitor::Encode->new->utf8_on(@_) }
-    }
-
+  sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
 
 =head2 -xml
 
 =head3 xml_dump *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
-      sub {
-          XML::Simple::XMLout( shift, %$args );
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
+    sub {
+      XML::Simple::XMLout(shift, %$args);
     }
+  }
 
 
 =head3 xml_load *
 
   sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
-           $kind_args->{parser}
-        || $args->{parser}
-        || 'XML::Parser';
-      $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
-      $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
-      sub {
-          XML::Simple::XMLin( shift, %$args );
-        }
+    my ($pkg, $class, $func, $args, $kind_args) = @_;
+    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
+    $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
+    $args->{KeyAttr}    ||= $kind_args->{key_attr} || $args->{key_attr};
+    sub {
+      XML::Simple::XMLin(shift, %$args);
     }
+  }
 
 
 =head2 -yaml
@@ -1769,19 +1813,11 @@ Dump of L<YAML::XS>
 
 =head3 to_yaml_file *
 
-  sub {
-      require File::Slurp;
-      sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
-    }
-
+  sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
 
 =head3 from_yaml_file *
 
-  sub {
-      require File::Slurp;
-      sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
-    }
-
+  sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
 
 =head3 from_yaml
 

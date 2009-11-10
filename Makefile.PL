@@ -7,6 +7,7 @@ WriteMakefile(
     AUTHOR              => 'Ktat <ktat@cpan.org>',
     VERSION_FROM        => 'lib/Util/All.pm',
     ABSTRACT_FROM       => 'lib/Util/All.pm',
+    test                => { TESTS => 't/*.t t/*/*.t'},
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
@@ -40,6 +41,7 @@ WriteMakefile(
 	'List::MoreUtils' => 0,
 	'List::Util' => 0,
 	'MIME::Base64' => 0,
+	'MIME::Base64::URLSafe' => 0,
 	'Mail::Sendmail' => 0,
 	'Math::BaseCalc' => 0,
 	'Number::Format' => 0,
