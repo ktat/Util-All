@@ -11,10 +11,14 @@ use List::MoreUtils ();
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
 local $Data::Dumper::Indent  = 1;
-my $USE_PERLTIDY = (@ARGV and $ARGV[0] eq '-tidy') ? 1 : 0;
+my %CONF;
+@CONF{@ARGV} = ();
+
+my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
+my $NOTEST       = exists $CONF{'-notest'} || 0;
 
 write_file(def_usage_from_file("functions.yml"));
-system("perl Makefile.PL && make && make test;");
+system("prove -Ilib t/ t/auto/;") unless $NOTEST;
 
 sub def_usage_from_file {
   tie my %new, 'Tie::IxHash';
@@ -33,6 +37,7 @@ sub def_usage_from_file {
     push @requires, @{delete $def->{$k}->{'-require'} || []};
     push @as_plugins, delete $def->{$k}->{'-as_plugin'} || (); # do nothing
     $usage_test{usage}->{$k}->{'-all'} = delete $def->{$k}->{'-usage'} if exists $def->{$k}->{'-usage'};
+    $usage_test{test}->{$k}->{'-all'}  = delete $def->{$k}->{'-test'}  if exists $def->{$k}->{'-test'};
 
     foreach my $m (sort {($tmp{$a} ||= (ref $def->{$k}{$a} ne 'HASH' ? $default_priority : delete $def->{$k}{$a}{-priority} || $default_priority)) <=>
                          ($tmp{$b} ||= (ref $def->{$k}{$b} ne 'HASH' ? $default_priority : delete $def->{$k}{$b}{-priority} || $default_priority))
@@ -128,13 +133,14 @@ sub def_usage_from_file {
 }
 
 sub write_file {
-  my ($new, $usage, $modules, $requires, $test) = @_;
+  my ($new, $usage_data, $modules, $requires, $test) = @_;
   my $def_string = Dumper($new);
+  my $success = 0;
 
   my $template = slurp("util-all.template") or die $!;
 
-  $usage = usage($usage, $test);
-  generate_test($test);
+  my $usage = usage($usage_data, $test);
+  generate_test($usage_data, $test);
 
   $template =~s{###DEFINITION###}{$def_string};
   $template =~s{###USAGE###}{$usage};
@@ -147,6 +153,7 @@ sub write_file {
     print "try perl -Ilib -MUtil::All=-all -e ''\n";
     unless(system("perl -Ilib -MUtil::All=-all -e '';")) {
       print "OK\n";
+      $success = 1;
     } else {
       print "NG\n";
     }
@@ -161,6 +168,7 @@ sub write_file {
     close $out;
     print "Writing Makefile.PL\n";
   }
+  return $success;
 }
 
 sub usage {
@@ -202,19 +210,19 @@ sub usage {
           }
         }
       }
-      foreach my $f (keys %{$test->{$kind}}) {
-        # next if exists $tmp{$f};
+    }
+    foreach my $f (keys %{$test->{$kind}}) {
+      # next if exists $tmp{$f};
 
-        my $t = $test->{$kind}{$f};
-        $c .= "=head4 test code\n\n";
-        foreach my $test (@$t) {
-          my ($_test, $_r) = @$test == 3 ? @{$test}[1,2] : @{$test}[0,1];
-          $_test =~s{;}{;\n}g;
-          $_test =~s{^\s*}{ }mg;
-          $c .= $_test;
-          chomp($c);
-          $c .= "\n # equal to: " . $_r . "\n\n";
-        }
+      my $t = $test->{$kind}{$f};
+      $c .= "=head3 test code\n\n";
+      foreach my $test (@$t) {
+        my ($_test, $_r) = @$test == 3 ? @{$test}[1,2] : @{$test}[0,1];
+        $_test =~s{;}{;\n}g;
+        $_test =~s{^\s*}{ }mg;
+        $c .= $_test;
+        chomp($c);
+        $c .= "\n # equal to: " . $_r . "\n\n";
       }
     }
   }
@@ -222,7 +230,7 @@ sub usage {
 }
 
 sub generate_test {
-  my ($test) = @_;
+  my ($usage, $test) = @_;
   my $i = 0;
   unless (-d "t/auto") {
     mkdir 't/auto';
@@ -230,18 +238,30 @@ sub generate_test {
     unlink <t/auto/*>;
   }
   foreach my $kind (keys %$test) {
-    foreach my $func (sort keys %{$test->{$kind}}) {
-      my $defs = $test->{$kind}->{$func};
-      next if !$defs or !@$defs;
-
-      open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
-      print $fh <<__EOL;
+    my $kind_tag = defined &{$kind} ? "-$kind" : "'-$kind'";
+    open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
+    print $fh <<__EOL;
 use Test::More qw/no_plan/;
 use strict;
 
-use Util::All -$kind;
+use Util::All $kind_tag;
 
 __EOL
+    my @funcs;
+    if (exists $usage->{$kind}->{-renames}) {
+      push @funcs, @{$usage->{$kind}->{-renames}};
+    }
+    if (exists $usage->{$kind}->{-rest}) {
+      push @funcs, @{$usage->{$kind}->{-rest}->{$_} || []} for keys %{$usage->{$kind}->{-rest}};
+    }
+    push @funcs, grep !/^-/, keys %{$usage->{$kind}};
+    @funcs = List::MoreUtils::uniq(@funcs);
+    foreach my $func (@funcs) {
+      print $fh "ok(defined \&$func);\n";
+    }
+    foreach my $func (sort keys %{$test->{$kind}}) {
+      my $defs = $test->{$kind}->{$func};
+      next if !$defs or !@$defs;
       foreach my $def (@$defs) {
         if (ref $def) {
           if (@$def == 3) {
@@ -260,11 +280,11 @@ is_deeply(
 EOL
           }
         } else {
-          print $fh "ok((do {${$def}[0]})->())\n";
+          print $fh "ok(do {${$def}[0]})\n";
         }
       }
-      close $fh;
     }
+    close $fh;
     $i++
   }
 }

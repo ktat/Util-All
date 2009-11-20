@@ -208,7 +208,7 @@ xml:
   -require: ['XML::Parser']
   -as_plugin: 1
   XML::Simple:
-    xml_load: |
+    from_xml: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
         local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
@@ -218,7 +218,7 @@ xml:
           XML::Simple::XMLin(shift, %$args);
         }
       }
-    xml_dump: |
+    to_xml: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
         $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
@@ -254,14 +254,15 @@ char_enc:
         - |
            convert $str to second argument charset. third argument is charset of $str.
            when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
-      - test:
-        - 
-          - char_convert(my $s = "あ", "euc-jp"); $s
-          - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
-        - 
-          - char_convert(my $s = "あ", "cp932", "utf8"); $s
-          - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
     from_to: char_from_to
+  -test:
+    - 
+      - char_convert(my $s = "あ", "euc-jp"); $s
+      - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
+    - 
+      - char_convert(my $s = "あ", "cp932", "utf8"); $s
+      - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+
 
 uri:
   URI::Escape:
@@ -390,16 +391,16 @@ basecalc:
               Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
            }
         }
-      - test:
-         -
-           - package test_basecalc1; use Util::All -basecalc => {-args => {digits => [0,1]}}; (to_base(4), from_base(100));
-           - 100, 4
-         -
-           - package test_basecalc2; use Util::All -basecalc => [to_base => {digits => [0,1], -as => 'to_base2'}]; to_base2(4);
-           - 100
-         -
-           - package test_basecalc3; use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}]; from_base2(100);
-           - 4
+  -test :
+    -
+      - package test_basecalc1; use Util::All -basecalc => {-args => {digits => [0,1]}}; (to_base(4), from_base(100));
+      - 100, 4
+    -
+      - package test_basecalc2; use Util::All -basecalc => [to_base => {digits => [0,1], -as => 'to_base2'}]; to_base2(4);
+      - 100
+    -
+      - package test_basecalc3; use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}]; from_base2(100);
+      - 4
 
 datetime:
   -require: ['Date::Manip']
@@ -578,11 +579,72 @@ file:
   File::Copy:
     copy: copy_file
     move: move_file
+  File::Temp:
+    tempfile:
+      - |
+        sub {
+          my($pkg, $class, $func, $args, $kind_args) = @_;
+          sub {
+            my @args = @_;
+            my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => shift @args) : @args);
+            my %new_args = map {uc($_) => $args{$_}} keys %args;
+            if (exists $new_args{TEMPLATE}) {
+              if ($new_args{TEMPLATE} =~s{\*(.+)$}{XXXX}) {
+                 $new_args{SUFFIX} = $1;
+              }
+              if ($new_args{TEMPLATE} !~ /XXXX$/) {
+                $new_args{TEMPLATE} .= "XXXX"
+              }
+            }
+            File::Temp->new(%new_args);
+          }
+        }
+      - usage:
+        - |
+          tempfile("anyname*.dat")
+          tempfile("anyname*.dat", dir => '/var/tmp')
+          tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 1)
+    locked_tempfile:
+      - |
+        sub {
+          my($pkg, $class, $func, $args, $kind_args) = @_;
+          # %args = map {uc($_) => $args->{$_}} keys %$args;
+          # %kind_args = map {uc($_) => $args->{$_}} keys %$kind_args;
+          sub {
+            my @args = @_;
+            my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => shift @args) : @args);
+            my %new_args = map {uc($_) => $args{$_}} keys %args;
+            if (exists $new_args{TEMPLATE}) {
+              if ($new_args{TEMPLATE} =~s{\*(.+)$}{XXXX}) {
+                 $new_args{SUFFIX} = $1;
+              }
+              if ($new_args{TEMPLATE} !~ /XXXX$/) {
+                $new_args{TEMPLATE} .= "XXXX"
+              }
+            }
+            File::Temp->new(%new_args, EXLOCK => 1);
+          }
+        }
 
-return:
+bool:
   Return::Value:
     - success
     - failure
+  -usage: |
+
+  -test:
+    - 
+      - 'success("yatta") ? 1 : 0;'
+      - 1
+    - 
+      - 'failure("orz") ? 1 : 0;'
+      - 0
+    - 
+      - my $x = success("yatta");
+      - ("yatta")
+    - 
+      - my $x = failure("orz");
+      - ("orz")
 
 time:
   Time::HiRes:
@@ -631,7 +693,7 @@ number:
         my ($pkg, $class, $func, $args, $kind_args) = @_;
         my $n = Number::Format->new(%$kind_args, %$args);
         sub {
-          $n->format_unit(@_);
+          $n->format_bytes(@_);
         }
       }
     to_number: |
@@ -642,3 +704,137 @@ number:
           $n->unformat_number(@_);
         }
       }
+  -test:
+    -
+      - number_commify(10000);
+      - ('10,000')
+    -
+      - number_price(10000);
+      - Number::Format->new->format_price(10000);
+    -
+      - number_round(123, -2);
+      - 100
+    -
+      - number_round(123.25, 1);
+      - 123.3
+    -
+      - number_unit(1024, unit => 'K', mode => 'iec')
+      - ('1KiB')
+    -
+      - number_unit(1048576, unit => 'M', mode => 'trad')
+      - ('1M')
+    -
+      - to_number('1,000');
+      - 1000
+    -
+      - to_number('1,025');
+      - 1025
+    -
+      - to_number('1KiB');
+      - 1024
+image:
+  -as_plugin: 1
+  Imager:
+    convert_image:
+      - |
+        sub {
+          sub {
+            my ($before, $after) = @_;
+            $after ||= '';
+            my $img = Imager->new;
+            $img->read(file => $before) or die $img->errstr;
+            if ($after !~ /\./) {
+              my $i;
+              $img->write(data => \$i, type => $after) or die $img->errstr;
+              print $i;
+            } else {
+              $img->write(file => $after) or die $img->errstr;
+            }
+            return $img;
+          }
+        }
+      - usage:
+        - |
+          convert_image("before.jpg", "after.png");
+          convert_image("before.jpg", "png"); # output to stdout as ping
+        - convert images to other format.
+    resize_image:
+      - |
+        sub {
+          sub ($@){
+            my ($before, $after, @conf) = @_;
+            $after ||= '';
+            my $img = Imager->new;
+            $img->read(file => $before) or die $img->errstr;
+            my %conf;
+            if (ref $conf[0] eq 'ARRAY') {
+              $conf{xpixels} = $conf[0]->[0];
+              $conf{ypixels} = $conf[0]->[1];
+              $conf{type} = 'nonprop';
+            } elsif(@conf == 1 and not ref $conf[0]) {
+              $conf{scalefactor} = $conf[0];
+            } else {
+                %conf = @conf;
+            }
+            my $newimg = $img->scale(%conf);
+            if ($after !~ /\./) {
+              my $i;
+              $newimg->write(data => \$i, type => $after) or die $newimg->errstr;
+              print $i;
+            } else {
+              $newimg->write(file => $after) or die $newimg->errstr;
+            }
+            return $newimg;
+          }
+        }
+      - usage:
+        - |
+          resize_image("before.jpg", "after.png", %option);
+          resize_image("before.jpg", "after.png", [200, 100]); # 200x100 px
+          resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
+          resize_image("before.jpg", "png", 0.5);  # output to STDOUT as ping
+        - |
+          resize image.
+  Image::Info:
+    -require : ['MIME::Base64', 'File::Slurp']
+    image_info:
+      - |
+        sub {
+          sub {
+            my ($file) = @_;
+            my $info = Image::Info::image_info($file);
+            if (ref $info eq 'HASH' and exists $info->{error}) {
+              die $info->{error};
+            }
+            return $info
+          }
+        }
+      - usage:
+        - my $info = image_info("picture.jpg");
+        - return image information(Image::Info)
+    image_type:
+      - |
+        sub {
+          sub {
+            my ($file) = @_;
+            my $type = Image::Info::image_type($file);
+            if (exists $type->{error}) {
+              die $type->{error};
+            }
+            return $type->{file_type};
+          }
+        }
+      - usage:
+        - my $info = image_type("picture.jpg");
+        - return image type(Image::Info)
+    image_base64:
+        - |
+         sub {
+           require File::Slurp;
+           require MIME::Base64;
+           sub {
+             my ($file) = @_;
+             my $d = File::Slurp::slurp($file);
+             return MIME::Base64::encode_base64($d);
+           }
+         }

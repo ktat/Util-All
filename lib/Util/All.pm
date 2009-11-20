@@ -89,6 +89,18 @@ our $Utils = {
       }
     ]
   ],
+  '-bool' => [
+    [
+      'Return::Value',
+      '',
+      {
+        '-select' => [
+          'success',
+          'failure'
+        ]
+      }
+    ]
+  ],
   '-carp' => [
     [
       'Carp',
@@ -381,6 +393,49 @@ our $Utils = {
       }
     ],
     [
+      'File::Temp',
+      '',
+      {
+        '-select' => [],
+        'locked_tempfile' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+                my(@args) = @_;
+                my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', shift @args) : @args);
+                my(%new_args) = map({uc $_, $args{$_};} keys %args);
+                if (exists $new_args{'TEMPLATE'}) {
+                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)$/XXXX/) {
+                        $new_args{'SUFFIX'} = $1;
+                    }
+                    if (not $new_args{'TEMPLATE'} =~ /XXXX$/) {
+                        $new_args{'TEMPLATE'} .= 'XXXX';
+                    }
+                }
+                'File::Temp'->new(%new_args, 'EXLOCK', 1);
+            }
+            ;
+        },
+        'tempfile' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+                my(@args) = @_;
+                my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', shift @args) : @args);
+                my(%new_args) = map({uc $_, $args{$_};} keys %args);
+                if (exists $new_args{'TEMPLATE'}) {
+                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)$/XXXX/) {
+                        $new_args{'SUFFIX'} = $1;
+                    }
+                    if (not $new_args{'TEMPLATE'} =~ /XXXX$/) {
+                        $new_args{'TEMPLATE'} .= 'XXXX';
+                    }
+                }
+                'File::Temp'->new(%new_args);
+            }
+            ;
+        }
+      }
+    ],
+    [
       'File::Path',
       '',
       {
@@ -504,6 +559,104 @@ our $Utils = {
             my $ua = 'LWP::UserAgent'->new;
             sub {
                 $ua->request(HTTP::Request::Common::DELETE(@_));
+            }
+            ;
+        }
+      }
+    ]
+  ],
+  '-image' => [
+    [
+      'Image::Info',
+      '',
+      {
+        '-select' => [],
+        'image_base64' => sub {
+            require File::Slurp;
+            require MIME::Base64;
+            sub {
+                my($file) = @_;
+                my $d = File::Slurp::slurp($file);
+                return MIME::Base64::encode_base64($d);
+            }
+            ;
+        },
+        'image_type' => sub {
+            sub {
+                my($file) = @_;
+                my $type = Image::Info::image_type($file);
+                if (exists $$type{'error'}) {
+                    die $$type{'error'};
+                }
+                return $$type{'file_type'};
+            }
+            ;
+        },
+        'image_info' => sub {
+            sub {
+                my($file) = @_;
+                my $info = Image::Info::image_info($file);
+                if (ref $info eq 'HASH' and exists $$info{'error'}) {
+                    die $$info{'error'};
+                }
+                return $info;
+            }
+            ;
+        },
+        '-require' => 'MIME::Base64'
+      }
+    ],
+    [
+      'Imager',
+      '',
+      {
+        'convert_image' => sub {
+            sub {
+                my($before, $after) = @_;
+                $after ||= '';
+                my $img = 'Imager'->new;
+                die $img->errstr unless $img->read('file', $before);
+                if (not $after =~ /\./) {
+                    my $i;
+                    die $img->errstr unless $img->write('data', \$i, 'type', $after);
+                    print $i;
+                }
+                else {
+                    die $img->errstr unless $img->write('file', $after);
+                }
+                return $img;
+            }
+            ;
+        },
+        '-select' => [],
+        'resize_image' => sub {
+            sub ($@) {
+                my($before, $after, @conf) = @_;
+                $after ||= '';
+                my $img = 'Imager'->new;
+                die $img->errstr unless $img->read('file', $before);
+                my %conf;
+                if (ref $conf[0] eq 'ARRAY') {
+                    $conf{'xpixels'} = $conf[0][0];
+                    $conf{'ypixels'} = $conf[0][1];
+                    $conf{'type'} = 'nonprop';
+                }
+                elsif (@conf == 1 and not ref $conf[0]) {
+                    $conf{'scalefactor'} = $conf[0];
+                }
+                else {
+                    (%conf) = @conf;
+                }
+                my $newimg = $img->scale(%conf);
+                if (not $after =~ /\./) {
+                    my $i;
+                    die $newimg->errstr unless $newimg->write('data', \$i, 'type', $after);
+                    print $i;
+                }
+                else {
+                    die $newimg->errstr unless $newimg->write('file', $after);
+                }
+                return $newimg;
             }
             ;
         }
@@ -656,7 +809,7 @@ our $Utils = {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             my $n = 'Number::Format'->new(%$kind_args, %$args);
             sub {
-                $n->format_unit(@_);
+                $n->format_bytes(@_);
             }
             ;
         },
@@ -685,18 +838,6 @@ our $Utils = {
             }
             ;
         }
-      }
-    ]
-  ],
-  '-return' => [
-    [
-      'Return::Value',
-      '',
-      {
-        '-select' => [
-          'success',
-          'failure'
-        ]
       }
     ]
   ],
@@ -873,7 +1014,8 @@ our $Utils = {
       'XML::Simple',
       '',
       {
-        'xml_dump' => sub {
+        '-select' => [],
+        'to_xml' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
             sub {
@@ -881,7 +1023,7 @@ our $Utils = {
             }
             ;
         },
-        'xml_load' => sub {
+        'from_xml' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
             $$args{'Forcearray'} ||= $$kind_args{'force_array'} || $$args{'force_array'};
@@ -890,8 +1032,7 @@ our $Utils = {
                 XML::Simple::XMLin(shift @_, %$args);
             }
             ;
-        },
-        '-select' => []
+        }
       }
     ]
   ],
@@ -1067,24 +1208,26 @@ decode_base64 of L<MIME::Base64>
 =head3 to_base *
 
   sub {
-     my($pkg, $class, $func, $args, $kind_args) = @_;
-     sub {
-        Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
-     }
-  }
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      sub {
+          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+            ->to_base(shift);
+        }
+    }
 
 
 =head3 from_base *
 
   sub {
-    my($pkg, $class, $func, $args, $kind_args) = @_;
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
       sub {
-      Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
+          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
+            ->from_base(shift);
+        }
     }
-  }
 
 
-=head4 test code
+=head3 test code
 
  package test_basecalc1;
  use Util::All -basecalc => {-args => {digits => [0,1]}};
@@ -1132,6 +1275,24 @@ like timethese but compare 2 code with same argument
   cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
 like cmpthese but compare 2 code with same argument
+
+=head2 -bool
+
+
+
+=head3 test code
+
+ success("yatta") ? 1 : 0;
+ # equal to: 1
+
+ failure("orz") ? 1 : 0;
+ # equal to: 0
+
+ my $x = success("yatta");
+ # equal to: ("yatta")
+
+ my $x = failure("orz");
+ # equal to: ("orz")
 
 =head2 -carp
 
@@ -1190,7 +1351,7 @@ encode of L<Encode>
 
 decode of L<Encode>
 
-=head4 test code
+=head3 test code
 
  char_convert(my $s = "あ", "euc-jp");
  $s
@@ -1329,6 +1490,39 @@ move of L<File::Copy>
 
 slurp of L<File::Slurp>
 
+=head3 locked_tempfile *
+
+  sub {
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+  
+      # %args = map {uc($_) => $args->{$_}} keys %$args;
+      # %kind_args = map {uc($_) => $args->{$_}} keys %$kind_args;
+      sub {
+          my @args = @_;
+          my %args = (
+              %$kind_args, %$args, @args % 2 ? ( TEMPLATE => shift @args ) : @args
+          );
+          my %new_args = map { uc($_) => $args{$_} } keys %args;
+          if ( exists $new_args{TEMPLATE} ) {
+              if ( $new_args{TEMPLATE} =~ s{\*(.+)$}{XXXX} ) {
+                  $new_args{SUFFIX} = $1;
+              }
+              if ( $new_args{TEMPLATE} !~ /XXXX$/ ) {
+                  $new_args{TEMPLATE} .= "XXXX";
+              }
+          }
+          File::Temp->new( %new_args, EXLOCK => 1 );
+        }
+    }
+
+
+=head3 tempfile *
+
+  tempfile("anyname*.dat")
+  tempfile("anyname*.dat", dir => '/var/tmp')
+  tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 1)
+
+
 =head3 copy_file
 
 copy of L<File::Copy>
@@ -1357,7 +1551,7 @@ copy of L<File::Copy>
 
 =head4 unlock_value
 
-=head4 test code
+=head3 test code
 
  indexed my %hash;
  %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;
@@ -1399,11 +1593,65 @@ do http method and get HTTP::Response object.
 
 http_post, http_get, http_put, http_head, http_delete
 
+=head2 -image
+
+=head3 convert_image *
+
+  convert_image("before.jpg", "after.png");
+  convert_image("before.jpg", "png"); # output to stdout as ping
+
+
+convert images to other format.
+
+=head3 MIME::Base64
+
+-require of L<Image::Info>
+
+=head3 image_base64 *
+
+  sub {
+      require File::Slurp;
+      require MIME::Base64;
+      sub {
+          my ($file) = @_;
+          my $d = File::Slurp::slurp($file);
+          return MIME::Base64::encode_base64($d);
+        }
+    }
+
+
+=head3 image_info *
+
+  my $info = image_info("picture.jpg");
+
+return image information(Image::Info)
+
+=head3 image_type *
+
+  my $info = image_type("picture.jpg");
+
+return image type(Image::Info)
+
+=head3 resize_image *
+
+  resize_image("before.jpg", "after.png", %option);
+  resize_image("before.jpg", "after.png", [200, 100]); # 200x100 px
+  resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
+  resize_image("before.jpg", "png", 0.5);  # output to STDOUT as ping
+
+
+resize image.
+
+
 =head2 -json
 
 =head3 to_json_file *
 
-  sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
+  sub {
+      require File::Slurp;
+      sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
+    }
+
 
 =head3 from_json
 
@@ -1502,22 +1750,23 @@ encode_json of L<JSON::XS>
 =head3 parse_mail *
 
   sub {
-    sub {my $message = Email::MIME->new(@_)}
-  }
+      sub { my $message = Email::MIME->new(@_) }
+    }
 
 
 =head3 send_mail *
 
   sub {
-    sub {
-      my (%args) = @_;
-      my %new;
-      $new{ucfirst $_} = $args{$_} for keys %args;
-      Mail::Sendmail::sendmail(%new);
-      # error $Mail::Sendmail::error;
-      # log   $Mail::Sendmail::log;
+      sub {
+          my (%args) = @_;
+          my %new;
+          $new{ ucfirst $_ } = $args{$_} for keys %args;
+          Mail::Sendmail::sendmail(%new);
+  
+          # error $Mail::Sendmail::error;
+          # log   $Mail::Sendmail::log;
+        }
     }
-  }
 
 
 =head2 -md5
@@ -1535,77 +1784,99 @@ encode_json of L<JSON::XS>
 =head3 number_commify *
 
   sub {
-    # code is borrowed from Template::Plugin::Comma
-    sub {
-      local $_ = shift;
-      while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s){}
-      return $_;
+  
+      # code is borrowed from Template::Plugin::Comma
+      sub {
+          local $_ = shift;
+          while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
+          return $_;
+        }
     }
-  }
 
 
 =head3 number_price *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    my $n = Number::Format->new(%$kind_args, %$args);
-    sub {
-      $n->format_price(@_);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_price(@_);
+        }
     }
-  }
 
 
 =head3 number_unit *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    my $n = Number::Format->new(%$kind_args, %$args);
-    sub {
-      $n->format_unit(@_);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_bytes(@_);
+        }
     }
-  }
 
 
 =head3 number_round *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    my $n = Number::Format->new(%$kind_args);
-    sub {
-      $n->round(@_);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new(%$kind_args);
+      sub {
+          $n->round(@_);
+        }
     }
-  }
 
 
 =head3 to_number *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    my $n = Number::Format->new(%$kind_args, %$args);
-    sub {
-      $n->unformat_number(@_);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->unformat_number(@_);
+        }
     }
-  }
 
 
 =head3 number_format *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    my $n = Number::Format->new(%$kind_args, %$args);
-    sub {
-      $n->format_number(@_);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      my $n = Number::Format->new( %$kind_args, %$args );
+      sub {
+          $n->format_number(@_);
+        }
     }
-  }
 
 
-=head2 -return
+=head3 test code
 
-=head3 functions of L<Return::Value>
+ number_commify(10000);
+ # equal to: ('10,000')
 
-=head4 success
+ number_price(10000);
+ # equal to: Number::Format->new->format_price(10000);
 
-=head4 failure
+ number_round(123, -2);
+ # equal to: 100
+
+ number_round(123.25, 1);
+ # equal to: 123.3
+
+ number_unit(1024, unit => 'K', mode => 'iec')
+ # equal to: ('1KiB')
+
+ number_unit(1048576, unit => 'M', mode => 'trad')
+ # equal to: ('1M')
+
+ to_number('1,000');
+ # equal to: 1000
+
+ to_number('1,025');
+ # equal to: 1025
+
+ to_number('1KiB');
+ # equal to: 1024
 
 =head2 -scalar
 
@@ -1726,24 +1997,24 @@ encode_json of L<JSON::XS>
 =head3 uri_make *
 
   sub {
-    sub {
-      use utf8;
-      my ($url, $form) = @_;
-      my %form;
-      foreach my $k (keys %$form) {
-        my ($key, $value) = ($k, $form->{$k});
-        utf8::decode($key)   unless utf8::is_utf8($k);
-        utf8::decode($value) unless utf8::is_utf8($value);
-        $form{$key} = $value;
-      }
-      my $u = URI->new($url);
-      $u->query_form(%form);
-      $u->as_string;
+      sub {
+          use utf8;
+          my ( $url, $form ) = @_;
+          my %form;
+          foreach my $k ( keys %$form ) {
+              my ( $key, $value ) = ( $k, $form->{$k} );
+              utf8::decode($key)   unless utf8::is_utf8($k);
+              utf8::decode($value) unless utf8::is_utf8($value);
+              $form{$key} = $value;
+          }
+          my $u = URI->new($url);
+          $u->query_form(%form);
+          $u->as_string;
+        }
     }
-  }
 
 
-=head4 test code
+=head3 test code
 
  uri_make('http://example.com/', { foo => "あ", bar => "い"});
  # equal to: ('http://example.com/?bar=%E3%81%84&foo=%E3%81%82')
@@ -1765,7 +2036,10 @@ encode of L<utf8>
 
 =head3 utf8_off *
 
-  sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
+  sub {
+      sub { Data::Visitor::Encode->new->utf8_off(@_) }
+    }
+
 
 =head3 utf8_upgrade
 
@@ -1777,32 +2051,38 @@ downgrade of L<utf8>
 
 =head3 utf8_on *
 
-  sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
+  sub {
+      sub { Data::Visitor::Encode->new->utf8_on(@_) }
+    }
+
 
 =head2 -xml
 
-=head3 xml_dump *
+=head3 to_xml *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
-    sub {
-      XML::Simple::XMLout(shift, %$args);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
+      sub {
+          XML::Simple::XMLout( shift, %$args );
+        }
     }
-  }
 
 
-=head3 xml_load *
+=head3 from_xml *
 
   sub {
-    my ($pkg, $class, $func, $args, $kind_args) = @_;
-    local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
-    $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
-    $args->{KeyAttr}    ||= $kind_args->{key_attr} || $args->{key_attr};
-    sub {
-      XML::Simple::XMLin(shift, %$args);
+      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+      local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
+           $kind_args->{parser}
+        || $args->{parser}
+        || 'XML::Parser';
+      $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
+      $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
+      sub {
+          XML::Simple::XMLin( shift, %$args );
+        }
     }
-  }
 
 
 =head2 -yaml
@@ -1813,11 +2093,19 @@ Dump of L<YAML::XS>
 
 =head3 to_yaml_file *
 
-  sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
+  sub {
+      require File::Slurp;
+      sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
+    }
+
 
 =head3 from_yaml_file *
 
-  sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
+  sub {
+      require File::Slurp;
+      sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
+    }
+
 
 =head3 from_yaml
 
