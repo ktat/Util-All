@@ -374,6 +374,18 @@ our $Utils = {
       }
     ]
   ],
+  '-exception' => [
+    [
+      'Try::Tiny',
+      '',
+      {
+        '-select' => [
+          'try',
+          'catch'
+        ]
+      }
+    ]
+  ],
   '-file' => [
     [
       'File::Copy',
@@ -602,8 +614,7 @@ our $Utils = {
                 return $info;
             }
             ;
-        },
-        '-require' => 'MIME::Base64'
+        }
       }
     ],
     [
@@ -677,6 +688,13 @@ our $Utils = {
         },
         'decode_json' => 'from_json',
         '-select' => [],
+        'from_json_file' => sub {
+            require File::Slurp;
+            sub ($) {
+                JSON::XS::decode_json(scalar File::Slurp::slurp(shift @_));
+            }
+            ;
+        },
         'encode_json' => 'to_json'
       }
     ]
@@ -1051,8 +1069,8 @@ our $Utils = {
         '-select' => [],
         'from_yaml_file' => sub {
             require File::Slurp;
-            sub {
-                YAML::XS::Load(File::Slurp::slurp(shift @_));
+            sub ($) {
+                YAML::XS::Load(scalar File::Slurp::slurp(shift @_));
             }
             ;
         },
@@ -1278,7 +1296,7 @@ like cmpthese but compare 2 code with same argument
 
 =head2 -bool
 
-
+ARRAY(0x8845d84)
 
 =head3 test code
 
@@ -1464,6 +1482,14 @@ dump code reference as string.
 
 as same as dump(function name is borrowed from Ruby).
 
+=head2 -exception
+
+=head3 functions of L<Try::Tiny>
+
+=head4 try
+
+=head4 catch
+
 =head2 -file
 
 =head3 functions of L<File::Path>
@@ -1603,10 +1629,6 @@ http_post, http_get, http_put, http_head, http_delete
 
 convert images to other format.
 
-=head3 MIME::Base64
-
--require of L<Image::Info>
-
 =head3 image_base64 *
 
   sub {
@@ -1635,9 +1657,9 @@ return image type(Image::Info)
 =head3 resize_image *
 
   resize_image("before.jpg", "after.png", %option);
-  resize_image("before.jpg", "after.png", [200, 100]); # 200x100 px
+  resize_image("before.jpg", "after.png", [200, 100]); # 200x100px
   resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
-  resize_image("before.jpg", "png", 0.5);  # output to STDOUT as ping
+  resize_image("before.jpg", "png", 0.5);  # output 1/2 scale image to STDOUT as ping
 
 
 resize image.
@@ -1647,11 +1669,15 @@ resize image.
 
 =head3 to_json_file *
 
-  sub {
-      require File::Slurp;
-      sub { File::Slurp::write_file( shift, JSON::XS::encode_json(shift) ) }
-    }
+  from_json_file($json_file);
 
+load JSON data from file
+
+=head3 from_json_file *
+
+  from_json_file($json_file);
+
+load JSON data from file
 
 =head3 from_json
 
@@ -1660,6 +1686,18 @@ decode_json of L<JSON::XS>
 =head3 to_json
 
 encode_json of L<JSON::XS>
+
+=head3 test code
+
+ package test_json;
+ use Util::All -json, -debug;
+ dump from_json(to_json({hoge => 1}));
+ # equal to: '{ hoge => 1 }'
+
+ package test_json;
+ use Util::All -json;
+ to_json(from_json_file("t/data/test.json"));
+ # equal to: qq{{"hoge":1}}
 
 =head2 -list
 
@@ -2036,10 +2074,9 @@ encode of L<utf8>
 
 =head3 utf8_off *
 
-  sub {
-      sub { Data::Visitor::Encode->new->utf8_off(@_) }
-    }
+  utf8_off($data)
 
+recursively make utf8 flag off
 
 =head3 utf8_upgrade
 
@@ -2051,10 +2088,9 @@ downgrade of L<utf8>
 
 =head3 utf8_on *
 
-  sub {
-      sub { Data::Visitor::Encode->new->utf8_on(@_) }
-    }
+  utf8_on($data)
 
+recursively make utf8 flag on
 
 =head2 -xml
 
@@ -2093,23 +2129,31 @@ Dump of L<YAML::XS>
 
 =head3 to_yaml_file *
 
-  sub {
-      require File::Slurp;
-      sub { File::Slurp::write_file( shift, YAML::XS::Dump(shift) ) }
-    }
+  to_yaml_file($yaml_file);
 
+dump YAML data to file
 
 =head3 from_yaml_file *
 
-  sub {
-      require File::Slurp;
-      sub { YAML::XS::Load( File::Slurp::slurp(shift) ) }
-    }
+  from_yaml_file($yaml_file);
 
+load YAML data from file
 
 =head3 from_yaml
 
 Load of L<YAML::XS>
+
+=head3 test code
+
+ package test_yaml;
+ use Util::All -yaml, -debug;
+ dump from_yaml(to_yaml({hoge => 1}));
+ # equal to: '{ hoge => 1 }'
+
+ package test_yaml;
+ use Util::All -yaml;
+ to_yaml(from_yaml_file("t/data/test.yml"));
+ # equal to: "---\nhoge: 1\n"
 
 
 

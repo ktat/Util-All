@@ -79,12 +79,13 @@ hash:
         }
       - usage:
         - indexed my %hash = (a => 1, b => 2);
-        - %hash is indexed.
+        - '%hash is indexed.'
       - test:
         -
           - indexed my %hash; %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;  keys %hash
           - qw/5 4 3 2 1 0/
 debug:
+  -require: ['B::Deparse']
   Data::Dumper:
     Dumper:
       - dumper
@@ -185,8 +186,14 @@ utf8:
     downgrade: utf8_downgrade
     encode   : utf8_encode
   Data::Visitor::Encode:
-    utf8_on  : sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
-    utf8_off : sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
+    utf8_on  :
+      - sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
+      - utf8_on($data)
+      - recursively make utf8 flag on
+    utf8_off :
+      - sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
+      - utf8_off($data)
+      - recursively make utf8 flag off
 
 cgi:
   CGI::Util:
@@ -356,22 +363,49 @@ carp:
     - shortmess
     - longmess
 
-yaml:
+yaml: &yaml
   -require: ['File::Slurp']
   YAML::XS:
     Load: from_yaml
     Dump: to_yaml
-    from_yaml_file: sub {require File::Slurp; sub { YAML::XS::Load(File::Slurp::slurp(shift)) }}
-    to_yaml_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
+    from_yaml_file:
+      - sub {require File::Slurp; sub ($) { YAML::XS::Load(scalar File::Slurp::slurp(shift)) }}
+      - from_yaml_file($yaml_file);
+      - load YAML data from file
+    to_yaml_file:
+      - sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
+      - to_yaml_file($yaml_file);
+      - dump YAML data to file
+  -test:
+    -
+      - package test_yaml; use Util::All -yaml, -debug; dump from_yaml(to_yaml({hoge => 1}));
+      - "'{ hoge => 1 }'"
+    - 
+      - package test_yaml; use Util::All -yaml; to_yaml(from_yaml_file("t/data/test.yml"));
+      - '"---\nhoge: 1\n"'
+
+# yml: *yaml
 
 json:
   -require: ['File::Slurp']
   JSON::XS:
     decode_json: from_json
     encode_json: to_json
-    to_json_file: sub {require File::Slurp; sub { JSON::XS::decode_json(File::Slurp::slurp(shift)) }}
-    to_json_file: sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
-
+    from_json_file:
+      - sub {require File::Slurp; sub ($) { JSON::XS::decode_json(scalar File::Slurp::slurp(shift)) }}
+      - from_json_file($json_file);
+      - load JSON data from file
+    to_json_file:
+      - sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
+      - from_json_file($json_file);
+      - load JSON data from file
+  -test:
+    -
+      - package test_json; use Util::All -json, -debug; dump from_json(to_json({hoge => 1}));
+      - "'{ hoge => 1 }'"
+    - 
+      - package test_json; use Util::All -json; to_json(from_json_file("t/data/test.json"));
+      - 'qq{{"hoge":1}}'
 
 basecalc:
   Math::BaseCalc:
@@ -402,7 +436,7 @@ basecalc:
       - package test_basecalc3; use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}]; from_base2(100);
       - 4
 
-datetime:
+datetime: &datetime
   -require: ['Date::Manip']
   -as_plugin: 1
   -usage: |
@@ -527,6 +561,8 @@ datetime:
     now     : sub {sub () { DateTime->now(@_) }}
     datetime: sub {sub { DateTime->new(@_) }}
 
+# date: *datetime
+
 benchmark:
   Benchmark:
     -select: 
@@ -628,10 +664,17 @@ file:
 
 bool:
   Return::Value:
-    - success
-    - failure
+    - 'success'
+    - 'failure'
   -usage: |
-
+     sub yatta { success("OK") }
+     if (my $r = yatta) {
+        print $r; # "OK";
+     }
+     sub orz { success("NG") }
+     unless (my $r = orz) {
+        print $r; # "NG";
+     }
   -test:
     - 
       - 'success("yatta") ? 1 : 0;'
@@ -734,6 +777,7 @@ number:
       - 1024
 image:
   -as_plugin: 1
+  -require : ['MIME::Base64', 'File::Slurp']
   Imager:
     convert_image:
       - |
@@ -790,13 +834,12 @@ image:
       - usage:
         - |
           resize_image("before.jpg", "after.png", %option);
-          resize_image("before.jpg", "after.png", [200, 100]); # 200x100 px
+          resize_image("before.jpg", "after.png", [200, 100]); # 200x100px
           resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
-          resize_image("before.jpg", "png", 0.5);  # output to STDOUT as ping
+          resize_image("before.jpg", "png", 0.5);  # output 1/2 scale image to STDOUT as ping
         - |
           resize image.
   Image::Info:
-    -require : ['MIME::Base64', 'File::Slurp']
     image_info:
       - |
         sub {
@@ -838,3 +881,7 @@ image:
              return MIME::Base64::encode_base64($d);
            }
          }
+exception:
+  Try::Tiny:
+    - try
+    - catch

@@ -11,6 +11,8 @@ use List::MoreUtils ();
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
 local $Data::Dumper::Indent  = 1;
+local $Data::Dumper::Varname = 'Utils';
+
 my %CONF;
 @CONF{@ARGV} = ();
 
@@ -144,6 +146,7 @@ sub write_file {
 
   $template =~s{###DEFINITION###}{$def_string};
   $template =~s{###USAGE###}{$usage};
+  $template =~s{\$Utils1}{\$Utils}g;
 
   {
     open my $out, '>', 'lib/Util/All.pm' or die $!;
@@ -292,23 +295,20 @@ EOL
 __END__
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
 
-WriteMakefile(
-    NAME                => 'Util::All',
-    AUTHOR              => 'Ktat <ktat@cpan.org>',
-    VERSION_FROM        => 'lib/Util/All.pm',
-    ABSTRACT_FROM       => 'lib/Util/All.pm',
-    test                => { TESTS => 't/*.t t/*/*.t'},
-    ($ExtUtils::MakeMaker::VERSION >= 6.3002
-      ? ('LICENSE'=> 'perl')
-      : ()),
-    PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::More' => 0,
-        'Util::Any'  => 0.14,
+use inc::Module::Install;
+
+# Define metadata
+name           'Util-All';
+all_from       'lib/Util/All.pm';
+
+# Specific dependencies
+requires       'Util::Any'  => '0.14',
 ###DEPENDENT_MODULES###
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Util-All-*' },
-);
+;
+test_requires  'Test::More'  => '0.42';
+no_index       'directory'   => 'demos';
+# install_script 'myscript';
+
+auto_install;
+WriteAll;

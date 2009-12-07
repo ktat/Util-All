@@ -1,20 +1,15 @@
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
 
-WriteMakefile(
-    NAME                => 'Util::All',
-    AUTHOR              => 'Ktat <ktat@cpan.org>',
-    VERSION_FROM        => 'lib/Util/All.pm',
-    ABSTRACT_FROM       => 'lib/Util/All.pm',
-    test                => { TESTS => 't/*.t t/*/*.t'},
-    ($ExtUtils::MakeMaker::VERSION >= 6.3002
-      ? ('LICENSE'=> 'perl')
-      : ()),
-    PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::More' => 0,
-        'Util::Any'  => 0.14,
+use inc::Module::Install;
+
+# Define metadata
+name           'Util-All';
+all_from       'lib/Util/All.pm';
+
+# Specific dependencies
+requires       'Util::Any'  => '0.14',
+	'B::Deparse' => 0,
 	'Benchmark' => 0,
 	'CGI::Util' => 0,
 	'Carp' => 0,
@@ -55,6 +50,7 @@ WriteMakefile(
 	'Tie::IxHash' => 0,
 	'Tie::Trace' => 0,
 	'Time::HiRes' => 0,
+	'Try::Tiny' => 0,
 	'URI' => 0,
 	'URI::Escape' => 0,
 	'URI::Split' => 0,
@@ -63,7 +59,10 @@ WriteMakefile(
 	'XML::Simple' => 0,
 	'YAML::XS' => 0,
 	'utf8' => 0
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Util-All-*' },
-);
+;
+test_requires  'Test::More'  => '0.42';
+no_index       'directory'   => 'demos';
+# install_script 'myscript';
+
+auto_install;
+WriteAll;
