@@ -181,12 +181,16 @@ our $Utils = {
             $kind_args ||= {};
             use strict 'refs';
             sub {
+                my $pass_fh = 0;
                 my($fh, $column_names) = @_;
                 my $csv = 'Text::CSV_XS'->new({'binary', 1, %$kind_args, %$args});
-                unless (ref $fh) {
+                if (not ref $fh) {
                     my $file = $fh;
                     undef $fh;
                     Carp::croak("cannot open file: $file") unless open $fh, '<', $file;
+                }
+                else {
+                    $pass_fh = 1;
                 }
                 my $sub;
                 if (@_ == 2) {
@@ -203,11 +207,11 @@ our $Utils = {
                     ;
                 }
                 my $refaddr = &Scalar::Util::refaddr($sub);
-                bless $sub, $refaddr;
+                bless $sub, $class . '::' . $refaddr;
                 no strict 'refs';
-                *{$refaddr . '::next';} = sub {
+                *{$class . '::' . $refaddr . '::next';} = sub {
                     my $r = $_[0]->();
-                    close $fh unless $r;
+                    close $fh if not $r and not $pass_fh;
                     return $r;
                 }
                 ;
@@ -1440,16 +1444,56 @@ decode of L<Encode>
 
 =head3 parse_csv *
 
+  use Util::All -csv;
+  
   my $csv = parse_csv($file_or_fh);
   while (my $ar = $csv->next) {
-     print @$ar, "\n";
+     print "@$ar\n";
   }
   
   my $csv = parse_csv($file_or_fh, ['name', 'age']);
   while (my $hr = $csv->next) {
-     print %$hr;
+     print jion " ", %$hr, "\n";
   }
+  
+  # pass options to Text::CSV_XS
+  use Util::All -csv => {-args => {binary => 0, eol => "\r\n"}};
 
+
+=head3 test code
+
+ package test_csv1;
+ use Util::All -csv;
+ my $csv = parse_csv("t/data/test.csv");
+ my $sum = 0;
+ while (my $l = $csv->next) {$sum +=$l->[1]};
+ $sum;
+ # equal to: 223
+
+ package test_csv2;
+ use Util::All -csv;
+ my $csv = parse_csv("t/data/test.csv", ['l', 'num']);
+ my $label = '';
+ while (my $l = $csv->next) {$label .=$l->{l}};
+ $label;
+ # equal to: "abcdef"
+
+ package test_csv3;
+ use Util::All -csv;
+ open my $fh, "t/data/test.csv";
+ my $csv = parse_csv($fh);
+ my $sum = 0;
+ while (my $l = $csv->next) {$sum +=$l->[1]};
+ $sum;
+ # equal to: 223
+
+ package test_csv4;
+ use Util::All -csv;
+ open my $fh, "t/data/test.csv";
+ my $csv = parse_csv($fh);
+ 1 while $csv->next;
+ tell $fh;
+ # equal to: 30
 
 =head2 -datetime
 
