@@ -159,6 +159,7 @@ sub write_file {
       $success = 1;
     } else {
       print "NG\n";
+      die "maybe Util::All has syntax error.";
     }
   }
 

@@ -170,6 +170,55 @@ our $Utils = {
       }
     ]
   ],
+  '-csv' => [
+    [
+      'Text::CSV_XS',
+      '',
+      {
+        'parse_csv' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            $args ||= {};
+            $kind_args ||= {};
+            use strict 'refs';
+            sub {
+                my($fh, $column_names) = @_;
+                my $csv = 'Text::CSV_XS'->new({'binary', 1, %$kind_args, %$args});
+                unless (ref $fh) {
+                    my $file = $fh;
+                    undef $fh;
+                    Carp::croak("cannot open file: $file") unless open $fh, '<', $file;
+                }
+                my $sub;
+                if (@_ == 2) {
+                    $csv->column_names($column_names);
+                    $sub = sub {
+                        $csv->getline_hr($fh);
+                    }
+                    ;
+                }
+                else {
+                    $sub = sub {
+                        $csv->getline($fh);
+                    }
+                    ;
+                }
+                my $refaddr = &Scalar::Util::refaddr($sub);
+                bless $sub, $refaddr;
+                no strict 'refs';
+                *{$refaddr . '::next';} = sub {
+                    my $r = $_[0]->();
+                    close $fh unless $r;
+                    return $r;
+                }
+                ;
+                return $sub;
+            }
+            ;
+        },
+        '-select' => []
+      }
+    ]
+  ],
   '-datetime' => [
     [
       'DateTime',
@@ -1296,7 +1345,15 @@ like cmpthese but compare 2 code with same argument
 
 =head2 -bool
 
-ARRAY(0x8845d84)
+sub yatta { success("OK") }
+if (my $r = yatta) {
+   print $r; # "OK";
+}
+sub orz { success("NG") }
+unless (my $r = orz) {
+   print $r; # "NG";
+}
+
 
 =head3 test code
 
@@ -1378,6 +1435,21 @@ decode of L<Encode>
  char_convert(my $s = "あ", "cp932", "utf8");
  $s
  # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+
+=head2 -csv
+
+=head3 parse_csv *
+
+  my $csv = parse_csv($file_or_fh);
+  while (my $ar = $csv->next) {
+     print @$ar, "\n";
+  }
+  
+  my $csv = parse_csv($file_or_fh, ['name', 'age']);
+  while (my $hr = $csv->next) {
+     print %$hr;
+  }
+
 
 =head2 -datetime
 

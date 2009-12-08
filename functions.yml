@@ -885,3 +885,48 @@ exception:
   Try::Tiny:
     - try
     - catch
+
+csv:
+  -as_plugin: 1
+  -require: ['Scalar::Util']
+  Text::CSV_XS:
+    parse_csv:
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          $args ||= {};
+          $kind_args ||= {};
+          use strict;
+          sub {
+            my ($fh, $column_names) = @_;
+            my $csv = Text::CSV_XS->new({binary => 1, %$kind_args, %$args});
+            unless (ref $fh) {
+              my $file = $fh;
+              undef $fh;
+              open($fh, '<', $file) or Carp::croak("cannot open file: $file");
+            }
+            my $sub;
+            if (@_ == 2) {
+              $csv->column_names($column_names);
+              $sub = sub {$csv->getline_hr($fh)};
+            } else {
+              $sub = sub {$csv->getline($fh)};
+            }
+            my $refaddr = Scalar::Util::refaddr($sub);
+            bless $sub => $refaddr;
+            no strict 'refs';
+            *{$refaddr . "::next"} = sub { my $r = $_[0]->(); close $fh unless $r; return $r};
+            return $sub;
+          }
+        }
+      - usage:
+        - |
+          my $csv = parse_csv($file_or_fh);
+          while (my $ar = $csv->next) {
+             print @$ar, "\n";
+          }
+
+          my $csv = parse_csv($file_or_fh, ['name', 'age']);
+          while (my $hr = $csv->next) {
+             print %$hr;
+          }
