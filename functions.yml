@@ -142,22 +142,35 @@ debug:
 
 string:
   String::Util:
-    - crunch
-    - define
-    - equndef
-    - fullchomp
-    - hascontent
-    - htmlesc
-    - neundef
-    - nospace
-    - randcrypt
-    - randword
-    - trim
-    - unquote
+    -select:
+      - crunch
+      - define
+      - equndef
+      - fullchomp
+      - hascontent
+      - htmlesc
+      - neundef
+      - nospace
+      - randcrypt
+      - randword
+      - trim
+      - unquote
+    strings: |
+      sub {
+        sub {
+          my $str = shift;
+          $str =~ s/\p{Cc}//g;
+          return $str;
+        }
+      }
   String::CamelCase:
     - camelize
     - decamelize
     - wordsplit
+  -test:
+    -
+      - package test_strings1; use Util::All -string; strings('111' . "\0" . '111');
+      - '"111111"'
 
 md5:
   Digest::MD5:

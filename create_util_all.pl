@@ -241,7 +241,7 @@ sub generate_test {
   } else {
     unlink <t/auto/*>;
   }
-  foreach my $kind (keys %$test) {
+  foreach my $kind (sort keys %$test) {
     my $kind_tag = defined &{$kind} ? "-$kind" : "'-$kind'";
     open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
     print $fh <<__EOL;
@@ -305,6 +305,7 @@ all_from       'lib/Util/All.pm';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.14',
+#               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###
 ;
 test_requires  'Test::More'  => '0.42';

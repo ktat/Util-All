@@ -9,6 +9,7 @@ all_from       'lib/Util/All.pm';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.14',
+#               'Errno::AnyString' => 0,
 	'B::Deparse' => 0,
 	'Benchmark' => 0,
 	'CGI::Util' => 0,

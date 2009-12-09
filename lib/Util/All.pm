@@ -986,7 +986,15 @@ our $Utils = {
           'randword',
           'trim',
           'unquote'
-        ]
+        ],
+        'strings' => sub {
+            sub {
+                my $str = shift @_;
+                $str =~ s/\p{Cc}//g;
+                return $str;
+            }
+            ;
+        }
       }
     ]
   ],
@@ -2124,6 +2132,24 @@ encode_json of L<JSON::XS>
 =head4 trim
 
 =head4 unquote
+
+=head3 strings *
+
+  sub {
+      sub {
+          my $str = shift;
+          $str =~ s/\p{Cc}//g;
+          return $str;
+        }
+    }
+
+
+=head3 test code
+
+ package test_strings1;
+ use Util::All -string;
+ strings('111' . "\0" . '111');
+ # equal to: "111111"
 
 =head2 -time
 
