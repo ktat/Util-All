@@ -137,7 +137,7 @@ our $Utils = {
       }
     ]
   ],
-  '-char_enc' => [
+  '-char_encode' => [
     [
       'Encode',
       '',
@@ -1158,7 +1158,7 @@ When you want string utilities.
 
 When you want character encoding Utilities.
 
- use Util::All -char_enc;
+ use Util::All -char_encode;
  $encoded = char_encode('utf8', $str); # Encode::encode
  $decoded = char_decode('utf8', $str); # Encode::decode
  char_from_to($str, $icode, 'utf8');   # Encode::from_to
@@ -1408,7 +1408,7 @@ unescape of L<CGI::Util>
 
 encode_entities of L<HTML::Entities>
 
-=head2 -char_enc
+=head2 -char_encode
 
 =head3 char_from_to
 
