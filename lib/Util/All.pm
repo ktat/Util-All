@@ -180,6 +180,16 @@ our $Utils = {
             $args ||= {};
             $kind_args ||= {};
             use strict 'refs';
+            if (not defined &Util::All::Text::CSV_XS::next) {
+                no strict 'refs';
+                *{'Util::All::_Tmp::Text::CSV_XS::next';} = sub {
+                    my $self = shift @_;
+                    my $r;
+                    not $$self{'pass_fh'} and close $$self{'fh'} unless $r = $$self{'sub'}();
+                    return $r;
+                }
+                ;
+            }
             sub {
                 my $pass_fh = 0;
                 my($fh, $column_names) = @_;
@@ -206,16 +216,7 @@ our $Utils = {
                     }
                     ;
                 }
-                my $refaddr = &Scalar::Util::refaddr($sub);
-                bless $sub, $class . '::' . $refaddr;
-                no strict 'refs';
-                *{$class . '::' . $refaddr . '::next';} = sub {
-                    my $r = $_[0]->();
-                    close $fh if not $r and not $pass_fh;
-                    return $r;
-                }
-                ;
-                return $sub;
+                return bless({'sub', $sub, 'fh', $fh, 'pass_fh', $pass_fh}, 'Util::All::_Tmp::Text::CSV_XS');
             }
             ;
         },

@@ -234,7 +234,7 @@ xml:
         }
       }
 
-char_enc:
+char_encode:
   Encode:
     encode: char_encode
     decode: char_decode
@@ -328,6 +328,9 @@ http:
     http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
     http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
     http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
+# If you cannot install WWW::Curl::Simple, use the following
+#    http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
+#    http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
   WWW::Curl::Simple:
     http_get   : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->get(@_) } }
     http_post  : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->post(@_) } }
@@ -888,7 +891,6 @@ exception:
 
 csv:
   -as_plugin: 1
-  -require: ['Scalar::Util']
   Text::CSV_XS:
     parse_csv:
       - |
@@ -897,6 +899,10 @@ csv:
           $args ||= {};
           $kind_args ||= {};
           use strict;
+          if (not defined &Util::All::Text::CSV_XS::next) {
+            no strict 'refs';
+            *{"Util::All::_Tmp::Text::CSV_XS::next"} = sub { my $self = shift; my $r; $r = $self->{sub}->() or (!$self->{pass_fh} and close $self->{fh}); return $r}
+          }
           sub {
             my $pass_fh = 0;
             my ($fh, $column_names) = @_;
@@ -915,11 +921,7 @@ csv:
             } else {
               $sub = sub {$csv->getline($fh)};
             }
-            my $refaddr = Scalar::Util::refaddr($sub);
-            bless $sub => $class . '::' . $refaddr;
-            no strict 'refs';
-            *{$class . '::' . $refaddr . "::next"} = sub {my $r = $_[0]->(); close $fh if ! $r and ! $pass_fh ; return $r};
-            return $sub;
+            return bless {sub => $sub, fh => $fh, pass_fh => $pass_fh} => "Util::All::_Tmp::Text::CSV_XS";
           }
         }
       - usage:
