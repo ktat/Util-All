@@ -306,11 +306,11 @@ all_from       'lib/Util/All.pm';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.14',
-requires       'Task::Email::PEP::NoStore' => 0,
+# requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###
 ;
-test_requires  'Test::More'  => '0.42';
+test_requires  'Test::More'  => '0.88';
 no_index       'directory'   => 'demos';
 # install_script 'myscript';
 
