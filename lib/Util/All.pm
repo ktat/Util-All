@@ -180,7 +180,7 @@ our $Utils = {
             $args ||= {};
             $kind_args ||= {};
             use strict 'refs';
-            if (not defined &Util::All::Text::CSV_XS::next) {
+            if (not defined &Util::All::_Tmp::Text::CSV_XS::next) {
                 no strict 'refs';
                 *{'Util::All::_Tmp::Text::CSV_XS::next';} = sub {
                     my $self = shift @_;
@@ -365,7 +365,7 @@ our $Utils = {
                     Date::Manip::Date_Init();
                 }
                 my($ss, $mm, $hh, $day, $month, $year, $zone) = Date::Parse::strptime(@_);
-                'DateTime'->new('year', $year + 1900, 'month', ++$month, 'day', $day, 'hour', $hh || 0, 'minute', $mm || 0, 'second', $ss || 0, 'time_zone', $Date::Manip::Zone{'n2o'}{Time::Zone::tz_name($zone)});
+                'DateTime'->new('year', $year + 1900, 'month', ++$month, 'day', $day, 'hour', $hh || 0, 'minute', $mm || 0, 'second', $ss || 0, 'time_zone', $Date::Manip::Zone{'n2o'}{Time::Zone::tz_name($zone)} || 'local');
             }
             ;
         }
@@ -419,8 +419,22 @@ our $Utils = {
         'Dumper' => 'dumper',
         '-select' => [],
         'code_dumper' => sub {
+            local $Data::Dumper::Deparse = 1;
             sub (&) {
-                local $Data::Dumper::Deparse = 1;
+                Data::Dumper::Dumper(@_);
+            }
+            ;
+        },
+        'ex_dumper' => sub {
+            sub {
+                my $keys = pop @_;
+                my %tmp;
+                @tmp{@$keys} = ();
+                local $Data::Dumper::Sortkeys = sub {
+                    my($hash) = @_;
+                    return [grep({not exists $tmp{$_};} keys %$hash)];
+                }
+                ;
                 Data::Dumper::Dumper(@_);
             }
             ;
@@ -810,37 +824,6 @@ our $Utils = {
       }
     ]
   ],
-  '-mail' => [
-    [
-      'Mail::Sendmail',
-      '',
-      {
-        '-select' => [],
-        'send_mail' => sub {
-            sub {
-                my(%args) = @_;
-                my %new;
-                $new{ucfirst $_} = $args{$_} foreach (keys %args);
-                Mail::Sendmail::sendmail(%new);
-            }
-            ;
-        }
-      }
-    ],
-    [
-      'Email::MIME',
-      '',
-      {
-        'parse_mail' => sub {
-            sub {
-                my $message = 'Email::MIME'->new(@_);
-            }
-            ;
-        },
-        '-select' => []
-      }
-    ]
-  ],
   '-md5' => [
     [
       'Digest::MD5',
@@ -1146,7 +1129,7 @@ our $Utils = {
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them by appropriate kind.
+Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
 
 =cut
 
@@ -1197,7 +1180,7 @@ When you want datetime utilities
  now;   # now   DateTime object
  datetime_parse("2009-09-10") + year + month + day; # 2010-10-11T00:00:00 DateTime object
 
-When you want all utilities
+When you want all utilities (it is slow a bit)
 
  use Util::All -all;
 
@@ -1429,6 +1412,7 @@ from_to of L<Encode>
 
 convert $str to second argument charset. third argument is charset of $str.
 when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
+It is Jcode style function.
 
 
 =head3 char_encode
@@ -1537,10 +1521,62 @@ example:
 
   $after_five_year_from_now = now + years 5;
 
+=head3 How to change end_of_month?
+
+  use Util::All -datetime => [-args => {end_of_month => 'wrap'}];
+
 
 =head3 function enable to rename *
 
 now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute, years, day, datetime_duration, year, months, datetime_parse
+
+=head3 test code
+
+ package test_datetime1;
+ use Util::All '-datetime';
+ my $dt = datetime_parse("1970/01/01");
+ $dt += year;
+ $dt->year;
+ # equal to: 1971
+
+ package test_datetime2;
+ use Util::All '-datetime';
+ my $dt = datetime_parse("1970/01/01");
+ $dt += years 2;
+ $dt->year;
+ # equal to: 1972
+
+ package test_datetime3;
+ use Util::All '-datetime';
+ my $dt = datetime_parse("1970/02/01");
+ $dt += month;
+ $dt->day;
+ # equal to: 1
+
+ package test_datetime4;
+ use Util::All '-datetime';
+ year->end_of_month_mode;
+ # equal to: ('limit')
+
+ package test_datetime5;
+ use Util::All '-datetime' => [-args => {end_of_month => 'wrap'}];
+ year->end_of_month_mode;
+ # equal to: ('wrap')
+
+ package test_datetime6;
+ use Util::All '-datetime' => ['month', year => {end_of_month => 'preserve'}];
+ join ' ', year->end_of_month_mode, month->end_of_month_mode;
+ # equal to: ('preserve limit')
+
+ package test_datetime7;
+ use Util::All '-datetime' => ['year', month => {end_of_month => 'wrap'}];
+ join ' ', month->end_of_month_mode, year->end_of_month_mode;
+ # equal to: ('wrap limit')
+
+ package test_datetime8;
+ use Util::All '-datetime' => ['day', days => {end_of_month => 'preserve'}];
+ join ' ', days(5)->end_of_month_mode, day->end_of_month_mode;
+ # equal to: ('preserve limit')
 
 =head2 -debug
 
@@ -1572,6 +1608,14 @@ dump strucutre. In later case, result is dumped to STDERR.
   code_dumper(sub { print "hello World" })
 
 dump code reference as string.
+
+=head3 ex_dumper *
+
+  ex_dumper($data, \@keys);
+  ex_dumper($data, '__MOP__');
+
+
+dump $data except @keys of hash
 
 =head3 dumper
 
@@ -1908,30 +1952,6 @@ encode_json of L<JSON::XS>
 
 =head4 zip
 
-=head2 -mail
-
-=head3 parse_mail *
-
-  sub {
-      sub { my $message = Email::MIME->new(@_) }
-    }
-
-
-=head3 send_mail *
-
-  sub {
-      sub {
-          my (%args) = @_;
-          my %new;
-          $new{ ucfirst $_ } = $args{$_} for keys %args;
-          Mail::Sendmail::sendmail(%new);
-  
-          # error $Mail::Sendmail::error;
-          # log   $Mail::Sendmail::log;
-        }
-    }
-
-
 =head2 -md5
 
 =head3 functions of L<Digest::MD5>
@@ -2217,9 +2237,9 @@ encode of L<utf8>
 
 =head3 utf8_off *
 
-  utf8_off($data)
+  my $d = utf8_off($data);
 
-recursively make utf8 flag off
+recursively make utf8 flag off(not destructive)
 
 =head3 utf8_upgrade
 
@@ -2231,9 +2251,26 @@ downgrade of L<utf8>
 
 =head3 utf8_on *
 
-  utf8_on($data)
+  my $d = utf8_on($data);
 
-recursively make utf8 flag on
+recursively make utf8 flag on(not destructive)
+
+=head3 test code
+
+ package test_utf8_1;
+ use Util::All -utf8;
+ my $data = { a => "あ", b => {c => "い"}};
+ my $d = utf8_on($data);
+ is_utf8($d->{a}) && is_utf8($d->{b}{c});
+ # equal to: 1
+
+ package test_utf8_2;
+ use utf8;
+ use Util::All -utf8;
+ my $data = { a => "あ", b => {c => "い"}};
+ my $d = utf8_off($data);
+ is_utf8($d->{a}) || is_utf8($d->{b}{c});
+ # equal to: ''
 
 =head2 -xml
 

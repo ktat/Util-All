@@ -245,7 +245,7 @@ sub generate_test {
     my $kind_tag = defined &{$kind} ? "-$kind" : "'-$kind'";
     open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
     print $fh <<__EOL;
-use Test::More qw/no_plan/;
+use Test::More;
 use strict;
 
 use Util::All $kind_tag;
@@ -288,6 +288,7 @@ EOL
         }
       }
     }
+    print $fh "done_testing;";
     close $fh;
     $i++
   }
@@ -305,6 +306,7 @@ all_from       'lib/Util/All.pm';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.14',
+requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###
 ;

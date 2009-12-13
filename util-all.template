@@ -9,7 +9,7 @@ our $Utils = ###DEFINITION###;
 
 =head1 NAME
 
-Util::All - collect perl utilities and group them by appropriate kind.
+Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
 
 =cut
 
@@ -60,7 +60,7 @@ When you want datetime utilities
  now;   # now   DateTime object
  datetime_parse("2009-09-10") + year + month + day; # 2010-10-11T00:00:00 DateTime object
 
-When you want all utilities
+When you want all utilities (it is slow a bit)
 
  use Util::All -all;
 

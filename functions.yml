@@ -93,10 +93,44 @@ debug:
         - dumper(@variables)
         - Dumper in L<Data::Dumper>.
     code_dumper:
-      - sub {sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
+      - sub { local $Data::Dumper::Deparse = 1; sub(&) { Data::Dumper::Dumper(@_)} }
       - usage:
         - code_dumper(sub { print "hello World" })
         - dump code reference as string. 
+#    moose_dumper:
+#      - |
+#        sub {
+#          # written by lesttrat at #soozy on freenode
+#          local $Data::Dumper::Sortkeys = sub {
+#            my ($hash) = @_;
+#            return [ grep { $_ ne '__MOP__' } keys %$hash ];
+#          };
+#          sub {
+#            Data::Dumper::Dumper(@_);
+#          }
+#        }
+#      - usage:
+#        - moose_dumper($moose_object)
+#        - dump $moose_object except __MOP__
+    ex_dumper:
+      - |
+        sub {
+          sub {
+            my $keys = pop;
+            my %tmp;
+            @tmp{@$keys} = ();
+            local $Data::Dumper::Sortkeys = sub {
+              my ($hash) = @_;
+              return [ grep {not exists $tmp{$_}} keys %$hash ];
+            };
+            Data::Dumper::Dumper(@_);
+          }
+        }
+      - usage:
+        - |
+          ex_dumper($data, \@keys);
+          ex_dumper($data, '__MOP__');
+        - dump $data except @keys of hash
   Data::Dump:
     -select: 
       - dump
@@ -201,12 +235,19 @@ utf8:
   Data::Visitor::Encode:
     utf8_on  :
       - sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
-      - utf8_on($data)
-      - recursively make utf8 flag on
+      - my $d = utf8_on($data);
+      - recursively make utf8 flag on(not destructive)
     utf8_off :
       - sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
-      - utf8_off($data)
-      - recursively make utf8 flag off
+      - my $d = utf8_off($data);
+      - recursively make utf8 flag off(not destructive)
+  -test:
+    -
+      - package test_utf8_1; use Util::All -utf8; my $data = { a => "あ", b => {c => "い"}}; my $d = utf8_on($data); is_utf8($d->{a}) && is_utf8($d->{b}{c});
+      - 1
+    -
+      - package test_utf8_2; use utf8; use Util::All -utf8; my $data = { a => "あ", b => {c => "い"}}; my $d = utf8_off($data); is_utf8($d->{a}) || is_utf8($d->{b}{c});
+      - "''"
 
 cgi:
   CGI::Util:
@@ -274,6 +315,7 @@ char_encode:
         - |
            convert $str to second argument charset. third argument is charset of $str.
            when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
+           It is Jcode style function.
     from_to: char_from_to
   -test:
     - 
@@ -348,27 +390,37 @@ http:
     http_get   : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->get(@_) } }
     http_post  : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->post(@_) } }
 
-
-mail:
-  Mail::Sendmail:
-    send_mail: |
-      sub {
-        sub {
-          my (%args) = @_;
-          my %new;
-          $new{ucfirst $_} = $args{$_} for keys %args;
-          Mail::Sendmail::sendmail(%new);
-          # error $Mail::Sendmail::error;
-          # log   $Mail::Sendmail::log;
-        }
-      }
-  Email::MIME:
-     parse_mail: |
-       sub {
-         sub {my $message = Email::MIME->new(@_)}
-       }
- # Email::Sender:
- # Email::MIME::Creator:
+# mail:
+#   -as_plugin: 1
+#   Email::Sender:
+#     send_mail: |
+#       sub {
+#         my ($pkg, $class, $func, $args, $kind_args) = @_;
+#         my $transport;
+#         if (my $host = $kind_args->{host} || $args->{host}) {
+#           $transport = Email::Sender::Transport::SMTP->new(
+#             host => $host,
+#             port => $kind_args->{port} || $args->{port},
+#           )
+#         }
+#         sub {
+#           my (%args) = @_;
+#           my $body = delete $args{body};
+#           Email::MIME->create(attributes => \%args);
+#           my %new;
+#           $new{ucfirst $_} = $args{$_} for keys %args;
+#           Mail::Sendmail::sendmail(%new);
+#           # error $Mail::Sendmail::error;
+#           # log   $Mail::Sendmail::log;
+#         }
+#       }
+#   Email::MIME:
+#      parse_mail: |
+#        sub {
+#          sub {my $message = Email::MIME->new(@_)}
+#        }
+#  # Email::Sender:
+#  # Email::MIME::Creator:
 
 carp:
   Carp:
@@ -487,6 +539,36 @@ datetime: &datetime
     
       $after_five_year_from_now = now + years 5;
 
+    =head3 How to change end_of_month?
+
+      use Util::All -datetime => [-args => {end_of_month => 'wrap'}];
+
+  -test:
+    - 
+      - package test_datetime1; use Util::All '-datetime'; my $dt = datetime_parse("1970/01/01"); $dt += year; $dt->year;
+      - 1971
+    - 
+      - package test_datetime2; use Util::All '-datetime'; my $dt = datetime_parse("1970/01/01"); $dt += years 2; $dt->year;
+      - 1972
+    - 
+      - package test_datetime3; use Util::All '-datetime'; my $dt = datetime_parse("1970/02/01"); $dt += month; $dt->day;
+      - 1
+    - 
+      - package test_datetime4; use Util::All '-datetime'; year->end_of_month_mode;
+      - ('limit')
+    - 
+      - package test_datetime5; use Util::All '-datetime' => [-args => {end_of_month => 'wrap'}]; year->end_of_month_mode;
+      - ('wrap')
+    - 
+      - package test_datetime6; use Util::All '-datetime' => ['month', year => {end_of_month => 'preserve'}]; join ' ', year->end_of_month_mode, month->end_of_month_mode;
+      - ('preserve limit')
+    - 
+      - package test_datetime7; use Util::All '-datetime' => ['year', month => {end_of_month => 'wrap'}]; join ' ', month->end_of_month_mode, year->end_of_month_mode;
+      - ('wrap limit')
+    - 
+      - package test_datetime8; use Util::All '-datetime' => ['day', days => {end_of_month => 'preserve'}]; join ' ', days(5)->end_of_month_mode, day->end_of_month_mode;
+      - ('preserve limit')
+
   DateTime::Duration:
     year   : |
       sub {
@@ -569,7 +651,7 @@ datetime: &datetime
           my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
           DateTime->new(year => $year + 1900, month => ++$month, day => $day,
             hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
-            time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)});
+            time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)} || 'local');
         }
       }
   DateTime:
@@ -897,6 +979,7 @@ image:
              return MIME::Base64::encode_base64($d);
            }
          }
+
 exception:
   Try::Tiny:
     - try
@@ -912,7 +995,7 @@ csv:
           $args ||= {};
           $kind_args ||= {};
           use strict;
-          if (not defined &Util::All::Text::CSV_XS::next) {
+          if (not defined &Util::All::_Tmp::Text::CSV_XS::next) {
             no strict 'refs';
             *{"Util::All::_Tmp::Text::CSV_XS::next"} = sub { my $self = shift; my $r; $r = $self->{sub}->() or (!$self->{pass_fh} and close $self->{fh}); return $r}
           }
@@ -966,4 +1049,3 @@ csv:
     -
       - package test_csv4; use Util::All -csv; open my $fh, "t/data/test.csv"; my $csv = parse_csv($fh); 1 while $csv->next; tell $fh;
       - 30
-
