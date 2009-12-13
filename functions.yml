@@ -93,7 +93,7 @@ debug:
         - dumper(@variables)
         - Dumper in L<Data::Dumper>.
     code_dumper:
-      - sub { local $Data::Dumper::Deparse = 1; sub(&) { Data::Dumper::Dumper(@_)} }
+      - sub { sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
       - usage:
         - code_dumper(sub { print "hello World" })
         - dump code reference as string. 

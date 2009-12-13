@@ -419,8 +419,8 @@ our $Utils = {
         'Dumper' => 'dumper',
         '-select' => [],
         'code_dumper' => sub {
-            local $Data::Dumper::Deparse = 1;
             sub (&) {
+                local $Data::Dumper::Deparse = 1;
                 Data::Dumper::Dumper(@_);
             }
             ;
