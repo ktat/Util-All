@@ -9,12 +9,13 @@ all_from       'lib/Util/All.pm';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.14',
-requires       'Task::Email::PEP::NoStore' => 0,
+# requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 	'B::Deparse' => 0,
 	'Benchmark' => 0,
 	'CGI::Util' => 0,
 	'Carp' => 0,
+	'Clone' => 0,
 	'Data::Dump' => 0,
 	'Data::Dumper' => 0,
 	'Data::Visitor::Encode' => 0,
@@ -24,6 +25,9 @@ requires       'Task::Email::PEP::NoStore' => 0,
 	'DateTime::Duration' => 0,
 	'Digest::MD5' => 0,
 	'Digest::SHA' => 0,
+	'Email::MIME' => 0,
+	'Email::Sender' => 0,
+	'Email::Sender::Simple' => 0,
 	'Encode' => 0,
 	'File::Copy' => 0,
 	'File::Find' => 0,
@@ -41,6 +45,7 @@ requires       'Task::Email::PEP::NoStore' => 0,
 	'List::Util' => 0,
 	'MIME::Base64' => 0,
 	'MIME::Base64::URLSafe' => 0,
+	'MIME::Types' => 0,
 	'Math::BaseCalc' => 0,
 	'Number::Format' => 0,
 	'Return::Value' => 0,
@@ -61,7 +66,7 @@ requires       'Task::Email::PEP::NoStore' => 0,
 	'YAML::XS' => 0,
 	'utf8' => 0
 ;
-test_requires  'Test::More'  => '0.42';
+test_requires  'Test::More'  => '0.88';
 no_index       'directory'   => 'demos';
 # install_script 'myscript';
 

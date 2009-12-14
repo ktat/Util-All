@@ -442,6 +442,93 @@ our $Utils = {
       }
     ]
   ],
+  '-email' => [
+    [
+      'Email::Sender::Simple',
+      '',
+      {
+        '-select' => [],
+        'send_email' => sub {
+            use strict 'refs';
+            unless (defined &sendmail) {
+                'Email::Sender::Simple'->import('sendmail');
+            }
+            sub {
+                no strict 'refs';
+                my $pkg = (caller)[0];
+                my $opt = {};
+                $opt = pop @_ if ref $_[-1] eq 'HASH';
+                my $mime = sendmail(@_ == 1 ? @_ : &{$pkg . '::' . 'create_email';}(@_), $opt);
+            }
+            ;
+        }
+      }
+    ],
+    [
+      'Email::MIME',
+      '',
+      {
+        'parse_email' => sub {
+            sub {
+                my $src = shift @_;
+                return 'Email::MIME'->new($src);
+            }
+            ;
+        },
+        '-select' => [],
+        'create_email' => sub {
+            my($pkg, $class, $func, $args) = @_;
+            require Clone;
+            require MIME::Types;
+            require File::Slurp;
+            my $mime = 'MIME::Types'->new;
+            my $charset_resolver = sub {
+                my($attributes, $header) = @_;
+                my $charset = $$attributes{'charset'} || '';
+                if ($charset =~ /iso[-_]2022[-_]jp/o or $charset =~ /\bjis$/o) {
+                    $charset = '';
+                    my $i = 0;
+                    foreach my $head (@$header) {
+                        next if ++$i % 2;
+                        $head = Encode::encode('MIME-Header-ISO_2022_JP', $head);
+                    }
+                    $$attributes{'encoding'} = '7bit';
+                }
+                elsif ($charset) {
+                    $$attributes{'encoding'} = 'base64';
+                }
+                return $charset;
+            }
+            ;
+            sub {
+                my($header, $attributes, $parts_or_body) = @_;
+                $attributes = Clone::clone($attributes);
+                $parts_or_body = Clone::clone($parts_or_body) if ref $parts_or_body;
+                my $charset = &$charset_resolver($attributes, $header);
+                if (ref $parts_or_body) {
+                    'Email::MIME'->create('attributes', $attributes, 'parts', [map({my(@arg, $charset);
+                    my($attributes, $body_or_file) = ref $_ ? @$_ : ({}, $_);
+                    if (-e $body_or_file) {
+                        my($ext) = $body_or_file =~ /\.(.+?)$/;
+                        my $attr = {'content_type', $mime->mimeTypeOf($ext), 'encoding', 'base64'};
+                        @arg = ('body', scalar File::Slurp::slurp($body_or_file), 'attributes', $attr);
+                    }
+                    else {
+                        $charset = &$charset_resolver($attributes, {});
+                        @arg = ('attributes', $attributes, 'body', $body_or_file);
+                    }
+                    'Email::MIME'->create(@arg);} @$parts_or_body)], $charset ? 'header_str' : 'header', $header);
+                }
+                else {
+                    $$attributes{'content_type'} ||= 'text/plain';
+                    'Email::MIME'->create('attributes', $attributes, $charset ? 'body_str' : 'body', $parts_or_body, $charset ? 'header_str' : 'header', $header);
+                }
+            }
+            ;
+        }
+      }
+    ]
+  ],
   '-exception' => [
     [
       'Try::Tiny',
@@ -1650,6 +1737,49 @@ dump code reference as string.
   p($variable)
 
 as same as dump(function name is borrowed from Ruby).
+
+=head2 -email
+
+=head3 examples
+
+  # multipart email
+  my @parts = ([$body, $attribute], [$body2, $attribute2]);
+  my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
+  send_email($email);
+
+  # multipart email
+  my $email = create_email([To => 'from@example.com', Subject => "さぶじぇくと"], {charset => "jis"},
+                           [[{content_type => "text/plain", charset => "utf8"}, "まるちばいと"],
+                            "example.jpg"]);
+  send_email($email);
+
+  # siglepart email
+  my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body);
+  send_email($email);
+
+  # send_email with create_email
+  send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
+  send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
+
+  # parse_email
+  parse_email($email_src);
+
+=head3 send_email
+
+  send_email($email);
+  send_email($email, $options);
+  send_email($header, $attributes, $body, $options);
+  send_email($header, $attributes, \@parts, $options);
+
+arguments is Email::MIME object(create_email returns) or
+arguments as same as create_email.
+As an additional argument, you can put hash ref as last argument
+which is equal to last argument of Email::Sender's sendmail.
+
+
+=head3 function enable to rename *
+
+send_email, parse_email, create_email
 
 =head2 -exception
 
