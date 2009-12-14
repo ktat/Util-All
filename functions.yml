@@ -507,7 +507,7 @@ email:
      arguments is Email::MIME object(create_email returns) or
      arguments as same as create_email.
      As an additional argument, you can put hash ref as last argument
-     which is equal to last argument of Email::Sender's sendmail.
+     which is equal to last argument of Email::Sender::Simple's sendmail.
 
 carp:
   Carp:
