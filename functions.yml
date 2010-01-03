@@ -325,7 +325,6 @@ char_encode:
       - char_convert(my $s = "あ", "cp932", "utf8"); $s
       - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
 
-
 uri:
   URI::Escape:
     - uri_escape
@@ -1136,3 +1135,32 @@ csv:
     -
       - package test_csv4; use Util::All -csv; open my $fh, "t/data/test.csv"; my $csv = parse_csv($fh); 1 while $csv->next; tell $fh;
       - 30
+
+prompt:
+  IO::Prompt:
+    -select:
+      - prompt
+    required_prompt:
+      - |
+        sub {
+          sub {
+            my $message = shift;
+            my $answer;
+          PROMPT:
+            {
+              $answer = IO::Prompt::prompt($message, @_);
+              $answer->{value} or redo PROMPT;
+              return $answer->{value};
+            }
+          }
+        }
+    password_prompt:
+      - |
+        sub {
+          sub {
+            my $message = shift;
+            my $answer;
+            $answer = IO::Prompt::prompt($message, -echo => "*", @_);
+            $answer->{value};
+          }
+        }

@@ -983,6 +983,38 @@ our $Utils = {
       }
     ]
   ],
+  '-prompt' => [
+    [
+      'IO::Prompt',
+      '',
+      {
+        'required_prompt' => sub {
+            sub {
+                my $message = shift @_;
+                my $answer;
+                PROMPT: {
+                    $answer = IO::Prompt::prompt($message, @_);
+                    redo PROMPT unless $$answer{'value'};
+                    return $$answer{'value'};
+                }
+            }
+            ;
+        },
+        '-select' => [
+          'prompt'
+        ],
+        'password_prompt' => sub {
+            sub {
+                my $message = shift @_;
+                my $answer;
+                $answer = IO::Prompt::prompt($message, -'echo', '*', @_);
+                $$answer{'value'};
+            }
+            ;
+        }
+      }
+    ]
+  ],
   '-scalar' => [
     [
       'Scalar::Util',
@@ -1774,7 +1806,7 @@ as same as dump(function name is borrowed from Ruby).
 arguments is Email::MIME object(create_email returns) or
 arguments as same as create_email.
 As an additional argument, you can put hash ref as last argument
-which is equal to last argument of Email::Sender's sendmail.
+which is equal to last argument of Email::Sender::Simple's sendmail.
 
 
 =head3 function enable to rename *
@@ -2190,6 +2222,40 @@ encode_json of L<JSON::XS>
 
  to_number('1KiB');
  # equal to: 1024
+
+=head2 -prompt
+
+=head3 functions of L<IO::Prompt>
+
+=head4 prompt
+
+=head3 required_prompt *
+
+  sub {
+      sub {
+          my $message = shift;
+          my $answer;
+        PROMPT:
+          {
+              $answer = IO::Prompt::prompt( $message, @_ );
+              $answer->{value} or redo PROMPT;
+              return $answer->{value};
+          }
+        }
+    }
+
+
+=head3 password_prompt *
+
+  sub {
+      sub {
+          my $message = shift;
+          my $answer;
+          $answer = IO::Prompt::prompt( $message, -echo => "*", @_ );
+          $answer->{value};
+        }
+    }
+
 
 =head2 -scalar
 
