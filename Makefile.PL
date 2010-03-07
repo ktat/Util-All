@@ -18,7 +18,7 @@ requires       'Util::Any'  => '0.14',
 	'Clone' => 0,
 	'Data::Dump' => 0,
 	'Data::Dumper' => 0,
-	'Data::Visitor::Encode' => 0,
+	'Data::Recursive::Encode' => 0,
 	'Date::Manip' => 0,
 	'Date::Parse' => 0,
 	'DateTime' => 0,
@@ -60,7 +60,6 @@ requires       'Util::Any'  => '0.14',
 	'URI' => 0,
 	'URI::Escape' => 0,
 	'URI::Split' => 0,
-	'WWW::Curl::Simple' => 0,
 	'XML::Parser' => 0,
 	'XML::Simple' => 0,
 	'YAML::XS' => 0,
@@ -68,6 +67,7 @@ requires       'Util::Any'  => '0.14',
 ;
 test_requires  'Test::More'  => '0.88';
 no_index       'directory'   => 'demos';
+tests           "t/*.t t/*/*.t";
 # install_script 'myscript';
 
 auto_install;

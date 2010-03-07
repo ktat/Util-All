@@ -232,13 +232,13 @@ utf8:
     upgrade  : utf8_upgrade
     downgrade: utf8_downgrade
     encode   : utf8_encode
-  Data::Visitor::Encode:
+  Data::Recursive::Encode:
     utf8_on  :
-      - sub {sub {Data::Visitor::Encode->new->utf8_on(@_)}}
+      - sub {sub {Data::Recursive::Encode->decode_utf8(@_)}}
       - my $d = utf8_on($data);
       - recursively make utf8 flag on(not destructive)
     utf8_off :
-      - sub {sub {Data::Visitor::Encode->new->utf8_off(@_)}}
+      - sub {sub {Data::Recursive::Encode->encode_utf8(@_)}}
       - my $d = utf8_off($data);
       - recursively make utf8 flag off(not destructive)
   -test:
@@ -382,12 +382,11 @@ http:
     http_put   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::PUT(@_)) } }
     http_delete: sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::DELETE(@_)) } }
     http_head  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::HEAD(@_)) } }
-# If you cannot install WWW::Curl::Simple, use the following
-#    http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
-#    http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
-  WWW::Curl::Simple:
-    http_get   : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->get(@_) } }
-    http_post  : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->post(@_) } }
+    http_get   : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::GET(@_)) } }
+    http_post  : sub { require LWP::UserAgent; my $ua = LWP::UserAgent->new(); sub { $ua->request(HTTP::Request::Common::POST(@_)) } }
+#  WWW::Curl::Simple is faster, but hard to install:
+#    http_get   : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->get(@_) } }
+#    http_post  : sub { require WWW::Curl::Simple; my $ua = WWW::Curl::Simple->new(); sub { $ua->post(@_) } }
 
 email:
   -as_plugin: 1
@@ -408,7 +407,8 @@ email:
              my $i = 0;
              foreach my $head (@$header) {
                next if ++$i % 2;
-               $head = Encode::encode('MIME-Header-ISO_2022_JP' => $head);
+               Encode::from_to($head, "iso-2022-jp", 'MIME-Header-ISO_2022_JP');
+               # $head = Encode::encode('MIME-Header-ISO_2022_JP' => $head);
              }
              $attributes->{encoding} = '7bit';
            } elsif($charset) {
@@ -473,6 +473,8 @@ email:
        }
   -usage: |
      =head3 examples
+
+     You have to pass encoded arguments.
 
        # multipart email
        my @parts = ([$body, $attribute], [$body2, $attribute2]);
@@ -845,6 +847,17 @@ file:
             File::Temp->new(%new_args, EXLOCK => 1);
           }
         }
+    file_base64:
+        - |
+         sub {
+           require File::Slurp;
+           require MIME::Base64;
+           sub {
+             my ($file) = @_;
+             my $d = File::Slurp::slurp($file);
+             return MIME::Base64::encode_base64($d);
+           }
+         }
 
 bool:
   Return::Value:
@@ -1054,17 +1067,6 @@ image:
       - usage:
         - my $info = image_type("picture.jpg");
         - return image type(Image::Info)
-    image_base64:
-        - |
-         sub {
-           require File::Slurp;
-           require MIME::Base64;
-           sub {
-             my ($file) = @_;
-             my $d = File::Slurp::slurp($file);
-             return MIME::Base64::encode_base64($d);
-           }
-         }
 
 exception:
   Try::Tiny:

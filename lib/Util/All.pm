@@ -490,7 +490,7 @@ our $Utils = {
                     my $i = 0;
                     foreach my $head (@$header) {
                         next if ++$i % 2;
-                        $head = Encode::encode('MIME-Header-ISO_2022_JP', $head);
+                        Encode::from_to($head, 'iso-2022-jp', 'MIME-Header-ISO_2022_JP');
                     }
                     $$attributes{'encoding'} = '7bit';
                 }
@@ -579,6 +579,16 @@ our $Utils = {
                     }
                 }
                 'File::Temp'->new(%new_args, 'EXLOCK', 1);
+            }
+            ;
+        },
+        'file_base64' => sub {
+            require File::Slurp;
+            require MIME::Base64;
+            sub {
+                my($file) = @_;
+                my $d = File::Slurp::slurp($file);
+                return MIME::Base64::encode_base64($d);
             }
             ;
         },
@@ -678,32 +688,17 @@ our $Utils = {
   ],
   '-http' => [
     [
-      'WWW::Curl::Simple',
-      '',
-      {
-        'http_post' => sub {
-            require WWW::Curl::Simple;
-            my $ua = 'WWW::Curl::Simple'->new;
-            sub {
-                $ua->post(@_);
-            }
-            ;
-        },
-        '-select' => [],
-        'http_get' => sub {
-            require WWW::Curl::Simple;
-            my $ua = 'WWW::Curl::Simple'->new;
-            sub {
-                $ua->get(@_);
-            }
-            ;
-        }
-      }
-    ],
-    [
       'HTTP::Request::Common',
       '',
       {
+        'http_post' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::POST(@_));
+            }
+            ;
+        },
         'http_put' => sub {
             require LWP::UserAgent;
             my $ua = 'LWP::UserAgent'->new;
@@ -713,6 +708,14 @@ our $Utils = {
             ;
         },
         '-select' => [],
+        'http_get' => sub {
+            require LWP::UserAgent;
+            my $ua = 'LWP::UserAgent'->new;
+            sub {
+                $ua->request(HTTP::Request::Common::GET(@_));
+            }
+            ;
+        },
         'http_head' => sub {
             require LWP::UserAgent;
             my $ua = 'LWP::UserAgent'->new;
@@ -738,16 +741,6 @@ our $Utils = {
       '',
       {
         '-select' => [],
-        'image_base64' => sub {
-            require File::Slurp;
-            require MIME::Base64;
-            sub {
-                my($file) = @_;
-                my $d = File::Slurp::slurp($file);
-                return MIME::Base64::encode_base64($d);
-            }
-            ;
-        },
         'image_type' => sub {
             sub {
                 my($file) = @_;
@@ -1160,19 +1153,19 @@ our $Utils = {
   ],
   '-utf8' => [
     [
-      'Data::Visitor::Encode',
+      'Data::Recursive::Encode',
       '',
       {
         'utf8_off' => sub {
             sub {
-                'Data::Visitor::Encode'->new->utf8_off(@_);
+                'Data::Recursive::Encode'->encode_utf8(@_);
             }
             ;
         },
         '-select' => [],
         'utf8_on' => sub {
             sub {
-                'Data::Visitor::Encode'->new->utf8_on(@_);
+                'Data::Recursive::Encode'->decode_utf8(@_);
             }
             ;
         }
@@ -1774,6 +1767,8 @@ as same as dump(function name is borrowed from Ruby).
 
 =head3 examples
 
+You have to pass encoded arguments.
+
   # multipart email
   my @parts = ([$body, $attribute], [$body2, $attribute2]);
   my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
@@ -1873,6 +1868,19 @@ slurp of L<File::Slurp>
     }
 
 
+=head3 file_base64 *
+
+  sub {
+      require File::Slurp;
+      require MIME::Base64;
+      sub {
+          my ($file) = @_;
+          my $d = File::Slurp::slurp($file);
+          return MIME::Base64::encode_base64($d);
+        }
+    }
+
+
 =head3 tempfile *
 
   tempfile("anyname*.dat")
@@ -1948,7 +1956,7 @@ do http method and get HTTP::Response object.
 
 =head3 function enable to rename *
 
-http_post, http_get, http_put, http_head, http_delete
+http_post, http_put, http_get, http_head, http_delete
 
 =head2 -image
 
@@ -1959,19 +1967,6 @@ http_post, http_get, http_put, http_head, http_delete
 
 
 convert images to other format.
-
-=head3 image_base64 *
-
-  sub {
-      require File::Slurp;
-      require MIME::Base64;
-      sub {
-          my ($file) = @_;
-          my $d = File::Slurp::slurp($file);
-          return MIME::Base64::encode_base64($d);
-        }
-    }
-
 
 =head3 image_info *
 
