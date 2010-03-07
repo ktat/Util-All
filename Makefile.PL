@@ -67,8 +67,7 @@ requires       'Util::Any'  => '0.14',
 ;
 test_requires  'Test::More'  => '0.88';
 no_index       'directory'   => 'demos';
-tests           "t/*.t t/*/*.t";
+tests_recursive;
 # install_script 'myscript';
 
-auto_install;
 WriteAll;
