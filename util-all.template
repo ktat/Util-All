@@ -29,15 +29,31 @@ When you want string utilities.
 
 When you want character encoding Utilities.
 
- use Util::All -char_encode;
+ use Util::All -encode;
+ $encoded = encode('utf8', $str); # Encode::encode
+ $decoded = decode('utf8', $str); # Encode::decode
+ from_to($str, $icode, 'utf8');   # Encode::from_to
+
+or
+
+ use Util::All -charset;
  $encoded = char_encode('utf8', $str); # Encode::encode
  $decoded = char_decode('utf8', $str); # Encode::decode
  char_from_to($str, $icode, 'utf8');   # Encode::from_to
- char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess
+ 
+-charset has other functions.
+ 
+ use Util::All -charset;
+ # $str will not be modified
+ my $new_str = char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess if not set $icode
 
  # use Encode::Guess and pass encoding to guess
- use Util::All -char_conv => {char_convert => {guess => ["sjis", "euc-jp"]}};
+ use Util::All -charaset => {char_convert => {guess => ["sjis", "euc-jp"]}};
  char_convert($str, "euc-jp");
+
+ print h2z("A"); 
+ print z2h("А");
+ print z2h_alpha("Аあ"); # only A is z2hed.
 
 When you want CGI utilities.
 
@@ -352,6 +368,9 @@ L<http://search.cpan.org/dist/Util-All/>
 =back
 
 =head1 ACKNOWLEDGEMENTS
+
+Thanks to All Perl Users.
+When I find useful code, I write it here as memo.
 
 =head1 SEE ALSO
 

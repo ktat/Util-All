@@ -89,18 +89,6 @@ our $Utils = {
       }
     ]
   ],
-  '-bool' => [
-    [
-      'Return::Value',
-      '',
-      {
-        '-select' => [
-          'success',
-          'failure'
-        ]
-      }
-    ]
-  ],
   '-carp' => [
     [
       'Carp',
@@ -137,7 +125,94 @@ our $Utils = {
       }
     ]
   ],
-  '-char_encode' => [
+  '-charset' => [
+    [
+      'Unicode::Japanese',
+      '',
+      {
+        'h2z_sym' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->h2zSym->$method;
+            }
+            ;
+        },
+        '-select' => [],
+        'h2z' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->h2z->$method;
+            }
+            ;
+        },
+        'z2h_alpha' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->z2hAlpha->$method;
+            }
+            ;
+        },
+        'z2h_num' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->z2hNum->$method;
+            }
+            ;
+        },
+        'h2z_num' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->h2zNum->$method;
+            }
+            ;
+        },
+        'h2z_kana' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->h2zKana->$method;
+            }
+            ;
+        },
+        'z2h_sym' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->z2hSym->$method;
+            }
+            ;
+        },
+        'h2z_alpha' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->h2zAlpha->$method;
+            }
+            ;
+        },
+        'z2h' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->z2h->$method;
+            }
+            ;
+        },
+        'z2h_kana' => sub {
+            sub {
+                my $str = shift @_;
+                my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+                Unicode::Japanese::unijp($str)->z2hKana->$method;
+            }
+            ;
+        }
+      }
+    ],
     [
       'Encode',
       '',
@@ -163,7 +238,14 @@ our $Utils = {
             }
             sub {
                 my($str, $to, $from) = @_;
-                Encode::from_to(shift @_, $from ? $from : ($g_class ? 'DETECT' : 'GUESS'), $to);
+                if (ref $str and utf8::is_utf8($$str)) {
+                    utf8::encode($$str);
+                }
+                elsif (utf8::is_utf8($str)) {
+                    utf8::encode($str);
+                }
+                Encode::from_to(ref $str ? $$str : $str, $from ? $from : ($g_class ? 'DETECT' : 'GUESS'), $to);
+                return $str;
             }
             ;
         }
@@ -172,7 +254,7 @@ our $Utils = {
   ],
   '-csv' => [
     [
-      'Text::CSV_XS',
+      'Text::CSV',
       '',
       {
         'parse_csv' => sub {
@@ -221,6 +303,28 @@ our $Utils = {
             ;
         },
         '-select' => []
+      }
+    ]
+  ],
+  '-data' => [
+    [
+      'Scalar::Util',
+      '',
+      {
+        '-select' => [
+          'blessed',
+          'dualvar',
+          'isvstring',
+          'isweak',
+          'looks_like_number',
+          'openhandle',
+          'readonly',
+          'refaddr',
+          'reftype',
+          'set_prototype',
+          'tainted',
+          'weaken'
+        ]
       }
     ]
   ],
@@ -398,14 +502,14 @@ our $Utils = {
           'dd',
           'ddx'
         ],
-        'dump_code' => sub {
-            sub (&) {
-                if (wantarray) {
-                    local $Data::Dumper::Deparse = 1;
-                    Data::Dumper::Dumper(@_);
+        'deep_dump' => sub {
+            sub (@) {
+                local $Data::Dumper::Deparse = 1;
+                if (not defined wantarray) {
+                    print STDERR Data::Dumper::Dumper(@_);
                 }
                 else {
-                    print STDERR Data::Dumper::Dumper(@_);
+                    return Data::Dumper::Dumper(@_);
                 }
             }
             ;
@@ -418,13 +522,6 @@ our $Utils = {
       {
         'Dumper' => 'dumper',
         '-select' => [],
-        'code_dumper' => sub {
-            sub (&) {
-                local $Data::Dumper::Deparse = 1;
-                Data::Dumper::Dumper(@_);
-            }
-            ;
-        },
         'ex_dumper' => sub {
             sub {
                 my $keys = pop @_;
@@ -435,6 +532,13 @@ our $Utils = {
                     return [grep({not exists $tmp{$_};} keys %$hash)];
                 }
                 ;
+                Data::Dumper::Dumper(@_);
+            }
+            ;
+        },
+        'deep_dumper' => sub {
+            sub (@) {
+                local $Data::Dumper::Deparse = 1;
                 Data::Dumper::Dumper(@_);
             }
             ;
@@ -526,6 +630,19 @@ our $Utils = {
             }
             ;
         }
+      }
+    ]
+  ],
+  '-encode' => [
+    [
+      'Encode',
+      '',
+      {
+        '-select' => [
+          'encode',
+          'decode',
+          'from_to'
+        ]
       }
     ]
   ],
@@ -1008,28 +1125,6 @@ our $Utils = {
       }
     ]
   ],
-  '-scalar' => [
-    [
-      'Scalar::Util',
-      '',
-      {
-        '-select' => [
-          'blessed',
-          'dualvar',
-          'isvstring',
-          'isweak',
-          'looks_like_number',
-          'openhandle',
-          'readonly',
-          'refaddr',
-          'reftype',
-          'set_prototype',
-          'tainted',
-          'weaken'
-        ]
-      }
-    ]
-  ],
   '-sha' => [
     [
       'Digest::SHA',
@@ -1090,19 +1185,6 @@ our $Utils = {
             }
             ;
         }
-      }
-    ]
-  ],
-  '-time' => [
-    [
-      'Time::HiRes',
-      '',
-      {
-        '-select' => [
-          'usleep',
-          'nanosleep',
-          'ualarm'
-        ]
       }
     ]
   ],
@@ -1184,6 +1266,19 @@ our $Utils = {
       }
     ]
   ],
+  '-utime' => [
+    [
+      'Time::HiRes',
+      '',
+      {
+        '-select' => [
+          'usleep',
+          'nanosleep',
+          'ualarm'
+        ]
+      }
+    ]
+  ],
   '-xml' => [
     [
       'XML::Simple',
@@ -1261,15 +1356,31 @@ When you want string utilities.
 
 When you want character encoding Utilities.
 
- use Util::All -char_encode;
+ use Util::All -encode;
+ $encoded = encode('utf8', $str); # Encode::encode
+ $decoded = decode('utf8', $str); # Encode::decode
+ from_to($str, $icode, 'utf8');   # Encode::from_to
+
+or
+
+ use Util::All -charset;
  $encoded = char_encode('utf8', $str); # Encode::encode
  $decoded = char_decode('utf8', $str); # Encode::decode
  char_from_to($str, $icode, 'utf8');   # Encode::from_to
- char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess
+ 
+-charset has other functions.
+ 
+ use Util::All -charset;
+ # $str will not be modified
+ my $new_str = char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess if not set $icode
 
  # use Encode::Guess and pass encoding to guess
- use Util::All -char_conv => {char_convert => {guess => ["sjis", "euc-jp"]}};
+ use Util::All -charaset => {char_convert => {guess => ["sjis", "euc-jp"]}};
  char_convert($str, "euc-jp");
+
+ print h2z("A"); 
+ print z2h("А");
+ print z2h_alpha("Аあ"); # only A is z2hed.
 
 When you want CGI utilities.
 
@@ -1380,27 +1491,16 @@ decode_base64 of L<MIME::Base64>
 
 =head2 -basecalc
 
-=head3 to_base *
+=head3 from_base / to_base
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      sub {
-          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-            ->to_base(shift);
-        }
-    }
+  use Util::All -basecalc => {-args => {digits => [0,1]}};
+  to_base(4);     # 100
+  from_base(100); # 4
 
 
-=head3 from_base *
+=head3 function enable to rename *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      sub {
-          Math::BaseCalc->new( digits => $kind_args->{digits} || $args->{digits} )
-            ->from_base(shift);
-        }
-    }
-
+to_base, from_base
 
 =head3 test code
 
@@ -1451,32 +1551,6 @@ like timethese but compare 2 code with same argument
 
 like cmpthese but compare 2 code with same argument
 
-=head2 -bool
-
-sub yatta { success("OK") }
-if (my $r = yatta) {
-   print $r; # "OK";
-}
-sub orz { success("NG") }
-unless (my $r = orz) {
-   print $r; # "NG";
-}
-
-
-=head3 test code
-
- success("yatta") ? 1 : 0;
- # equal to: 1
-
- failure("orz") ? 1 : 0;
- # equal to: 0
-
- my $x = success("yatta");
- # equal to: ("yatta")
-
- my $x = failure("orz");
- # equal to: ("orz")
-
 =head2 -carp
 
 =head3 functions of L<Carp>
@@ -1511,39 +1585,108 @@ unescape of L<CGI::Util>
 
 encode_entities of L<HTML::Entities>
 
-=head2 -char_encode
+=head2 -charset
 
-=head3 char_from_to
+=head3 char_encode / char_decode
 
-from_to of L<Encode>
+They are encode / decode of Encode.
 
-=head3 char_convert *
+=head3 char_convert
 
-  char_convert($str, "euc-jp");
-  char_convert($str, "euc-jp", "sjis");
+old Jocde style function.
+
+ $new_str = char_convert($str, "euc-jp"); # to euc-jp
+ $new_str = char_convert($str, "euc-jp", "sjis"); # to euc-jp from sjis
 
 convert $str to second argument charset. third argument is charset of $str.
-when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
-It is Jcode style function.
+when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used to detect charset.
+
+=head3 z2h functions
+
+ z2h($str);       # return the value replaced zenkaku to hankaku
+ z2h_kana($str);  # return the value replaced zenkaku kana hankaku
+ z2h_num($str);   # return the value replaced zenkaku number hankaku
+ z2h_sym($str);   # return the value replaced zenkaku symbol hankaku
+ z2h_alpha($str); # return the value replaced zenkaku alphabet hankaku
+
+If $str is utf8 flag on, return utf flagged value, if not return byte string.
+
+=head3 h2z functions
+
+ h2z($str);       # return the value replaced hankaku to zenkaku
+ h2z_kana($str);  # return the value replaced hankaku kana zenkaku
+ h2z_num($str);   # return the value replaced hankaku number zenkaku
+ h2z_sym($str);   # return the value replaced hankaku symbol zenkaku
+ h2z_alpha($str); # return the value replaced hankaku alphabet zenkaku
+
+If $str is utf8 flag on, return utf flagged value, if not return byte string.
 
 
-=head3 char_encode
+=head3 function enable to rename *
 
-encode of L<Encode>
-
-=head3 char_decode
-
-decode of L<Encode>
+h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2h_kana, char_convert
 
 =head3 test code
 
- char_convert(my $s = "あ", "euc-jp");
- $s
+ my $ss = char_convert(my $s = "あ", "euc-jp");
+ $ss
  # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
 
- char_convert(my $s = "あ", "cp932", "utf8");
- $s
+ my $ss = char_convert(my $s = "あ", "cp932", "utf8");
+ $ss
  # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+
+ use utf8;
+ my $ss = char_convert(my $s = "あ", "euc-jp");
+ $ss
+ # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
+
+ use utf8;
+ my $ss = char_convert(my $s = "あ", "cp932", "utf8");
+ $ss
+ # equal to: my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+
+ my $ss = char_convert(\(my $s = "あ"), "euc-jp");
+ $$ss eq $s
+ # equal to: 1;
+
+ z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: 'ｱｲｳｴｵ1234ABCD()*&'
+
+ z2h_alpha('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: 'アイウエオ１２３４ABCD（）＊＆'
+
+ z2h_sym('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: 'アイウエオ１２３４ＡＢＣＤ()*&'
+
+ z2h_num('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: 'アイウエオ1234ＡＢＣＤ（）＊＆'
+
+ z2h_kana('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: 'ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊＆'
+
+ h2z('ｱｲｳｴｵ1234ABCD()*&')
+ # equal to: 'アイウエオ１２３４ＡＢＣＤ（）＊＆'
+
+ h2z_alpha('ｱｲｳｴｵ1234ABCD()*&')
+ # equal to: 'ｱｲｳｴｵ1234ＡＢＣＤ()*&'
+
+ h2z_sym('ｱｲｳｴｵ1234ABCD()*&')
+ # equal to: 'ｱｲｳｴｵ1234ABCD（）＊＆'
+
+ h2z_num('ｱｲｳｴｵ1234ABCD()*&')
+ # equal to: 'ｱｲｳｴｵ１２３４ABCD()*&'
+
+ h2z_kana('ｱｲｳｴｵ1234ABCD()*&')
+ # equal to: 'アイウエオ1234ABCD()*&'
+
+ use utf8;
+ z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
+
+ use utf8;
+ z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+ # equal to: use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
 
 =head2 -csv
 
@@ -1599,6 +1742,34 @@ decode of L<Encode>
  1 while $csv->next;
  tell $fh;
  # equal to: 30
+
+=head2 -data
+
+=head3 functions of L<Scalar::Util>
+
+=head4 blessed
+
+=head4 dualvar
+
+=head4 isvstring
+
+=head4 isweak
+
+=head4 looks_like_number
+
+=head4 openhandle
+
+=head4 readonly
+
+=head4 refaddr
+
+=head4 reftype
+
+=head4 set_prototype
+
+=head4 tainted
+
+=head4 weaken
 
 =head2 -datetime
 
@@ -1715,9 +1886,9 @@ dump of L<Data::Dumper>.
 dump strucutre. In later case, result is dumped to STDERR.
 
 
-=head3 code_dumper *
+=head3 deep_dumper *
 
-  code_dumper(sub { print "hello World" })
+  deep_dumper([1 , 2, sub { print "hello World" }])
 
 dump code reference as string.
 
@@ -1751,11 +1922,11 @@ as same as dump but output to STDOUT.
 
 dump after given string is evaled.
 
-=head3 dump_code *
+=head3 deep_dump *
 
-  dump_code( sub { ... } );
+  deep_dump([1,2,3, sub { ... } ]);
 
-dump code reference as string.
+as same as dump. but it dump code reference as string.
 
 =head3 p *
 
@@ -1789,7 +1960,7 @@ You have to pass encoded arguments.
   send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
 
   # parse_email
-  parse_email($email_src);
+  parse_email($email_src); # currently just returns Email::MIME object
 
 =head3 send_email
 
@@ -1807,6 +1978,16 @@ which is equal to last argument of Email::Sender::Simple's sendmail.
 =head3 function enable to rename *
 
 send_email, parse_email, create_email
+
+=head2 -encode
+
+=head3 functions of L<Encode>
+
+=head4 encode
+
+=head4 decode
+
+=head4 from_to
 
 =head2 -exception
 
@@ -2252,34 +2433,6 @@ encode_json of L<JSON::XS>
     }
 
 
-=head2 -scalar
-
-=head3 functions of L<Scalar::Util>
-
-=head4 blessed
-
-=head4 dualvar
-
-=head4 isvstring
-
-=head4 isweak
-
-=head4 looks_like_number
-
-=head4 openhandle
-
-=head4 readonly
-
-=head4 refaddr
-
-=head4 reftype
-
-=head4 set_prototype
-
-=head4 tainted
-
-=head4 weaken
-
 =head2 -sha
 
 =head3 functions of L<Digest::SHA>
@@ -2346,14 +2499,9 @@ encode_json of L<JSON::XS>
 
 =head3 strings *
 
-  sub {
-      sub {
-          my $str = shift;
-          $str =~ s/\p{Cc}//g;
-          return $str;
-        }
-    }
+  strings("111\0111");
 
+abstract printable characgter from scalar. just like strings command.
 
 =head3 test code
 
@@ -2361,16 +2509,6 @@ encode_json of L<JSON::XS>
  use Util::All -string;
  strings('111' . "\0" . '111');
  # equal to: "111111"
-
-=head2 -time
-
-=head3 functions of L<Time::HiRes>
-
-=head4 usleep
-
-=head4 nanosleep
-
-=head4 ualarm
 
 =head2 -uri
 
@@ -2388,23 +2526,9 @@ encode_json of L<JSON::XS>
 
 =head3 uri_make *
 
-  sub {
-      sub {
-          use utf8;
-          my ( $url, $form ) = @_;
-          my %form;
-          foreach my $k ( keys %$form ) {
-              my ( $key, $value ) = ( $k, $form->{$k} );
-              utf8::decode($key)   unless utf8::is_utf8($k);
-              utf8::decode($value) unless utf8::is_utf8($value);
-              $form{$key} = $value;
-          }
-          my $u = URI->new($url);
-          $u->query_form(%form);
-          $u->as_string;
-        }
-    }
+  uri_make('http://example.com/', { foo => "あ", bar => "い"});
 
+create URI with parameter.
 
 =head3 test code
 
@@ -2462,6 +2586,16 @@ recursively make utf8 flag on(not destructive)
  my $d = utf8_off($data);
  is_utf8($d->{a}) || is_utf8($d->{b}{c});
  # equal to: ''
+
+=head2 -utime
+
+=head3 functions of L<Time::HiRes>
+
+=head4 usleep
+
+=head4 nanosleep
+
+=head4 ualarm
 
 =head2 -xml
 

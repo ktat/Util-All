@@ -1,5 +1,5 @@
 ---
-scalar:
+data:
   Scalar::Util:
     - blessed
     - dualvar
@@ -92,10 +92,10 @@ debug:
       - usage:
         - dumper(@variables)
         - Dumper in L<Data::Dumper>.
-    code_dumper:
-      - sub { sub(&) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
+    deep_dumper:
+      - sub { sub(@) { local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)} }
       - usage:
-        - code_dumper(sub { print "hello World" })
+        - deep_dumper([1 , 2, sub { print "hello World" }])
         - dump code reference as string. 
 #    moose_dumper:
 #      - |
@@ -157,20 +157,21 @@ debug:
       - sub { sub(@) { Data::Dump::dump(@_) } }
       - p($variable)
       - as same as dump(function name is borrowed from Ruby).
-    dump_code:
+    deep_dump:
       - |
         sub {
-           sub(&) {
-            if (wantarray) {
-              local $Data::Dumper::Deparse = 1; Data::Dumper::Dumper(@_)
-            } else {
-              print STDERR Data::Dumper::Dumper(@_);
-            }
+           sub(@) {
+             local $Data::Dumper::Deparse = 1;
+             if (not defined wantarray) {
+               print STDERR Data::Dumper::Dumper(@_);
+             } else {
+               return Data::Dumper::Dumper(@_)
+             }
           }
         }
       - usage:
-        - dump_code( sub { ... } );
-        - dump code reference as string. 
+        - deep_dump([1,2,3, sub { ... } ]);
+        - as same as dump. but it dump code reference as string.
   Tie::Trace:
     -select: ['watch']
 
@@ -189,14 +190,18 @@ string:
       - randword
       - trim
       - unquote
-    strings: |
-      sub {
+    strings:
+      - |
         sub {
-          my $str = shift;
-          $str =~ s/\p{Cc}//g;
-          return $str;
+          sub {
+            my $str = shift;
+            $str =~ s/\p{Cc}//g;
+            return $str;
+          }
         }
-      }
+      - usage:
+        - strings("111\0111"); # return '111111'
+        - abstract printable characgter from scalar. just like strings command.
   String::CamelCase:
     - camelize
     - decamelize
@@ -288,7 +293,13 @@ xml:
         }
       }
 
-char_encode:
+encode:
+  Encode:
+    - encode
+    - decode
+    - from_to
+
+charset:
   Encode:
     encode: char_encode
     decode: char_decode
@@ -305,25 +316,194 @@ char_encode:
            }
            sub {
              my ($str, $to, $from) = @_;
-             Encode::from_to(shift, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
+             if (ref $str and utf8::is_utf8($$str)) {
+               utf8::encode($$str);
+             } elsif (utf8::is_utf8($str)) {
+               utf8::encode($str);
+             }
+             Encode::from_to(ref $str ? $$str : $str, $from ? $from : $g_class ? "DETECT" : "GUESS", $to);
+             return $str;
            }
         }
-      - usage:
-        -
-          - char_convert($str, "euc-jp"); # to euc-jp
-          - char_convert($str, "euc-jp", "sjis"); # to euc-jp from sjis
-        - |
-           convert $str to second argument charset. third argument is charset of $str.
-           when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used.
-           It is Jcode style function.
     from_to: char_from_to
+  Unicode::Japanese:
+   z2h:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->z2h->$method;
+        }
+      }
+   z2h_kana:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->z2hKana->$method;
+        }
+      }
+   z2h_alpha:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->z2hAlpha->$method;
+        }
+      }
+   z2h_sym:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->z2hSym->$method;
+        }
+      }
+   z2h_num:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->z2hNum->$method;
+        }
+      }
+   h2z:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->h2z->$method;
+        }
+      }
+   h2z_kana:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->h2zKana->$method;
+        }
+      }
+   h2z_alpha:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->h2zAlpha->$method;
+        }
+      }
+   h2z_sym:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->h2zSym->$method;
+        }
+      }
+   h2z_num:
+    - |
+      sub {
+        sub {
+          my $str = shift;
+          my $method = utf8::is_utf8($str) ? 'getu' : 'get';
+          Unicode::Japanese::unijp($str)->h2zNum->$method;
+        }
+      }
+  -usage: |
+    =head3 char_encode / char_decode
+
+    They are encode / decode of Encode.
+
+    =head3 char_convert
+    
+    old Jocde style function.
+    
+     $new_str = char_convert($str, "euc-jp"); # to euc-jp
+     $new_str = char_convert($str, "euc-jp", "sjis"); # to euc-jp from sjis
+    
+    convert $str to second argument charset. third argument is charset of $str.
+    when third argument is omitted, Encode::Detect(if installed) or Encode::Guess is used to detect charset.
+    
+    =head3 z2h functions
+    
+     z2h($str);       # return the value replaced zenkaku to hankaku
+     z2h_kana($str);  # return the value replaced zenkaku kana hankaku
+     z2h_num($str);   # return the value replaced zenkaku number hankaku
+     z2h_sym($str);   # return the value replaced zenkaku symbol hankaku
+     z2h_alpha($str); # return the value replaced zenkaku alphabet hankaku
+
+    If $str is utf8 flag on, return utf flagged value, if not return byte string.
+
+    =head3 h2z functions
+
+     h2z($str);       # return the value replaced hankaku to zenkaku
+     h2z_kana($str);  # return the value replaced hankaku kana zenkaku
+     h2z_num($str);   # return the value replaced hankaku number zenkaku
+     h2z_sym($str);   # return the value replaced hankaku symbol zenkaku
+     h2z_alpha($str); # return the value replaced hankaku alphabet zenkaku
+
+    If $str is utf8 flag on, return utf flagged value, if not return byte string.
+   
   -test:
     - 
-      - char_convert(my $s = "あ", "euc-jp"); $s
+      - my $ss = char_convert(my $s = "あ", "euc-jp"); $ss
       - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
     - 
-      - char_convert(my $s = "あ", "cp932", "utf8"); $s
+      - my $ss = char_convert(my $s = "あ", "cp932", "utf8"); $ss
       - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+    - 
+      - use utf8; my $ss = char_convert(my $s = "あ", "euc-jp"); $ss
+      - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
+    - 
+      - use utf8; my $ss = char_convert(my $s = "あ", "cp932", "utf8"); $ss
+      - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
+    - 
+      - my $ss = char_convert(\(my $s = "あ"), "euc-jp"); $$ss eq $s
+      - 1;
+    -
+      - z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - "'ｱｲｳｴｵ1234ABCD()*&'"
+    -
+      - z2h_alpha('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - "'アイウエオ１２３４ABCD（）＊＆'"
+    -
+      - z2h_sym('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - "'アイウエオ１２３４ＡＢＣＤ()*&'"
+    -
+      - z2h_num('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - "'アイウエオ1234ＡＢＣＤ（）＊＆'"
+    -
+      - z2h_kana('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - "'ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊＆'"
+    -
+      - h2z('ｱｲｳｴｵ1234ABCD()*&')
+      - "'アイウエオ１２３４ＡＢＣＤ（）＊＆'"
+    -
+      - h2z_alpha('ｱｲｳｴｵ1234ABCD()*&')
+      - "'ｱｲｳｴｵ1234ＡＢＣＤ()*&'"
+    -
+      - h2z_sym('ｱｲｳｴｵ1234ABCD()*&')
+      - "'ｱｲｳｴｵ1234ABCD（）＊＆'"
+    -
+      - h2z_num('ｱｲｳｴｵ1234ABCD()*&')
+      - "'ｱｲｳｴｵ１２３４ABCD()*&'"
+    -
+      - h2z_kana('ｱｲｳｴｵ1234ABCD()*&')
+      - "'アイウエオ1234ABCD()*&'"
+    -
+      - use utf8; z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
+    -
+      - use utf8; z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
+      - use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
 
 uri:
   URI::Escape:
@@ -351,6 +531,9 @@ uri:
             $u->as_string;
           }
         }
+      - usage:
+        - uri_make('http://example.com/', { foo => "あ", bar => "い"}); # return 'http://example.com/?bar=%E3%81%84&foo=%E3%81%82'
+        - create URI with parameter.
       - test:
         - 
           - uri_make('http://example.com/', { foo => "あ", bar => "い"});
@@ -358,6 +541,7 @@ uri:
         - 
           - my $x = "あ"; utf8::decode($x); uri_make('http://example.com/', { foo => $x});
           - ('http://example.com/?foo=%E3%81%82')
+
 base64:
   MIME::Base64:
     encode_base64: base64_encode
@@ -496,7 +680,7 @@ email:
        send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
        
        # parse_email
-       parse_email($email_src);
+       parse_email($email_src); # currently just returns Email::MIME object
 
      =head3 send_email
 
@@ -581,6 +765,13 @@ basecalc:
               Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
            }
         }
+  -usage: |
+    =head3 from_base / to_base
+
+      use Util::All -basecalc => {-args => {digits => [0,1]}};
+      to_base(4);     # 100
+      from_base(100); # 4
+ 
   -test :
     -
       - package test_basecalc1; use Util::All -basecalc => {-args => {digits => [0,1]}}; (to_base(4), from_base(100));
@@ -859,34 +1050,34 @@ file:
            }
          }
 
-bool:
-  Return::Value:
-    - 'success'
-    - 'failure'
-  -usage: |
-     sub yatta { success("OK") }
-     if (my $r = yatta) {
-        print $r; # "OK";
-     }
-     sub orz { success("NG") }
-     unless (my $r = orz) {
-        print $r; # "NG";
-     }
-  -test:
-    - 
-      - 'success("yatta") ? 1 : 0;'
-      - 1
-    - 
-      - 'failure("orz") ? 1 : 0;'
-      - 0
-    - 
-      - my $x = success("yatta");
-      - ("yatta")
-    - 
-      - my $x = failure("orz");
-      - ("orz")
+# bool:
+#   Return::Value:
+#     - 'success'
+#     - 'failure'
+#   -usage: |
+#      sub yatta { success("OK") }
+#      if (my $r = yatta) {
+#         print $r; # "OK";
+#      }
+#      sub orz { success("NG") }
+#      unless (my $r = orz) {
+#         print $r; # "NG";
+#      }
+#   -test:
+#     - 
+#       - 'success("yatta") ? 1 : 0;'
+#       - 1
+#     - 
+#       - 'failure("orz") ? 1 : 0;'
+#       - 0
+#     - 
+#       - my $x = success("yatta");
+#       - ("yatta")
+#     - 
+#       - my $x = failure("orz");
+#       - ("orz")
 
-time:
+utime:
   Time::HiRes:
     - usleep
     - nanosleep
@@ -1075,7 +1266,7 @@ exception:
 
 csv:
   -as_plugin: 1
-  Text::CSV_XS:
+  Text::CSV:
     parse_csv:
       - |
         sub {
@@ -1166,3 +1357,4 @@ prompt:
             $answer->{value};
           }
         }
+

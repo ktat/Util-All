@@ -8,7 +8,7 @@ name           'Util-All';
 all_from       'lib/Util/All.pm';
 
 # Specific dependencies
-requires       'Util::Any'  => '0.14',
+requires       'Util::Any'  => '0.18',
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 	'B::Deparse' => 0,
@@ -48,11 +48,10 @@ requires       'Util::Any'  => '0.14',
 	'MIME::Types' => 0,
 	'Math::BaseCalc' => 0,
 	'Number::Format' => 0,
-	'Return::Value' => 0,
 	'Scalar::Util' => 0,
 	'String::CamelCase' => 0,
 	'String::Util' => 0,
-	'Text::CSV_XS' => 0,
+	'Text::CSV' => 0,
 	'Tie::IxHash' => 0,
 	'Tie::Trace' => 0,
 	'Time::HiRes' => 0,
@@ -60,6 +59,7 @@ requires       'Util::Any'  => '0.14',
 	'URI' => 0,
 	'URI::Escape' => 0,
 	'URI::Split' => 0,
+	'Unicode::Japanese' => 0,
 	'XML::Parser' => 0,
 	'XML::Simple' => 0,
 	'YAML::XS' => 0,
@@ -67,7 +67,8 @@ requires       'Util::Any'  => '0.14',
 ;
 test_requires  'Test::More'  => '0.88';
 no_index       'directory'   => 'demos';
-tests_recursive;
 # install_script 'myscript';
 
+tests_recursive;
+# auto_install;
 WriteAll;
