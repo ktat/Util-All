@@ -119,9 +119,30 @@ our $Utils = {
       'HTML::Entities',
       '',
       {
-        'encode_entities' => 'html_entity_encode',
         '-select' => [],
-        'decode_entities' => 'html_entity_decode'
+        'decode_entities' => 'html_entity_decode',
+        'html_entity_encode' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $_words = $$kind_args{'words'} || $$args{'words'};
+            sub {
+                my($str, $words);
+                if (defined wantarray) {
+                    ($str, $words) = @_;
+                    my $s = $str;
+                    utf8::decode($s) if not utf8::is_utf8($s);
+                    $str = HTML::Entities::encode_entities($s, $words || $_words);
+                }
+                else {
+                    ($str, $words) = @_;
+                    my $ref = \$_[0];
+                    utf8::decode($str) if not utf8::is_utf8($str);
+                    HTML::Entities::encode_entities($str, $words || $_words);
+                    $$ref = $str;
+                }
+                return $str;
+            }
+            ;
+        }
       }
     ]
   ],
@@ -1569,21 +1590,94 @@ like cmpthese but compare 2 code with same argument
 
 =head2 -cgi
 
-=head3 html_entity_decode
-
-decode_entities of L<HTML::Entities>
-
-=head3 cgi_escape
-
-escape of L<CGI::Util>
-
-=head3 cgi_unescape
-
-unescape of L<CGI::Util>
-
 =head3 html_entity_encode
 
-encode_entities of L<HTML::Entities>
+  my $new_str = html_entity_encode($str, $words);
+  html_entity_encode($str, $words);
+
+encode HTML entity. in void context, it modify argument itself.
+this function assumes given argument charset is utf8(utf8 flag on or off).
+
+=head3 html_entity_decode
+
+  @new_args = html_entity_decode(@args);
+  html_entity_decode(@args);
+
+decode HTML entity.  in void context, it modify argument itself.
+
+
+=head3 function enable to rename *
+
+html_entity_encode
+
+=head3 test code
+
+ no utf8;
+ use Util::All -cgi;
+ html_entity_encode("あいうえお");
+ # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
+
+ use utf8;
+ use Util::All -cgi;
+ html_entity_encode("あいうえお");
+ # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
+
+ no utf8;
+ use Util::All -cgi;
+ html_entity_encode(my $s = "あいうえお");
+ $s;
+ # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
+
+ use utf8;
+ use Util::All -cgi;
+ html_entity_encode(my $s = "あいうえお");
+ $s;
+ # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
+
+ no utf8;
+ use Util::All -cgi;
+ html_entity_decode(html_entity_encode("あいうえお"));
+ # equal to: use utf8; 'あいうえお'
+
+ use utf8;
+ use Util::All -cgi;
+ html_entity_decode(html_entity_encode("あいうえお"));
+ # equal to: use utf8; 'あいうえお'
+
+ no utf8;
+ use Util::All -cgi;
+ my $str = "あいうえお";
+ html_entity_encode($str);
+ $str;
+ # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
+
+ no utf8;
+ use Util::All -cgi;
+ my $str = "あいうえお";
+ scalar html_entity_encode($str);
+ $str;
+ # equal to: no utf8; 'あいうえお'
+
+ package BB;
+ no utf8;
+ use Util::All -cgi => [html_entity_encode => {words => "<>"}];
+ my $str = "あいうえお<&>";
+ html_entity_encode($str);
+ # equal to: use utf8; 'あいうえお&lt;&&gt;'
+
+ package CC;
+ no utf8;
+ use Util::All -cgi => [-args => {words => "<>"}];
+ my $str = "あいうえお<&>";
+ html_entity_encode($str);
+ # equal to: use utf8; 'あいうえお&lt;&&gt;'
+
+ package DD;
+ no utf8;
+ use Util::All -cgi => [-args => {words => "<>"}];
+ my $str = "あいうえお<&>";
+ html_entity_encode($str, "&");
+ # equal to: use utf8; 'あいうえお<&amp;>'
 
 =head2 -charset
 
@@ -1724,7 +1818,7 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
  my $label = '';
  while (my $l = $csv->next) {$label .=$l->{l}};
  $label;
- # equal to: "abcdef"
+ # equal to: "abcdefアイウエオ"
 
  package test_csv3;
  use Util::All -csv;
@@ -1741,7 +1835,7 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
  my $csv = parse_csv($fh);
  1 while $csv->next;
  tell $fh;
- # equal to: 30
+ # equal to: 49
 
 =head2 -data
 
@@ -2884,6 +2978,9 @@ L<http://search.cpan.org/dist/Util-All/>
 =back
 
 =head1 ACKNOWLEDGEMENTS
+
+Thanks to All Perl Users.
+When I find useful code, I write it here as memo.
 
 =head1 SEE ALSO
 

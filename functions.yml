@@ -260,8 +260,78 @@ cgi:
     unescape: cgi_unescape
   HTML::Entities:
     decode_entities: html_entity_decode
-    encode_entities: html_entity_encode
-
+    html_entity_encode:
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          my $_words = $kind_args->{words} || $args->{words};
+          sub {
+            my ($str, $words);
+            if (defined wantarray) {
+              ($str, $words) = @_;
+              my $s = $str;
+              utf8::decode($s)  if not utf8::is_utf8($s);
+              $str = HTML::Entities::encode_entities($s, $words || $_words);
+            } else {
+              ($str, $words) = @_;
+              my $ref = \$_[0];
+              utf8::decode($str)  if not utf8::is_utf8($str);
+              HTML::Entities::encode_entities($str, $words || $_words);
+              $$ref = $str;
+            }
+            return $str;
+          }
+        }
+      - test:
+        -
+          - no utf8; use Util::All -cgi; html_entity_encode("あいうえお");
+          - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
+        -
+          - use utf8; use Util::All -cgi; html_entity_encode("あいうえお");
+          - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
+        -
+          - no utf8; use Util::All -cgi; html_entity_encode(my $s = "あいうえお"); $s;
+          - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
+        -
+          - use utf8; use Util::All -cgi; html_entity_encode(my $s = "あいうえお"); $s;
+          - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
+        -
+          - no utf8; use Util::All -cgi; html_entity_decode(html_entity_encode("あいうえお"));
+          - use utf8; 'あいうえお'
+        -
+          - use utf8; use Util::All -cgi; html_entity_decode(html_entity_encode("あいうえお"));
+          - use utf8; 'あいうえお'
+        -
+          - no utf8; use Util::All -cgi; my $str = "あいうえお"; html_entity_encode($str); $str;
+          - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
+        -
+          - no utf8; use Util::All -cgi; my $str = "あいうえお"; scalar html_entity_encode($str); $str;
+          - no utf8; 'あいうえお'
+        -
+          - package BB;no utf8; use Util::All -cgi => [html_entity_encode => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str);
+          - use utf8; 'あいうえお&lt;&&gt;'
+        -
+          - package CC;no utf8; use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str);
+          - use utf8; 'あいうえお&lt;&&gt;'
+        -
+          - package DD;no utf8;use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str, "&");
+          - use utf8; 'あいうえお<&amp;>'
+  -usage: |
+    =head3 html_entity_encode
+    
+      my $new_str = html_entity_encode($str, $words);
+      html_entity_encode($str, $words);
+    
+    encode HTML entity. in void context, it modify argument itself.
+    this function assumes given argument charset is utf8(utf8 flag on or off).
+    
+    =head3 html_entity_decode
+    
+      @new_args = html_entity_decode(@args);
+      html_entity_decode(@args);
+    
+    decode HTML entity.  in void context, it modify argument itself.
+   
 html:
   HTML::Entities:
     decode_entities: html_entity_decode
@@ -1321,15 +1391,16 @@ csv:
       - 223
     -
       - package test_csv2; use Util::All -csv; my $csv = parse_csv("t/data/test.csv", ['l', 'num']); my $label = ''; while (my $l = $csv->next) {$label .=$l->{l}}; $label;
-      - '"abcdef"'
+      - '"abcdefアイウエオ"'
     -
       - package test_csv3; use Util::All -csv; open my $fh, "t/data/test.csv"; my $csv = parse_csv($fh); my $sum = 0; while (my $l = $csv->next) {$sum +=$l->[1]}; $sum;
       - 223
     -
       - package test_csv4; use Util::All -csv; open my $fh, "t/data/test.csv"; my $csv = parse_csv($fh); 1 while $csv->next; tell $fh;
-      - 30
+      - 49
 
 prompt:
+  -as_plugin: 1
   IO::Prompt:
     -select:
       - prompt
