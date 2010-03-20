@@ -572,6 +572,30 @@ our $Utils = {
       'Email::Sender::Simple',
       '',
       {
+        'send_template_email' => sub {
+            use strict 'refs';
+            require Template;
+            unless (defined &sendmail) {
+                'Email::Sender::Simple'->import('sendmail');
+            }
+            sub {
+                my $pkg = (caller)[0];
+                my($file_or_scalarref, $params) = @_;
+                my $tt = 'Template'->new('INTERPOLATE', 1, 'ABSOLUTE', 1, 'RELATIVE', 1);
+                my $body;
+                $tt->process($file_or_scalarref, $params, \$body);
+                my %header;
+                if ($body =~ s/^(.+?)--\s*//s and my $header = $1) {
+                    foreach my $kv (split(/[\r\n]+/, $header, 0)) {
+                        my($k, $v) = split(/\s*:\s*/, $kv, 2);
+                        $header{ucfirst $k} = $v;
+                    }
+                }
+                no strict 'refs';
+                my $mime = sendmail(&{$pkg . '::' . 'create_email';}([%header], {}, $body));
+            }
+            ;
+        },
         '-select' => [],
         'send_email' => sub {
             use strict 'refs';
@@ -2045,13 +2069,28 @@ You have to pass encoded arguments.
                             "example.jpg"]);
   send_email($email);
 
-  # siglepart email
+  # singlepart email
   my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body);
   send_email($email);
 
   # send_email with create_email
   send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
   send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
+
+
+  # send_template_email (singlepart only)
+  send_template_email($template_file, $parameter)
+  # $template_file is like the following
+  #
+  #   From:
+  #   To: 
+  #   Subject: 
+  #   --
+  #   Hello, World!
+  #   Hello, World!
+  #   Hello, World!
+  #
+  # header is begore '--'. data part is aftrer '--'.
 
   # parse_email
   parse_email($email_src); # currently just returns Email::MIME object
@@ -2071,7 +2110,7 @@ which is equal to last argument of Email::Sender::Simple's sendmail.
 
 =head3 function enable to rename *
 
-send_email, parse_email, create_email
+send_template_email, send_email, parse_email, create_email
 
 =head2 -encode
 

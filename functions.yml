@@ -644,7 +644,7 @@ http:
 
 email:
   -as_plugin: 1
-  -require: ['File::Slurp', 'MIME::Types', 'Clone']
+  -require: ['File::Slurp', 'MIME::Types', 'Clone', 'Template']
   Email::MIME:
     create_email: |
       sub {
@@ -725,6 +725,34 @@ email:
             my $mime = sendmail(@_ == 1 ? (@_) : &{$pkg . '::' . 'create_email'}(@_), $opt);
          }
        }
+    send_template_email: |
+      sub {
+         use strict;
+         require Template;
+         unless (defined &sendmail) {
+           Email::Sender::Simple->import('sendmail');
+         }
+         sub {
+            my $pkg = (caller)[0];
+            my ($file_or_scalarref, $params) = @_;
+            my $tt = Template->new(
+               INTERPOLATE  => 1,
+               ABSOLUTE     => 1,
+               RELATIVE     => 1,
+               );
+            my $body;
+            $tt->process($file_or_scalarref, $params, \$body);
+            my %header;
+            if ($body =~s{^(.+?)--\s*}{}s and my $header = $1) {
+               foreach my $kv (split /[\r\n]+/, $header) {
+                 my ($k, $v) = split /\s*:\s*/, $kv, 2;
+                 $header{ucfirst $k} =  $v;
+               }
+            }
+            no strict 'refs';
+            my $mime = sendmail(&{$pkg . '::' . 'create_email'}([%header], {}, $body));
+         }
+      }
   -usage: |
      =head3 examples
 
@@ -741,7 +769,7 @@ email:
                                  "example.jpg"]);
        send_email($email);
   
-       # siglepart email
+       # singlepart email
        my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body);
        send_email($email);
   
@@ -749,6 +777,21 @@ email:
        send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
        send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
        
+
+       # send_template_email (singlepart only)
+       send_template_email($template_file, $parameter)
+       # $template_file is like the following
+       #
+       #   From:
+       #   To: 
+       #   Subject: 
+       #   --
+       #   Hello, World!
+       #   Hello, World!
+       #   Hello, World!
+       #
+       # header is begore '--'. data part is aftrer '--'.
+  
        # parse_email
        parse_email($email_src); # currently just returns Email::MIME object
 
