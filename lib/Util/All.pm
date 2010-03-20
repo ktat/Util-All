@@ -580,7 +580,9 @@ our $Utils = {
             }
             sub {
                 my $pkg = (caller)[0];
-                my($file_or_scalarref, $params) = @_;
+                my $opt = {};
+                $opt = pop @_ if @_ > 2 and ref $_[-1] eq 'HASH';
+                my($file_or_scalarref, $params, $attr) = @_;
                 my $tt = 'Template'->new('INTERPOLATE', 1, 'ABSOLUTE', 1, 'RELATIVE', 1);
                 my $body;
                 $tt->process($file_or_scalarref, $params, \$body);
@@ -592,7 +594,7 @@ our $Utils = {
                     }
                 }
                 no strict 'refs';
-                my $mime = sendmail(&{$pkg . '::' . 'create_email';}([%header], {}, $body));
+                my $mime = sendmail(&{$pkg . '::' . 'create_email';}([%header], $attr, $body));
             }
             ;
         },
@@ -2079,7 +2081,7 @@ You have to pass encoded arguments.
 
 
   # send_template_email (singlepart only)
-  send_template_email($template_file, $parameter)
+  send_template_email($template_file, $parameter, {'content_type' => 'text/plain'}, {transport => $transprot})
   # $template_file is like the following
   #
   #   From:
