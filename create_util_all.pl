@@ -235,7 +235,6 @@ sub usage {
 
 sub generate_test {
   my ($usage, $test) = @_;
-  my $i = 0;
   unless (-d "t/auto") {
     mkdir 't/auto';
   } else {
@@ -243,7 +242,7 @@ sub generate_test {
   }
   foreach my $kind (sort keys %$test) {
     my $kind_tag = defined &{$kind} ? "-$kind" : "'-$kind'";
-    open my $fh, ">", sprintf "t/auto/%02d-%s.t", $i, $kind;
+    open my $fh, ">", sprintf "t/auto/%s.t", $kind;
     print $fh <<__EOL;
 use Test::More;
 use strict;
@@ -290,7 +289,6 @@ EOL
     }
     print $fh "done_testing;";
     close $fh;
-    $i++
   }
 }
 

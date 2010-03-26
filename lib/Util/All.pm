@@ -119,30 +119,23 @@ our $Utils = {
       'HTML::Entities',
       '',
       {
-        '-select' => [],
-        'decode_entities' => 'html_entity_decode',
-        'html_entity_encode' => sub {
+        'encode_html_entities' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             my $_words = $$kind_args{'words'} || $$args{'words'};
             sub {
-                my($str, $words);
-                if (defined wantarray) {
-                    ($str, $words) = @_;
-                    my $s = $str;
-                    utf8::decode($s) if not utf8::is_utf8($s);
-                    $str = HTML::Entities::encode_entities($s, $words || $_words);
-                }
-                else {
-                    ($str, $words) = @_;
+                my($str, $words) = @_;
+                utf8::decode($str) if not utf8::is_utf8($str);
+                $str = HTML::Entities::encode_entities($str, $words || $_words);
+                unless (defined wantarray) {
                     my $ref = \$_[0];
-                    utf8::decode($str) if not utf8::is_utf8($str);
-                    HTML::Entities::encode_entities($str, $words || $_words);
                     $$ref = $str;
                 }
                 return $str;
             }
             ;
-        }
+        },
+        '-select' => [],
+        'decode_entities' => 'decode_html_entities'
       }
     ]
   ],
@@ -239,6 +232,36 @@ our $Utils = {
       '',
       {
         'from_to' => 'char_from_to',
+        'jfold' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            sub {
+                my($str, $width, $nl) = @_;
+                $width ||= $$kind_args{'width'} || $$args{'width'};
+                $nl ||= $$kind_args{'nl'} || $$args{'nl'} || "\n";
+                my $is_utf8 = 0;
+                utf8::decode($str) if not $is_utf8 = utf8::is_utf8($str);
+                my $cnt = 0;
+                my @lines;
+                my $l = '';
+                foreach my $s ($str =~ /(.)/g) {
+                    if ($s =~ /\p{ASCII}/ or $s =~ /\p{InHalfwidthAndFullwidthForms}/ and not $s =~ /[\p{Lu}\p{Ll}\p{LC}\p{Lt}\p{Lm}\p{S}\p{P}\p{N}]/) {
+                        ++$cnt;
+                    }
+                    else {
+                        $cnt += 2;
+                    }
+                    $l .= $s;
+                    if ($cnt >= $width) {
+                        push @lines, $l;
+                        $cnt = 0;
+                        $l = '';
+                    }
+                }
+                push @lines, $l if $l;
+                return $is_utf8 ? join($nl, @lines) : Encode::encode('utf8', join($nl, @lines));
+            }
+            ;
+        },
         'decode' => 'char_decode',
         '-select' => [],
         'encode' => 'char_encode',
@@ -728,24 +751,6 @@ our $Utils = {
       '',
       {
         '-select' => [],
-        'locked_tempfile' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub {
-                my(@args) = @_;
-                my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', shift @args) : @args);
-                my(%new_args) = map({uc $_, $args{$_};} keys %args);
-                if (exists $new_args{'TEMPLATE'}) {
-                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)$/XXXX/) {
-                        $new_args{'SUFFIX'} = $1;
-                    }
-                    if (not $new_args{'TEMPLATE'} =~ /XXXX$/) {
-                        $new_args{'TEMPLATE'} .= 'XXXX';
-                    }
-                }
-                'File::Temp'->new(%new_args, 'EXLOCK', 1);
-            }
-            ;
-        },
         'file_base64' => sub {
             require File::Slurp;
             require MIME::Base64;
@@ -760,11 +765,11 @@ our $Utils = {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
                 my(@args) = @_;
-                my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', shift @args) : @args);
+                my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', @args) : @args);
                 my(%new_args) = map({uc $_, $args{$_};} keys %args);
                 if (exists $new_args{'TEMPLATE'}) {
-                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)$/XXXX/) {
-                        $new_args{'SUFFIX'} = $1;
+                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)?$/XXXX/) {
+                        $new_args{'SUFFIX'} ||= $1;
                     }
                     if (not $new_args{'TEMPLATE'} =~ /XXXX$/) {
                         $new_args{'TEMPLATE'} .= 'XXXX';
@@ -827,26 +832,6 @@ our $Utils = {
           'unlock_keys',
           'unlock_value'
         ]
-      }
-    ]
-  ],
-  '-html' => [
-    [
-      'CGI::Util',
-      '',
-      {
-        '-select' => [],
-        'unescape' => 'cgi_unescape',
-        'escape' => 'cgi_escape'
-      }
-    ],
-    [
-      'HTML::Entities',
-      '',
-      {
-        'encode_entities' => 'html_entity_encode',
-        '-select' => [],
-        'decode_entities' => 'html_entity_decode'
       }
     ]
   ],
@@ -1381,6 +1366,9 @@ our $Utils = {
 }
 ;
 
+$Utils->{'-html'} = Clone::clone($Utils->{'-cgi'});
+$Utils->{'-yml'}  = Clone::clone($Utils->{'-yaml'});
+
 =head1 NAME
 
 Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
@@ -1616,93 +1604,93 @@ like cmpthese but compare 2 code with same argument
 
 =head2 -cgi
 
-=head3 html_entity_encode
+=head3 encode_html_entities
 
-  my $new_str = html_entity_encode($str, $words);
-  html_entity_encode($str, $words);
+  my $new_str = encode_html_entities($str, $words);
+  encode_html_entities($str, $words);
 
 encode HTML entity. in void context, it modify argument itself.
 this function assumes given argument charset is utf8(utf8 flag on or off).
 
-=head3 html_entity_decode
+=head3 decode_html_entities
 
-  @new_args = html_entity_decode(@args);
-  html_entity_decode(@args);
+  @new_args = decode_html_entities(@args);
+  decode_html_entities(@args);
 
 decode HTML entity.  in void context, it modify argument itself.
 
 
 =head3 function enable to rename *
 
-html_entity_encode
+encode_html_entities
 
 =head3 test code
 
  no utf8;
  use Util::All -cgi;
- html_entity_encode("あいうえお");
+ encode_html_entities("あいうえお");
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
  use utf8;
  use Util::All -cgi;
- html_entity_encode("あいうえお");
+ encode_html_entities("あいうえお");
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
  no utf8;
  use Util::All -cgi;
- html_entity_encode(my $s = "あいうえお");
+ encode_html_entities(my $s = "あいうえお");
  $s;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
  use utf8;
  use Util::All -cgi;
- html_entity_encode(my $s = "あいうえお");
+ encode_html_entities(my $s = "あいうえお");
  $s;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
  no utf8;
  use Util::All -cgi;
- html_entity_decode(html_entity_encode("あいうえお"));
+ decode_html_entities(encode_html_entities("あいうえお"));
  # equal to: use utf8; 'あいうえお'
 
  use utf8;
  use Util::All -cgi;
- html_entity_decode(html_entity_encode("あいうえお"));
+ decode_html_entities(encode_html_entities("あいうえお"));
  # equal to: use utf8; 'あいうえお'
 
  no utf8;
  use Util::All -cgi;
  my $str = "あいうえお";
- html_entity_encode($str);
+ encode_html_entities($str);
  $str;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
  no utf8;
  use Util::All -cgi;
  my $str = "あいうえお";
- scalar html_entity_encode($str);
+ scalar encode_html_entities($str);
  $str;
  # equal to: no utf8; 'あいうえお'
 
  package BB;
  no utf8;
- use Util::All -cgi => [html_entity_encode => {words => "<>"}];
+ use Util::All -cgi => [encode_html_entities => {words => "<>"}];
  my $str = "あいうえお<&>";
- html_entity_encode($str);
+ encode_html_entities($str);
  # equal to: use utf8; 'あいうえお&lt;&&gt;'
 
  package CC;
  no utf8;
  use Util::All -cgi => [-args => {words => "<>"}];
  my $str = "あいうえお<&>";
- html_entity_encode($str);
+ encode_html_entities($str);
  # equal to: use utf8; 'あいうえお&lt;&&gt;'
 
  package DD;
  no utf8;
  use Util::All -cgi => [-args => {words => "<>"}];
  my $str = "あいうえお<&>";
- html_entity_encode($str, "&");
+ encode_html_entities($str, "&");
  # equal to: use utf8; 'あいうえお<&amp;>'
 
 =head2 -charset
@@ -1741,12 +1729,58 @@ If $str is utf8 flag on, return utf flagged value, if not return byte string.
 
 If $str is utf8 flag on, return utf flagged value, if not return byte string.
 
+=head3 jfold
+
+ jfold($sentense, $width, $new_line_char);
+ jfold("アイウエオ１２３４ABCD（）＊＆", 4); # "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
+
+This folds sentense. This regrads full-width char as 2 and half-width char as 1.
+The given string must be utf-8(flgged or non flagged).
+
+You can give default $width and/or $new_line_char.
+
+ use Util::All -charset => [jfold => {width => 4, nl => "\t"}];
+
+ jfold($str);
+ jfold("アイウエオ１２３４ABCD（）＊＆"); # "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆";
+
 
 =head3 function enable to rename *
 
-h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2h_kana, char_convert
+h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2h_kana, jfold, char_convert
 
 =head3 test code
+
+ use Util::All -charset;
+ jfold("アイウエオ１２３４ABCD（）＊＆", 4);
+ # equal to: "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
+
+ use Util::All -charset;
+ jfold("ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊", 4);
+ # equal to: "ｱｲｳｴ\nｵ１２\n３４\nＡＢ\nＣＤ\n（）\n＊"
+
+ use Util::All -charset;
+ jfold("～！＠＃＄％＾＆＊（）＿＋＝ー／＼；？＞＜。、，．：｛｝「」［］｜『』《》〔〕", 4);
+ # equal to: "～！\n＠＃\n＄％\n＾＆\n＊（\n）＿\n＋＝\nー／\n＼；\n？＞\n＜。\n、，\n．：\n｛｝\n「」\n［］\n｜『\n』《\n》〔\n〕"
+
+ use Util::All -charset;
+ jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+ # equal to: "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
+
+ use utf8;
+ use Util::All -charset;
+ jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+ # equal to: use utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
+
+ no utf8;
+ use Util::All -charset;
+ jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+ # equal to: no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
+
+ package charset_jfold;
+ use Util::All -charset => [jfold => {width => 4, nl => "\t"}];
+ jfold("アイウエオ１２３４ABCD（）＊＆");
+ # equal to: no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
 
  my $ss = char_convert(my $s = "あ", "euc-jp");
  $ss
@@ -2002,7 +2036,7 @@ now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute
   print dump(@vars);
   dump(@vars);
 
-dump of L<Data::Dumper>. 
+dump of L<Data::Dump>. 
 dump strucutre. In later case, result is dumped to STDERR.
 
 
@@ -2158,32 +2192,6 @@ move of L<File::Copy>
 
 slurp of L<File::Slurp>
 
-=head3 locked_tempfile *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-  
-      # %args = map {uc($_) => $args->{$_}} keys %$args;
-      # %kind_args = map {uc($_) => $args->{$_}} keys %$kind_args;
-      sub {
-          my @args = @_;
-          my %args = (
-              %$kind_args, %$args, @args % 2 ? ( TEMPLATE => shift @args ) : @args
-          );
-          my %new_args = map { uc($_) => $args{$_} } keys %args;
-          if ( exists $new_args{TEMPLATE} ) {
-              if ( $new_args{TEMPLATE} =~ s{\*(.+)$}{XXXX} ) {
-                  $new_args{SUFFIX} = $1;
-              }
-              if ( $new_args{TEMPLATE} !~ /XXXX$/ ) {
-                  $new_args{TEMPLATE} .= "XXXX";
-              }
-          }
-          File::Temp->new( %new_args, EXLOCK => 1 );
-        }
-    }
-
-
 =head3 file_base64 *
 
   sub {
@@ -2199,14 +2207,45 @@ slurp of L<File::Slurp>
 
 =head3 tempfile *
 
-  tempfile("anyname*.dat")
-  tempfile("anyname*.dat", dir => '/var/tmp')
-  tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 1)
+  $tmpfile = tempfile("anyname*.dat");
+  $tmpfile = tempfile("anynameXXXX.dat"); # as same as the above
+  $tmpfile = tempfile("anyname*.dat", dir => '/var/tmp');
+  $tmpfile = tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 0);
+  $tmpfile = tempfile(template => "anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 0);
+  
+  my $filename = $tmpfile->filename;
+  print $tmpfile "Test";
+
+
+create temporary file. on BSD derived systems, O_EXLOCK is used(see File::Temp manual).
+If you don't want to lock temporary file, give exlock => 0 for arguments.
 
 
 =head3 copy_file
 
 copy of L<File::Copy>
+
+=head3 test code
+
+ use Util::All -file;
+ my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1);
+ $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
+ # equal to: 1
+
+ use Util::All -file;
+ my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1);
+ $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+ # equal to: 1
+
+ use Util::All -file;
+ my $fh = tempfile(template => "anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1);
+ $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+ # equal to: 1
+
+ use Util::All -file;
+ my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1);
+ $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
+ # equal to: 1
 
 =head2 -hash
 
@@ -2238,24 +2277,6 @@ copy of L<File::Copy>
  %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;
  keys %hash
  # equal to: qw/5 4 3 2 1 0/
-
-=head2 -html
-
-=head3 html_entity_decode
-
-decode_entities of L<HTML::Entities>
-
-=head3 cgi_escape
-
-escape of L<CGI::Util>
-
-=head3 cgi_unescape
-
-unescape of L<CGI::Util>
-
-=head3 html_entity_encode
-
-encode_entities of L<HTML::Entities>
 
 =head2 -http
 
@@ -2950,7 +2971,7 @@ But, of cource, -all loads all modules.
 Keyword '-all' as same as 'all' and ':all' is used,
 L<Util::Any> checks exportable functions in  all modules defined in $Utils and
 some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
-So, it is slow a bit. But, it is only first time, not slow next C<use>.
+So, '-all' is slow a bit. But, it is only first time, not slow next C<use>.
 
 =head1 CREATE YOUR OWN Util::All
 
@@ -3036,7 +3057,7 @@ Util::Any helps you to create your own utility module.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Ktat, all rights reserved.
+Copyright 2009-2010 Ktat, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

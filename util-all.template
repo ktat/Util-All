@@ -7,6 +7,9 @@ use Util::Any -Base, -Pluggable;
 
 our $Utils = ###DEFINITION###;
 
+$Utils->{'-html'} = Clone::clone($Utils->{'-cgi'});
+$Utils->{'-yml'}  = Clone::clone($Utils->{'-yaml'});
+
 =head1 NAME
 
 Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
@@ -299,7 +302,7 @@ But, of cource, -all loads all modules.
 Keyword '-all' as same as 'all' and ':all' is used,
 L<Util::Any> checks exportable functions in  all modules defined in $Utils and
 some of functions have to be generated on loading and which needs a bit heavy module like DateTime, Date::Manip.
-So, it is slow a bit. But, it is only first time, not slow next C<use>.
+So, '-all' is slow a bit. But, it is only first time, not slow next C<use>.
 
 =head1 CREATE YOUR OWN Util::All
 
@@ -385,7 +388,7 @@ Util::Any helps you to create your own utility module.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Ktat, all rights reserved.
+Copyright 2009-2010 Ktat, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

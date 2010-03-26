@@ -139,7 +139,7 @@ debug:
           - print dump(@vars);
           - dump(@vars);
         - |
-          dump of L<Data::Dumper>. 
+          dump of L<Data::Dump>. 
           dump strucutre. In later case, result is dumped to STDERR.
       - pp
       - usage:
@@ -259,24 +259,18 @@ cgi:
     escape: cgi_escape
     unescape: cgi_unescape
   HTML::Entities:
-    decode_entities: html_entity_decode
-    html_entity_encode:
+    decode_entities: decode_html_entities
+    encode_html_entities:
       - |
         sub {
           my ($pkg, $class, $func, $args, $kind_args) = @_;
           my $_words = $kind_args->{words} || $args->{words};
           sub {
-            my ($str, $words);
-            if (defined wantarray) {
-              ($str, $words) = @_;
-              my $s = $str;
-              utf8::decode($s)  if not utf8::is_utf8($s);
-              $str = HTML::Entities::encode_entities($s, $words || $_words);
-            } else {
-              ($str, $words) = @_;
+            my ($str, $words) = @_;
+            utf8::decode($str)  if not utf8::is_utf8($str);
+            $str = HTML::Entities::encode_entities($str, $words || $_words);
+            unless (defined wantarray) {
               my $ref = \$_[0];
-              utf8::decode($str)  if not utf8::is_utf8($str);
-              HTML::Entities::encode_entities($str, $words || $_words);
               $$ref = $str;
             }
             return $str;
@@ -284,62 +278,54 @@ cgi:
         }
       - test:
         -
-          - no utf8; use Util::All -cgi; html_entity_encode("あいうえお");
+          - no utf8; use Util::All -cgi; encode_html_entities("あいうえお");
           - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
         -
-          - use utf8; use Util::All -cgi; html_entity_encode("あいうえお");
+          - use utf8; use Util::All -cgi; encode_html_entities("あいうえお");
           - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
         -
-          - no utf8; use Util::All -cgi; html_entity_encode(my $s = "あいうえお"); $s;
+          - no utf8; use Util::All -cgi; encode_html_entities(my $s = "あいうえお"); $s;
           - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
         -
-          - use utf8; use Util::All -cgi; html_entity_encode(my $s = "あいうえお"); $s;
+          - use utf8; use Util::All -cgi; encode_html_entities(my $s = "あいうえお"); $s;
           - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
         -
-          - no utf8; use Util::All -cgi; html_entity_decode(html_entity_encode("あいうえお"));
+          - no utf8; use Util::All -cgi; decode_html_entities(encode_html_entities("あいうえお"));
           - use utf8; 'あいうえお'
         -
-          - use utf8; use Util::All -cgi; html_entity_decode(html_entity_encode("あいうえお"));
+          - use utf8; use Util::All -cgi; decode_html_entities(encode_html_entities("あいうえお"));
           - use utf8; 'あいうえお'
         -
-          - no utf8; use Util::All -cgi; my $str = "あいうえお"; html_entity_encode($str); $str;
+          - no utf8; use Util::All -cgi; my $str = "あいうえお"; encode_html_entities($str); $str;
           - "'&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'"
         -
-          - no utf8; use Util::All -cgi; my $str = "あいうえお"; scalar html_entity_encode($str); $str;
+          - no utf8; use Util::All -cgi; my $str = "あいうえお"; scalar encode_html_entities($str); $str;
           - no utf8; 'あいうえお'
         -
-          - package BB;no utf8; use Util::All -cgi => [html_entity_encode => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str);
+          - package BB;no utf8; use Util::All -cgi => [encode_html_entities => {words => "<>"}]; my $str = "あいうえお<&>"; encode_html_entities($str);
           - use utf8; 'あいうえお&lt;&&gt;'
         -
-          - package CC;no utf8; use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str);
+          - package CC;no utf8; use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; encode_html_entities($str);
           - use utf8; 'あいうえお&lt;&&gt;'
         -
-          - package DD;no utf8;use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; html_entity_encode($str, "&");
+          - package DD;no utf8;use Util::All -cgi => [-args => {words => "<>"}]; my $str = "あいうえお<&>"; encode_html_entities($str, "&");
           - use utf8; 'あいうえお<&amp;>'
   -usage: |
-    =head3 html_entity_encode
+    =head3 encode_html_entities
     
-      my $new_str = html_entity_encode($str, $words);
-      html_entity_encode($str, $words);
+      my $new_str = encode_html_entities($str, $words);
+      encode_html_entities($str, $words);
     
     encode HTML entity. in void context, it modify argument itself.
     this function assumes given argument charset is utf8(utf8 flag on or off).
     
-    =head3 html_entity_decode
+    =head3 decode_html_entities
     
-      @new_args = html_entity_decode(@args);
-      html_entity_decode(@args);
+      @new_args = decode_html_entities(@args);
+      decode_html_entities(@args);
     
     decode HTML entity.  in void context, it modify argument itself.
    
-html:
-  HTML::Entities:
-    decode_entities: html_entity_decode
-    encode_entities: html_entity_encode
-  CGI::Util:
-    escape: cgi_escape
-    unescape: cgi_unescape
-
 xml:
   -require: ['XML::Parser']
   -as_plugin: 1
@@ -373,6 +359,37 @@ charset:
   Encode:
     encode: char_encode
     decode: char_decode
+    jfold:
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          sub {
+            my ($str, $width, $nl) = @_;
+            $width ||= $kind_args->{width} || $args->{width};
+            $nl ||= $kind_args->{nl} || $args->{nl} || "\n";
+            my $is_utf8 = 0;
+            utf8::decode($str) if not $is_utf8 = utf8::is_utf8($str);
+            my $cnt = 0;
+            my @lines;
+            my $l = '';
+            foreach my $s ($str =~ m{(.)}g) {
+              if ($s =~ m{\p{ASCII}} or ($s =~ m{\p{InHalfwidthAndFullwidthForms}} and $s !~ m{[\p{Lu}\p{Ll}\p{LC}\p{Lt}\p{Lm}\p{S}\p{P}\p{N}]})) {
+                 $cnt ++;
+              } else {
+                 $cnt += 2;
+              }
+              $l .= $s;
+              if ($cnt >= $width) {
+                push @lines, $l;
+                $cnt = 0;
+                $l   = '';
+              }
+            }
+            push @lines, $l if $l;
+            return $is_utf8 ? join $nl, @lines : Encode::encode("utf8", join $nl, @lines);
+          }
+        }
+
     char_convert:
       - |
         sub {
@@ -522,14 +539,50 @@ charset:
 
     If $str is utf8 flag on, return utf flagged value, if not return byte string.
    
+    =head3 jfold
+      
+     jfold($sentense, $width, $new_line_char);
+     jfold("アイウエオ１２３４ABCD（）＊＆", 4); # "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
+   
+    This folds sentense. This regrads full-width char as 2 and half-width char as 1.
+    The given string must be utf-8(flgged or non flagged).
+    
+    You can give default $width and/or $new_line_char.
+    
+     use Util::All -charset => [jfold => {width => 4, nl => "\t"}];
+     
+     jfold($str);
+     jfold("アイウエオ１２３４ABCD（）＊＆"); # "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆";
+   
   -test:
+    -
+      - use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4);
+      - '"アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"'
+    -
+      - use Util::All -charset; jfold("ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊", 4);
+      - '"ｱｲｳｴ\nｵ１２\n３４\nＡＢ\nＣＤ\n（）\n＊"'
+    - 
+      - use Util::All -charset; jfold("～！＠＃＄％＾＆＊（）＿＋＝ー／＼；？＞＜。、，．：｛｝「」［］｜『』《》〔〕", 4);
+      - '"～！\n＠＃\n＄％\n＾＆\n＊（\n）＿\n＋＝\nー／\n＼；\n？＞\n＜。\n、，\n．：\n｛｝\n「」\n［］\n｜『\n』《\n》〔\n〕"'
+    -
+      - use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+      - '"アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"'
+    -
+      - use utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+      - use utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
+    -
+      - no utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
+      - no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
+    -
+      - package charset_jfold; use Util::All -charset => [jfold => {width => 4, nl => "\t"}]; jfold("アイウエオ１２３４ABCD（）＊＆");
+      - no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
     - 
       - my $ss = char_convert(my $s = "あ", "euc-jp"); $ss
       - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
     - 
       - my $ss = char_convert(my $s = "あ", "cp932", "utf8"); $ss
       - my $s = "あ"; Encode::from_to($s, "utf8", "cp932"); $s;
-    - 
+    -              
       - use utf8; my $ss = char_convert(my $s = "あ", "euc-jp"); $ss
       - my $s = "あ"; Encode::from_to($s, "utf8", "euc-jp"); $s;
     - 
@@ -818,7 +871,7 @@ carp:
     - shortmess
     - longmess
 
-yaml: &yaml
+yaml:
   -require: ['File::Slurp']
   YAML::XS:
     Load: from_yaml
@@ -838,9 +891,6 @@ yaml: &yaml
     - 
       - package test_yaml; use Util::All -yaml; to_yaml(from_yaml_file("t/data/test.yml"));
       - '"---\nhoge: 1\n"'
-
-# yml: *yaml
-
 json:
   -require: ['File::Slurp']
   JSON::XS:
@@ -1114,11 +1164,11 @@ file:
           my($pkg, $class, $func, $args, $kind_args) = @_;
           sub {
             my @args = @_;
-            my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => shift @args) : @args);
+            my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => @args) : @args);
             my %new_args = map {uc($_) => $args{$_}} keys %args;
             if (exists $new_args{TEMPLATE}) {
-              if ($new_args{TEMPLATE} =~s{\*(.+)$}{XXXX}) {
-                 $new_args{SUFFIX} = $1;
+              if ($new_args{TEMPLATE} =~s{\*(.+)?$}{XXXX}) {
+                 $new_args{SUFFIX} ||= $1;
               }
               if ($new_args{TEMPLATE} !~ /XXXX$/) {
                 $new_args{TEMPLATE} .= "XXXX"
@@ -1129,30 +1179,30 @@ file:
         }
       - usage:
         - |
-          tempfile("anyname*.dat")
-          tempfile("anyname*.dat", dir => '/var/tmp')
-          tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 1)
-    locked_tempfile:
-      - |
-        sub {
-          my($pkg, $class, $func, $args, $kind_args) = @_;
-          # %args = map {uc($_) => $args->{$_}} keys %$args;
-          # %kind_args = map {uc($_) => $args->{$_}} keys %$kind_args;
-          sub {
-            my @args = @_;
-            my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => shift @args) : @args);
-            my %new_args = map {uc($_) => $args{$_}} keys %args;
-            if (exists $new_args{TEMPLATE}) {
-              if ($new_args{TEMPLATE} =~s{\*(.+)$}{XXXX}) {
-                 $new_args{SUFFIX} = $1;
-              }
-              if ($new_args{TEMPLATE} !~ /XXXX$/) {
-                $new_args{TEMPLATE} .= "XXXX"
-              }
-            }
-            File::Temp->new(%new_args, EXLOCK => 1);
-          }
-        }
+          $tmpfile = tempfile("anyname*.dat");
+          $tmpfile = tempfile("anynameXXXX.dat"); # as same as the above
+          $tmpfile = tempfile("anyname*.dat", dir => '/var/tmp');
+          $tmpfile = tempfile("anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 0);
+          $tmpfile = tempfile(template => "anyname*", dir => '/var/tmp', suffix => '.dat', exlock => 0);
+          
+          my $filename = $tmpfile->filename;
+          print $tmpfile "Test";
+        - |
+          create temporary file. on BSD derived systems, O_EXLOCK is used(see File::Temp manual).
+          If you don't want to lock temporary file, give exlock => 0 for arguments.
+      - test:
+        - 
+          - use Util::All -file; my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
+          - 1
+        - 
+          - use Util::All -file; my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+          - 1
+        - 
+          - use Util::All -file; my $fh = tempfile(template => "anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+          - 1
+        - 
+          - use Util::All -file; my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
+          - 1
     file_base64:
         - |
          sub {
@@ -1473,4 +1523,3 @@ prompt:
             $answer->{value};
           }
         }
-
