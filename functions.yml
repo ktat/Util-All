@@ -1130,9 +1130,9 @@ benchmark:
         }
       - usage:
         - cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
-        -
-          - like cmpthese but compare 2 code with same argument.
-          - if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
+        - |
+          like cmpthese but compare 2 code with same argument.
+          if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
     timesamearg:
       - |
         sub {
@@ -1143,9 +1143,9 @@ benchmark:
         }
       - usage:
         - timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
-        -
-          - like timethese but compare 2 code with same argument.
-          - if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
+        - |
+          like timethese but compare 2 code with same argument.
+          if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
 
 file:
   File::Find:

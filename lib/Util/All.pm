@@ -1568,13 +1568,17 @@ to_base, from_base
 
   timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
-ARRAY(0x2d9bb08)
+like timethese but compare 2 code with same argument.
+if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
+
 
 =head3 cmpsamearg *
 
   cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
-ARRAY(0x2d9b9a0)
+like cmpthese but compare 2 code with same argument.
+if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
+
 
 =head2 -carp
 
@@ -2566,14 +2570,14 @@ encode_json of L<JSON::XS>
  package Util::All::_prompt;
  use Util::All '-prompt';
  $|=1;
- my $answer = required_prompt("input somthing:");
+ my $answer = required_prompt("input somthing(1):");
  $answer !~ /%$/;
  # equal to: 1;
 
  package Util::All::_prompt;
  use Util::All '-prompt';
  $|=1;
- password_prompt("input somthing:");
+ password_prompt("input somthing(2):");
  my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn);
  $answer eq 'y';
  # equal to: 1;
