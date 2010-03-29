@@ -183,6 +183,10 @@ If you want to embed usage.
        - example1
        - example2
      - explanation
+   - test:
+    -
+       - test code
+       - return value
 
 =head2 Third:
 
@@ -199,8 +203,26 @@ If you want to embed usage.
      - usage:
        - example
        - explanation
+     - test:
+       -
+         - test code
+         - return value
 
-example can be array ref.
+example can be array ref like the following.
+
+     - usage:
+       -
+         -  example1
+         -  example2
+       - explanation
+
+you cnan write code to skip test as the following.
+
+     - test:
+       - skip: $^O eq 'MSWin32';
+       -
+         - test code
+         - return value
 
 =head2 Fourth:
 
@@ -262,6 +284,19 @@ use -usage key.
      
 
 If this is defined, all of other usage expressions, I showed you then in this section, are ignored.
+
+=head2 write all tests for the kind?
+
+use -test key.
+
+ datetime:
+   -test:
+     -
+       - test code
+       - return value
+     -
+       - test code
+       - return value
 
 =head1 CREATE PLUGINS
 

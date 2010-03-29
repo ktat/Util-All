@@ -296,60 +296,6 @@ our $Utils = {
       }
     ]
   ],
-  '-csv' => [
-    [
-      'Text::CSV',
-      '',
-      {
-        'parse_csv' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            $args ||= {};
-            $kind_args ||= {};
-            use strict 'refs';
-            if (not defined &Util::All::_Tmp::Text::CSV_XS::next) {
-                no strict 'refs';
-                *{'Util::All::_Tmp::Text::CSV_XS::next';} = sub {
-                    my $self = shift @_;
-                    my $r;
-                    not $$self{'pass_fh'} and close $$self{'fh'} unless $r = $$self{'sub'}();
-                    return $r;
-                }
-                ;
-            }
-            sub {
-                my $pass_fh = 0;
-                my($fh, $column_names) = @_;
-                my $csv = 'Text::CSV_XS'->new({'binary', 1, %$kind_args, %$args});
-                if (not ref $fh) {
-                    my $file = $fh;
-                    undef $fh;
-                    Carp::croak("cannot open file: $file") unless open $fh, '<', $file;
-                }
-                else {
-                    $pass_fh = 1;
-                }
-                my $sub;
-                if (@_ == 2) {
-                    $csv->column_names($column_names);
-                    $sub = sub {
-                        $csv->getline_hr($fh);
-                    }
-                    ;
-                }
-                else {
-                    $sub = sub {
-                        $csv->getline($fh);
-                    }
-                    ;
-                }
-                return bless({'sub', $sub, 'fh', $fh, 'pass_fh', $pass_fh}, 'Util::All::_Tmp::Text::CSV_XS');
-            }
-            ;
-        },
-        '-select' => []
-      }
-    ]
-  ],
   '-data' => [
     [
       'Scalar::Util',
@@ -369,154 +315,6 @@ our $Utils = {
           'tainted',
           'weaken'
         ]
-      }
-    ]
-  ],
-  '-datetime' => [
-    [
-      'DateTime',
-      '',
-      {
-        'now' => sub {
-            sub () {
-                'DateTime'->now(@_);
-            }
-            ;
-        },
-        'today' => sub {
-            sub () {
-                'DateTime'->today(@_);
-            }
-            ;
-        },
-        '-select' => [],
-        'datetime' => sub {
-            sub {
-                'DateTime'->new(@_);
-            }
-            ;
-        }
-      }
-    ],
-    [
-      'DateTime::Duration',
-      '',
-      {
-        'hour' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'hours' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        '-select' => [],
-        'second' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'month' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('months', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'minutes' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'days' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'seconds' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'minute' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'years' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'day' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('days', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'datetime_duration' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub {
-                'DateTime::Duration'->new('end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit', @_);
-            }
-            ;
-        },
-        'year' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub () {
-                'DateTime::Duration'->new('years', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        },
-        'months' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            sub ($) {
-                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
-            }
-            ;
-        }
-      }
-    ],
-    [
-      'Date::Parse',
-      '',
-      {
-        '-select' => [],
-        'datetime_parse' => sub {
-            my $i = 1;
-            unless ($INC{'Date/Manip.pm'}) {
-                require Date::Manip;
-                $i = 0;
-            }
-            sub {
-                unless ($i) {
-                    $i = 1;
-                    Date::Manip::Date_Init();
-                }
-                my($ss, $mm, $hh, $day, $month, $year, $zone) = Date::Parse::strptime(@_);
-                'DateTime'->new('year', $year + 1900, 'month', ++$month, 'day', $day, 'hour', $hh || 0, 'minute', $mm || 0, 'second', $ss || 0, 'time_zone', $Date::Manip::Zone{'n2o'}{Time::Zone::tz_name($zone)} || 'local');
-            }
-            ;
-        }
       }
     ]
   ],
@@ -584,119 +382,6 @@ our $Utils = {
             sub (@) {
                 local $Data::Dumper::Deparse = 1;
                 Data::Dumper::Dumper(@_);
-            }
-            ;
-        }
-      }
-    ]
-  ],
-  '-email' => [
-    [
-      'Email::Sender::Simple',
-      '',
-      {
-        'send_template_email' => sub {
-            use strict 'refs';
-            require Template;
-            unless (defined &sendmail) {
-                'Email::Sender::Simple'->import('sendmail');
-            }
-            sub {
-                my $pkg = (caller)[0];
-                my $opt = {};
-                $opt = pop @_ if @_ > 2 and ref $_[-1] eq 'HASH';
-                my($file_or_scalarref, $params, $attr) = @_;
-                my $tt = 'Template'->new('INTERPOLATE', 1, 'ABSOLUTE', 1, 'RELATIVE', 1);
-                my $body;
-                $tt->process($file_or_scalarref, $params, \$body);
-                my %header;
-                if ($body =~ s/^(.+?)--\s*//s and my $header = $1) {
-                    foreach my $kv (split(/[\r\n]+/, $header, 0)) {
-                        my($k, $v) = split(/\s*:\s*/, $kv, 2);
-                        $header{ucfirst $k} = $v;
-                    }
-                }
-                no strict 'refs';
-                my $mime = sendmail(&{$pkg . '::' . 'create_email';}([%header], $attr, $body));
-            }
-            ;
-        },
-        '-select' => [],
-        'send_email' => sub {
-            use strict 'refs';
-            unless (defined &sendmail) {
-                'Email::Sender::Simple'->import('sendmail');
-            }
-            sub {
-                no strict 'refs';
-                my $pkg = (caller)[0];
-                my $opt = {};
-                $opt = pop @_ if ref $_[-1] eq 'HASH';
-                my $mime = sendmail(@_ == 1 ? @_ : &{$pkg . '::' . 'create_email';}(@_), $opt);
-            }
-            ;
-        }
-      }
-    ],
-    [
-      'Email::MIME',
-      '',
-      {
-        'parse_email' => sub {
-            sub {
-                my $src = shift @_;
-                return 'Email::MIME'->new($src);
-            }
-            ;
-        },
-        '-select' => [],
-        'create_email' => sub {
-            my($pkg, $class, $func, $args) = @_;
-            require Clone;
-            require MIME::Types;
-            require File::Slurp;
-            my $mime = 'MIME::Types'->new;
-            my $charset_resolver = sub {
-                my($attributes, $header) = @_;
-                my $charset = $$attributes{'charset'} || '';
-                if ($charset =~ /iso[-_]2022[-_]jp/o or $charset =~ /\bjis$/o) {
-                    $charset = '';
-                    my $i = 0;
-                    foreach my $head (@$header) {
-                        next if ++$i % 2;
-                        Encode::from_to($head, 'iso-2022-jp', 'MIME-Header-ISO_2022_JP');
-                    }
-                    $$attributes{'encoding'} = '7bit';
-                }
-                elsif ($charset) {
-                    $$attributes{'encoding'} = 'base64';
-                }
-                return $charset;
-            }
-            ;
-            sub {
-                my($header, $attributes, $parts_or_body) = @_;
-                $attributes = Clone::clone($attributes);
-                $parts_or_body = Clone::clone($parts_or_body) if ref $parts_or_body;
-                my $charset = &$charset_resolver($attributes, $header);
-                if (ref $parts_or_body) {
-                    'Email::MIME'->create('attributes', $attributes, 'parts', [map({my(@arg, $charset);
-                    my($attributes, $body_or_file) = ref $_ ? @$_ : ({}, $_);
-                    if (-e $body_or_file) {
-                        my($ext) = $body_or_file =~ /\.(.+?)$/;
-                        my $attr = {'content_type', $mime->mimeTypeOf($ext), 'encoding', 'base64'};
-                        @arg = ('body', scalar File::Slurp::slurp($body_or_file), 'attributes', $attr);
-                    }
-                    else {
-                        $charset = &$charset_resolver($attributes, {});
-                        @arg = ('attributes', $attributes, 'body', $body_or_file);
-                    }
-                    'Email::MIME'->create(@arg);} @$parts_or_body)], $charset ? 'header_str' : 'header', $header);
-                }
-                else {
-                    $$attributes{'content_type'} ||= 'text/plain';
-                    'Email::MIME'->create('attributes', $attributes, $charset ? 'body_str' : 'body', $parts_or_body, $charset ? 'header_str' : 'header', $header);
-                }
             }
             ;
         }
@@ -874,93 +559,6 @@ our $Utils = {
       }
     ]
   ],
-  '-image' => [
-    [
-      'Image::Info',
-      '',
-      {
-        '-select' => [],
-        'image_type' => sub {
-            sub {
-                my($file) = @_;
-                my $type = Image::Info::image_type($file);
-                if (exists $$type{'error'}) {
-                    die $$type{'error'};
-                }
-                return $$type{'file_type'};
-            }
-            ;
-        },
-        'image_info' => sub {
-            sub {
-                my($file) = @_;
-                my $info = Image::Info::image_info($file);
-                if (ref $info eq 'HASH' and exists $$info{'error'}) {
-                    die $$info{'error'};
-                }
-                return $info;
-            }
-            ;
-        }
-      }
-    ],
-    [
-      'Imager',
-      '',
-      {
-        'convert_image' => sub {
-            sub {
-                my($before, $after) = @_;
-                $after ||= '';
-                my $img = 'Imager'->new;
-                die $img->errstr unless $img->read('file', $before);
-                if (not $after =~ /\./) {
-                    my $i;
-                    die $img->errstr unless $img->write('data', \$i, 'type', $after);
-                    print $i;
-                }
-                else {
-                    die $img->errstr unless $img->write('file', $after);
-                }
-                return $img;
-            }
-            ;
-        },
-        '-select' => [],
-        'resize_image' => sub {
-            sub ($@) {
-                my($before, $after, @conf) = @_;
-                $after ||= '';
-                my $img = 'Imager'->new;
-                die $img->errstr unless $img->read('file', $before);
-                my %conf;
-                if (ref $conf[0] eq 'ARRAY') {
-                    $conf{'xpixels'} = $conf[0][0];
-                    $conf{'ypixels'} = $conf[0][1];
-                    $conf{'type'} = 'nonprop';
-                }
-                elsif (@conf == 1 and not ref $conf[0]) {
-                    $conf{'scalefactor'} = $conf[0];
-                }
-                else {
-                    (%conf) = @conf;
-                }
-                my $newimg = $img->scale(%conf);
-                if (not $after =~ /\./) {
-                    my $i;
-                    die $newimg->errstr unless $newimg->write('data', \$i, 'type', $after);
-                    print $i;
-                }
-                else {
-                    die $newimg->errstr unless $newimg->write('file', $after);
-                }
-                return $newimg;
-            }
-            ;
-        }
-      }
-    ]
-  ],
   '-json' => [
     [
       'JSON::XS',
@@ -1053,97 +651,6 @@ our $Utils = {
           'md5_hex',
           'md5_base64'
         ]
-      }
-    ]
-  ],
-  '-number' => [
-    [
-      'Number::Format',
-      '',
-      {
-        'number_price' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args, %$args);
-            sub {
-                $n->format_price(@_);
-            }
-            ;
-        },
-        'number_commify' => sub {
-            sub {
-                local $_ = shift @_;
-                while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) {
-                    ();
-                }
-                return $_;
-            }
-            ;
-        },
-        'number_unit' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args, %$args);
-            sub {
-                $n->format_bytes(@_);
-            }
-            ;
-        },
-        '-select' => [],
-        'to_number' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args, %$args);
-            sub {
-                $n->unformat_number(@_);
-            }
-            ;
-        },
-        'number_round' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args);
-            sub {
-                $n->round(@_);
-            }
-            ;
-        },
-        'number_format' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args, %$args);
-            sub {
-                $n->format_number(@_);
-            }
-            ;
-        }
-      }
-    ]
-  ],
-  '-prompt' => [
-    [
-      'IO::Prompt',
-      '',
-      {
-        'required_prompt' => sub {
-            sub {
-                my $message = shift @_;
-                my $answer;
-                PROMPT: {
-                    $answer = IO::Prompt::prompt($message, @_);
-                    redo PROMPT unless $$answer{'value'};
-                    return $$answer{'value'};
-                }
-            }
-            ;
-        },
-        '-select' => [
-          'prompt'
-        ],
-        'password_prompt' => sub {
-            sub {
-                my $message = shift @_;
-                my $answer;
-                $answer = IO::Prompt::prompt($message, -'echo', '*', @_);
-                $$answer{'value'};
-            }
-            ;
-        }
       }
     ]
   ],
@@ -1298,33 +805,6 @@ our $Utils = {
           'nanosleep',
           'ualarm'
         ]
-      }
-    ]
-  ],
-  '-xml' => [
-    [
-      'XML::Simple',
-      '',
-      {
-        '-select' => [],
-        'to_xml' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
-            sub {
-                XML::Simple::XMLout(shift @_, %$args);
-            }
-            ;
-        },
-        'from_xml' => sub {
-            my($pkg, $class, $func, $args, $kind_args) = @_;
-            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
-            $$args{'Forcearray'} ||= $$kind_args{'force_array'} || $$args{'force_array'};
-            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
-            sub {
-                XML::Simple::XMLin(shift @_, %$args);
-            }
-            ;
-        }
       }
     ]
   ],
@@ -1836,61 +1316,6 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
  z2h('アイウエオ１２３４ＡＢＣＤ（）＊＆')
  # equal to: use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
 
-=head2 -csv
-
-=head3 parse_csv *
-
-  use Util::All -csv;
-  
-  my $csv = parse_csv($file_or_fh);
-  while (my $ar = $csv->next) {
-     print "@$ar\n";
-  }
-  
-  my $csv = parse_csv($file_or_fh, ['name', 'age']);
-  while (my $hr = $csv->next) {
-     print jion " ", %$hr, "\n";
-  }
-  
-  # pass options to Text::CSV_XS
-  use Util::All -csv => {-args => {binary => 0, eol => "\r\n"}};
-
-
-=head3 test code
-
- package test_csv1;
- use Util::All -csv;
- my $csv = parse_csv("t/data/test.csv");
- my $sum = 0;
- while (my $l = $csv->next) {$sum +=$l->[1]};
- $sum;
- # equal to: 223
-
- package test_csv2;
- use Util::All -csv;
- my $csv = parse_csv("t/data/test.csv", ['l', 'num']);
- my $label = '';
- while (my $l = $csv->next) {$label .=$l->{l}};
- $label;
- # equal to: "abcdefアイウエオ"
-
- package test_csv3;
- use Util::All -csv;
- open my $fh, "t/data/test.csv";
- my $csv = parse_csv($fh);
- my $sum = 0;
- while (my $l = $csv->next) {$sum +=$l->[1]};
- $sum;
- # equal to: 223
-
- package test_csv4;
- use Util::All -csv;
- open my $fh, "t/data/test.csv";
- my $csv = parse_csv($fh);
- 1 while $csv->next;
- tell $fh;
- # equal to: 49
-
 =head2 -data
 
 =head3 functions of L<Scalar::Util>
@@ -1918,96 +1343,6 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
 =head4 tainted
 
 =head4 weaken
-
-=head2 -datetime
-
-=head3 functions to return DateTime object
-
-  $dt = datetime(year => .., month => ..,);
-  $dt = datetime_parse("2009/09/09");
-  $dt = now;
-  $dt = today;
-
-=head3 functions to return DateTime::Duration object
-
-NOTE THAT: end_of_month is set as limit.
-
-  year
-  month
-  day
-  hour
-  minute
-  second
-
-They return DateTime::Duration object. So you can use them for calcuration.
-
-  $duration = year + month + day
-
-You can use plural form of these functions, too which can take number.
-
-  years 5;
-  months 5;
-
-example:
-
-  $after_five_year_from_now = now + years 5;
-
-=head3 How to change end_of_month?
-
-  use Util::All -datetime => [-args => {end_of_month => 'wrap'}];
-
-
-=head3 function enable to rename *
-
-now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute, years, day, datetime_duration, year, months, datetime_parse
-
-=head3 test code
-
- package test_datetime1;
- use Util::All '-datetime';
- my $dt = datetime_parse("1970/01/01");
- $dt += year;
- $dt->year;
- # equal to: 1971
-
- package test_datetime2;
- use Util::All '-datetime';
- my $dt = datetime_parse("1970/01/01");
- $dt += years 2;
- $dt->year;
- # equal to: 1972
-
- package test_datetime3;
- use Util::All '-datetime';
- my $dt = datetime_parse("1970/02/01");
- $dt += month;
- $dt->day;
- # equal to: 1
-
- package test_datetime4;
- use Util::All '-datetime';
- year->end_of_month_mode;
- # equal to: ('limit')
-
- package test_datetime5;
- use Util::All '-datetime' => [-args => {end_of_month => 'wrap'}];
- year->end_of_month_mode;
- # equal to: ('wrap')
-
- package test_datetime6;
- use Util::All '-datetime' => ['month', year => {end_of_month => 'preserve'}];
- join ' ', year->end_of_month_mode, month->end_of_month_mode;
- # equal to: ('preserve limit')
-
- package test_datetime7;
- use Util::All '-datetime' => ['year', month => {end_of_month => 'wrap'}];
- join ' ', month->end_of_month_mode, year->end_of_month_mode;
- # equal to: ('wrap limit')
-
- package test_datetime8;
- use Util::All '-datetime' => ['day', days => {end_of_month => 'preserve'}];
- join ' ', days(5)->end_of_month_mode, day->end_of_month_mode;
- # equal to: ('preserve limit')
 
 =head2 -debug
 
@@ -2081,66 +1416,6 @@ as same as dump. but it dump code reference as string.
   p($variable)
 
 as same as dump(function name is borrowed from Ruby).
-
-=head2 -email
-
-=head3 examples
-
-You have to pass encoded arguments.
-
-  # multipart email
-  my @parts = ([$body, $attribute], [$body2, $attribute2]);
-  my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
-  send_email($email);
-
-  # multipart email
-  my $email = create_email([To => 'from@example.com', Subject => "さぶじぇくと"], {charset => "jis"},
-                           [[{content_type => "text/plain", charset => "utf8"}, "まるちばいと"],
-                            "example.jpg"]);
-  send_email($email);
-
-  # singlepart email
-  my $email = create_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body);
-  send_email($email);
-
-  # send_email with create_email
-  send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, \@parts);
-  send_email([From => 'from@example.com'], {'content_type' => 'text/plain'}, $body, {transport => $transport});
-
-
-  # send_template_email (singlepart only)
-  send_template_email($template_file, $parameter, {'content_type' => 'text/plain'}, {transport => $transprot})
-  # $template_file is like the following
-  #
-  #   From:
-  #   To: 
-  #   Subject: 
-  #   --
-  #   Hello, World!
-  #   Hello, World!
-  #   Hello, World!
-  #
-  # header is begore '--'. data part is aftrer '--'.
-
-  # parse_email
-  parse_email($email_src); # currently just returns Email::MIME object
-
-=head3 send_email
-
-  send_email($email);
-  send_email($email, $options);
-  send_email($header, $attributes, $body, $options);
-  send_email($header, $attributes, \@parts, $options);
-
-arguments is Email::MIME object(create_email returns) or
-arguments as same as create_email.
-As an additional argument, you can put hash ref as last argument
-which is equal to last argument of Email::Sender::Simple's sendmail.
-
-
-=head3 function enable to rename *
-
-send_template_email, send_email, parse_email, create_email
 
 =head2 -encode
 
@@ -2271,39 +1546,6 @@ do http method and get HTTP::Response object.
 
 http_post, http_put, http_get, http_head, http_delete
 
-=head2 -image
-
-=head3 convert_image *
-
-  convert_image("before.jpg", "after.png");
-  convert_image("before.jpg", "png"); # output to stdout as ping
-
-
-convert images to other format.
-
-=head3 image_info *
-
-  my $info = image_info("picture.jpg");
-
-return image information(Image::Info)
-
-=head3 image_type *
-
-  my $info = image_type("picture.jpg");
-
-return image type(Image::Info)
-
-=head3 resize_image *
-
-  resize_image("before.jpg", "after.png", %option);
-  resize_image("before.jpg", "after.png", [200, 100]); # 200x100px
-  resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
-  resize_image("before.jpg", "png", 0.5);  # output 1/2 scale image to STDOUT as ping
-
-
-resize image.
-
-
 =head2 -json
 
 =head3 to_json_file *
@@ -2431,156 +1673,6 @@ encode_json of L<JSON::XS>
 =head4 md5_hex
 
 =head4 md5_base64
-
-=head2 -number
-
-=head3 number_commify *
-
-  sub {
-  
-      # code is borrowed from Template::Plugin::Comma
-      sub {
-          local $_ = shift;
-          while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
-          return $_;
-        }
-    }
-
-
-=head3 number_price *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_price(@_);
-        }
-    }
-
-
-=head3 number_unit *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_bytes(@_);
-        }
-    }
-
-
-=head3 number_round *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new(%$kind_args);
-      sub {
-          $n->round(@_);
-        }
-    }
-
-
-=head3 to_number *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->unformat_number(@_);
-        }
-    }
-
-
-=head3 number_format *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_number(@_);
-        }
-    }
-
-
-=head3 test code
-
- number_commify(10000);
- # equal to: ('10,000')
-
- number_price(10000);
- # equal to: Number::Format->new->format_price(10000);
-
- number_round(123, -2);
- # equal to: 100
-
- number_round(123.25, 1);
- # equal to: 123.3
-
- number_unit(1024, unit => 'K', mode => 'iec')
- # equal to: ('1KiB')
-
- number_unit(1048576, unit => 'M', mode => 'trad')
- # equal to: ('1M')
-
- to_number('1,000');
- # equal to: 1000
-
- to_number('1,025');
- # equal to: 1025
-
- to_number('1KiB');
- # equal to: 1024
-
-=head2 -prompt
-
-=head3 functions of L<IO::Prompt>
-
-=head4 prompt
-
-=head3 required_prompt *
-
-  sub {
-      sub {
-          my $message = shift;
-          my $answer;
-        PROMPT:
-          {
-              $answer = IO::Prompt::prompt( $message, @_ );
-              $answer->{value} or redo PROMPT;
-              return $answer->{value};
-          }
-        }
-    }
-
-
-=head3 password_prompt *
-
-  sub {
-      sub {
-          my $message = shift;
-          my $answer;
-          $answer = IO::Prompt::prompt( $message, -echo => "*", @_ );
-          $answer->{value};
-        }
-    }
-
-
-=head3 test code
-
- package Util::All::_prompt;
- use Util::All '-prompt';
- $|=1;
- my $answer = required_prompt("input somthing(1):");
- $answer !~ /%$/;
- # equal to: 1;
-
- package Util::All::_prompt;
- use Util::All '-prompt';
- $|=1;
- password_prompt("input somthing(2):");
- my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn);
- $answer eq 'y';
- # equal to: 1;
 
 =head2 -sha
 
@@ -2746,35 +1838,6 @@ recursively make utf8 flag on(not destructive)
 
 =head4 ualarm
 
-=head2 -xml
-
-=head3 to_xml *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
-      sub {
-          XML::Simple::XMLout( shift, %$args );
-        }
-    }
-
-
-=head3 from_xml *
-
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
-           $kind_args->{parser}
-        || $args->{parser}
-        || 'XML::Parser';
-      $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
-      $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
-      sub {
-          XML::Simple::XMLin( shift, %$args );
-        }
-    }
-
-
 =head2 -yaml
 
 =head3 to_yaml
@@ -2845,6 +1908,10 @@ If you want to embed usage.
        - example1
        - example2
      - explanation
+   - test:
+    -
+       - test code
+       - return value
 
 =head2 Third:
 
@@ -2861,8 +1928,26 @@ If you want to embed usage.
      - usage:
        - example
        - explanation
+     - test:
+       -
+         - test code
+         - return value
 
-example can be array ref.
+example can be array ref like the following.
+
+     - usage:
+       -
+         -  example1
+         -  example2
+       - explanation
+
+you cnan write code to skip test as the following.
+
+     - test:
+       - skip: $^O eq 'MSWin32';
+       -
+         - test code
+         - return value
 
 =head2 Fourth:
 
@@ -2924,6 +2009,19 @@ use -usage key.
      
 
 If this is defined, all of other usage expressions, I showed you then in this section, are ignored.
+
+=head2 write all tests for the kind?
+
+use -test key.
+
+ datetime:
+   -test:
+     -
+       - test code
+       - return value
+     -
+       - test code
+       - return value
 
 =head1 CREATE PLUGINS
 

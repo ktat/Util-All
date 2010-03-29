@@ -6,6 +6,7 @@ use File::Slurp 'slurp';
 use Tie::IxHash;
 use Data::Dumper;
 use Perl::Tidy qw/perltidy/;
+use FindBin;
 use List::MoreUtils ();
 
 local $Data::Dumper::Deparse = 1;
@@ -19,8 +20,26 @@ my %CONF;
 my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
 my $NOTEST       = exists $CONF{'-notest'} || 0;
 
-write_file(def_usage_from_file("functions.yml"));
-system("prove -Ilib t/ t/auto/;") unless $NOTEST;
+main();
+
+sub main {
+  reset_test();
+  my @defs = def_usage_from_file("functions.yml");
+  my $plugins = pop @defs;
+  my (@modules, @requires);
+  my ($modules, $requires) = write_file("all", @defs) or die "NG";
+  foreach my $k (keys %$plugins) {
+    @defs = def_usage_from_file({$k => $plugins->{$k}});
+    pop @defs;
+    push @modules, @$modules;
+    push @requires, @$requires;
+    ($modules, $requires) = write_file($k, @defs) or die "NG";
+    push @modules, @$modules;
+    push @requires, @$requires;
+  }
+  write_make_file(\@modules, \@requires);
+  system("prove -Ilib t/ t/auto/;") unless $NOTEST;
+}
 
 sub def_usage_from_file {
   tie my %new, 'Tie::IxHash';
@@ -28,16 +47,22 @@ sub def_usage_from_file {
   tie %{$usage_test{usage} ||= {}}, 'Tie::IxHash';
   tie %{$usage_test{test} ||= {}}, 'Tie::IxHash';
 
-  my $def = LoadFile(shift);
+  my $def = shift;
+  $def = LoadFile($def) unless ref $def;
+
   my @modules;
   my @requires;
-  my @as_plugins; # not yet
   my $default_priority = 1000;
+  my %plugins;
 
   foreach my $k (sort keys %$def) {
     my %tmp;
     push @requires, @{delete $def->{$k}->{'-require'} || []};
-    push @as_plugins, delete $def->{$k}->{'-as_plugin'} || (); # do nothing
+    if (delete $def->{$k}->{'-as_plugin'}) {
+      $plugins{$k} = delete $def->{$k};
+      next;
+    }
+
     $usage_test{usage}->{$k}->{'-all'} = delete $def->{$k}->{'-usage'} if exists $def->{$k}->{'-usage'};
     $usage_test{test}->{$k}->{'-all'}  = delete $def->{$k}->{'-test'}  if exists $def->{$k}->{'-test'};
 
@@ -131,28 +156,31 @@ sub def_usage_from_file {
       }
     }
   }
-  return \%new, $usage_test{usage}, \@modules, \@requires, $usage_test{test};
+  return (\%new, $usage_test{usage}, \@modules, \@requires, $usage_test{test}, \%plugins);
 }
 
 sub write_file {
-  my ($new, $usage_data, $modules, $requires, $test) = @_;
+  my ($kind, $new, $usage_data, $modules, $requires, $test) = @_;
   my $def_string = Dumper($new);
   my $success = 0;
 
-  my $template = slurp("util-all.template") or die $!;
+  my $template = slurp($kind eq 'all' ? "$FindBin::Bin/../template/util-all.template" : "$FindBin::Bin/../template/util-all-plugin.template") or die $!;
 
   my $usage = usage($usage_data, $test);
   generate_test($usage_data, $test);
 
+  $kind = ucfirst($kind);
+  $template =~s{###KIND###}{$kind}g;
   $template =~s{###DEFINITION###}{$def_string};
   $template =~s{###USAGE###}{$usage};
   $template =~s{\$Utils1}{\$Utils}g;
 
+  my $out_file = $kind eq 'All' ? 'lib/Util/All.pm' : 'lib/Util/All/Plugin/' . ucfirst($kind) . '.pm';
   {
-    open my $out, '>', 'lib/Util/All.pm' or die $!;
+    open my $out, '>', $out_file or die $!;
     print $out $template;
     close $out;
-    print "Writing lib/Util/All.pm\n";
+    print "Writing $out_file\n";
     print "try perl -Ilib -MUtil::All=-all -e ''\n";
     unless(system("perl -Ilib -MUtil::All=-all -e '';")) {
       print "OK\n";
@@ -162,7 +190,11 @@ sub write_file {
       die "maybe Util::All has syntax error.";
     }
   }
+  return $success ? ($modules, $requires) : ();
+}
 
+sub write_make_file {
+  my ($modules, $requires) = @_;
   my $makefile = do {local $/; <DATA>};
   my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort(List::MoreUtils::uniq(@$modules, @$requires));
   $makefile =~s{###DEPENDENT_MODULES###}{$dependent_modules};
@@ -172,7 +204,7 @@ sub write_file {
     close $out;
     print "Writing Makefile.PL\n";
   }
-  return $success;
+  return 1;
 }
 
 sub usage {
@@ -234,13 +266,16 @@ sub usage {
   return $c;
 }
 
-sub generate_test {
-  my ($usage, $test) = @_;
+sub reset_test {
   unless (-d "t/auto") {
     mkdir 't/auto';
   } else {
     unlink <t/auto/*>;
   }
+}
+
+sub generate_test {
+  my ($usage, $test) = @_;
   foreach my $kind (sort keys %$test) {
     my $kind_tag = defined &{$kind} ? "-$kind" : "'-$kind'";
     open my $fh, ">", sprintf "t/auto/%s.t", $kind;
