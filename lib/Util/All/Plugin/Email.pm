@@ -126,13 +126,9 @@ sub utils {
 
 =head1 NAME
 
-Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
+Util::All::Plugin::Email; -  Util::All plugin for Email
 
 =cut
-
-our $VERSION = '0.01';
-
-=head1 SYNOPSIS
 
 =head1 EXPORT
 
@@ -217,36 +213,13 @@ You can find documentation for this module with the perldoc command.
 
  perldoc Util::All::Email
 
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Util-All>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Util-All>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Util-All>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Util-All/>
-
-=back
-
-=head1 ACKNOWLEDGEMENTS
-
-Thanks to All Perl Users.
-When I find useful code, I write it here as memo.
-
 =head1 SEE ALSO
 
 =over 4
+
+=item L<Util::All>
+
+collect perl utilities and group them by appropriate kind.
 
 =item L<Util::Any>
 
