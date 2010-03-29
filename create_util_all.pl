@@ -221,6 +221,7 @@ sub usage {
       my $t = $test->{$kind}{$f};
       $c .= "=head3 test code\n\n";
       foreach my $test (@$t) {
+        next if ref $test eq 'HASH';
         my ($_test, $_r) = @$test == 3 ? @{$test}[1,2] : @{$test}[0,1];
         $_test =~s{;}{;\n}g;
         $_test =~s{^\s*}{ }mg;
@@ -265,6 +266,10 @@ __EOL
     foreach my $func (sort keys %{$test->{$kind}}) {
       my $defs = $test->{$kind}->{$func};
       next if !$defs or !@$defs;
+      my $skip = ref $defs->[0] eq 'HASH' ? shift(@$defs) : '';
+      if ($skip) {
+        printf $fh "SKIP: { skip(q{%s}, %d) if %s;\n", $skip->{skip}, scalar(@$defs), $skip->{skip};
+      }
       foreach my $def (@$defs) {
         if (ref $def) {
           if (@$def == 3) {
@@ -286,6 +291,7 @@ EOL
           print $fh "ok(do {${$def}[0]})\n";
         }
       }
+      print $fh "}\n" if $skip;
     }
     print $fh "done_testing;";
     close $fh;

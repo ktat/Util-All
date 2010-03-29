@@ -1130,7 +1130,9 @@ benchmark:
         }
       - usage:
         - cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
-        - like cmpthese but compare 2 code with same argument
+        -
+          - like cmpthese but compare 2 code with same argument.
+          - if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
     timesamearg:
       - |
         sub {
@@ -1141,7 +1143,9 @@ benchmark:
         }
       - usage:
         - timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
-        - like timethese but compare 2 code with same argument
+        -
+          - like timethese but compare 2 code with same argument.
+          - if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
 
 file:
   File::Find:
@@ -1167,8 +1171,8 @@ file:
             my %args = (%$kind_args, %$args, @args % 2 ? (TEMPLATE => @args) : @args);
             my %new_args = map {uc($_) => $args{$_}} keys %args;
             if (exists $new_args{TEMPLATE}) {
-              if ($new_args{TEMPLATE} =~s{\*(.+)?$}{XXXX}) {
-                 $new_args{SUFFIX} ||= $1;
+              if ($new_args{TEMPLATE} =~s{(X{4}X*)(.+)?$}{$1} or $new_args{TEMPLATE} =~s{(\*)(.+)?$}{XXXX}) {
+                 $new_args{SUFFIX} ||= $2;
               }
               if ($new_args{TEMPLATE} !~ /XXXX$/) {
                 $new_args{TEMPLATE} .= "XXXX"
@@ -1194,7 +1198,6 @@ file:
         - 
           - use Util::All -file; my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
           - 1
-        - 
           - use Util::All -file; my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
           - 1
         - 
@@ -1203,17 +1206,6 @@ file:
         - 
           - use Util::All -file; my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
           - 1
-    file_base64:
-        - |
-         sub {
-           require File::Slurp;
-           require MIME::Base64;
-           sub {
-             my ($file) = @_;
-             my $d = File::Slurp::slurp($file);
-             return MIME::Base64::encode_base64($d);
-           }
-         }
 
 # bool:
 #   Return::Value:
@@ -1330,7 +1322,7 @@ number:
       - 1024
 image:
   -as_plugin: 1
-  -require : ['MIME::Base64', 'File::Slurp']
+  -require : ['File::Slurp']
   Imager:
     convert_image:
       - |
@@ -1523,3 +1515,11 @@ prompt:
             $answer->{value};
           }
         }
+  -test:
+    - skip: $^O eq 'MSWin32';
+    -
+      - package Util::All::_prompt;use Util::All '-prompt'; $|=1; my $answer = required_prompt("input somthing(1):"); $answer !~ /%$/;
+      - 1;
+    -
+      - package Util::All::_prompt;use Util::All '-prompt'; $|=1; password_prompt("input somthing(2):"); my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn); $answer eq 'y';
+      - 1;

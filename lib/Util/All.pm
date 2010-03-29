@@ -751,16 +751,6 @@ our $Utils = {
       '',
       {
         '-select' => [],
-        'file_base64' => sub {
-            require File::Slurp;
-            require MIME::Base64;
-            sub {
-                my($file) = @_;
-                my $d = File::Slurp::slurp($file);
-                return MIME::Base64::encode_base64($d);
-            }
-            ;
-        },
         'tempfile' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
@@ -768,8 +758,8 @@ our $Utils = {
                 my(%args) = (%$kind_args, %$args, @args % 2 ? ('TEMPLATE', @args) : @args);
                 my(%new_args) = map({uc $_, $args{$_};} keys %args);
                 if (exists $new_args{'TEMPLATE'}) {
-                    if ($new_args{'TEMPLATE'} =~ s/\*(.+)?$/XXXX/) {
-                        $new_args{'SUFFIX'} ||= $1;
+                    if ($new_args{'TEMPLATE'} =~ s/(X{4}X*)(.+)?$/$1/ or $new_args{'TEMPLATE'} =~ s/(\*)(.+)?$/XXXX/) {
+                        $new_args{'SUFFIX'} ||= $2;
                     }
                     if (not $new_args{'TEMPLATE'} =~ /XXXX$/) {
                         $new_args{'TEMPLATE'} .= 'XXXX';
@@ -1578,13 +1568,13 @@ to_base, from_base
 
   timesamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
-like timethese but compare 2 code with same argument
+ARRAY(0x2d9bb08)
 
 =head3 cmpsamearg *
 
   cmpsamearg($count, {name => \&code, name2 => \&code}, \%samearg)
 
-like cmpthese but compare 2 code with same argument
+ARRAY(0x2d9b9a0)
 
 =head2 -carp
 
@@ -2192,19 +2182,6 @@ move of L<File::Copy>
 
 slurp of L<File::Slurp>
 
-=head3 file_base64 *
-
-  sub {
-      require File::Slurp;
-      require MIME::Base64;
-      sub {
-          my ($file) = @_;
-          my $d = File::Slurp::slurp($file);
-          return MIME::Base64::encode_base64($d);
-        }
-    }
-
-
 =head3 tempfile *
 
   $tmpfile = tempfile("anyname*.dat");
@@ -2230,11 +2207,6 @@ copy of L<File::Copy>
  use Util::All -file;
  my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1);
  $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
- # equal to: 1
-
- use Util::All -file;
- my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1);
- $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
  # equal to: 1
 
  use Util::All -file;
@@ -2588,6 +2560,23 @@ encode_json of L<JSON::XS>
         }
     }
 
+
+=head3 test code
+
+ package Util::All::_prompt;
+ use Util::All '-prompt';
+ $|=1;
+ my $answer = required_prompt("input somthing:");
+ $answer !~ /%$/;
+ # equal to: 1;
+
+ package Util::All::_prompt;
+ use Util::All '-prompt';
+ $|=1;
+ password_prompt("input somthing:");
+ my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn);
+ $answer eq 'y';
+ # equal to: 1;
 
 =head2 -sha
 
