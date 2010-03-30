@@ -149,6 +149,14 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 ###USAGE###
 
+=head1 PLUGINS
+
+=over 4
+
+###PLUGINS###
+
+=back
+
 =head1 YAML FILE STRUCTURE
 
 Util::All is generated from YAML file(functions.yml in distribution file).

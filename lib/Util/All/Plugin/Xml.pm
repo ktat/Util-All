@@ -14,20 +14,36 @@ sub utils {
       {
         '-select' => [],
         'to_xml' => sub {
+            require String::CamelCase;
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
+            if (not defined($$args{'ForceArray'} ||= $$kind_args{'force_array'})) {
+                if (not defined($$args{'ForceArray'} ||= $$args{'force_array'})) {
+                    $$args{'ForceArray'} = 1;
+                }
+            }
             sub {
-                XML::Simple::XMLout(shift @_, %$args);
+                my($data, %args) = @_;
+                $args{String::CamelCase::camelize($_)} = delete $args{$_} foreach (keys %args);
+                XML::Simple::XMLout($data, %$args, %args);
             }
             ;
         },
         'from_xml' => sub {
+            require String::CamelCase;
             my($pkg, $class, $func, $args, $kind_args) = @_;
             local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
-            $$args{'Forcearray'} ||= $$kind_args{'force_array'} || $$args{'force_array'};
-            $$args{'KeyAttr'} ||= $$kind_args{'key_attr'} || $$args{'key_attr'};
+            if (not defined($$args{'ForceArray'} ||= $$kind_args{'force_array'})) {
+                if (not defined($$args{'ForceArray'} ||= $$args{'force_array'})) {
+                    $$args{'ForceArray'} = 1;
+                }
+            }
+            if (my $key_attr = $$kind_args{'key_attr'} || $$args{'key_attr'}) {
+                $$args{'KeyAttr'} ||= $key_attr;
+            }
             sub {
-                XML::Simple::XMLin(shift @_, %$args);
+                my($file, %args) = @_;
+                $args{String::CamelCase::camelize($_)} = delete $args{$_} foreach (keys %args);
+                XML::Simple::XMLin($file, (%$args, %args));
             }
             ;
         }
@@ -53,30 +69,55 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 to_xml *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      $args->{KeyAttr} ||= $kind_args->{key_attr} || $args->{key_attr};
-      sub {
-          XML::Simple::XMLout( shift, %$args );
-        }
-    }
+  use Util::All -xml;
+  
+  my $xml = to_xml(\%structure);
+  my $xml = to_xml(\%structure, force_array => 0, key_attr => 'id');
+  
+  use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
+  my $xmls = to_xml(\%structure);
+
+
+parse XML file with XML::Simple. If xml has key attribute, you can pass key_attr => $key_name,
+then this return hash ref instead of array ref. As default, attribute name "id" is regarded as key attribute.
+This function pass fore_array => 1 to XML::Simple, If you don't want it, give force_array => 0 as option,
 
 
 =head3 from_xml *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER =
-           $kind_args->{parser}
-        || $args->{parser}
-        || 'XML::Parser';
-      $args->{Forcearray} ||= $kind_args->{force_array} || $args->{force_array};
-      $args->{KeyAttr}    ||= $kind_args->{key_attr}    || $args->{key_attr};
-      sub {
-          XML::Simple::XMLin( shift, %$args );
-        }
-    }
+  use Util::All -xml;
+  
+  $data = from_xml('hoge.xml');
+  $data = from_xml('hoge.xml', force_array => 0, key_attr => 'id'); # force_array is 1 as default.
+  
+  use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
+  
+  $data = from_xml('hoge.xml');
 
+
+parse XML file with XML::Simple.
+
+=head3 test code
+
+ package xml_test1;
+ use Util::All -xml => [-args => {force_array => 1, key_attr => "hoge"}];
+ from_xml("t/data/test.xml");
+ # equal to: {"parent" => { "1" => {"child" => ["1"]}, "2" => {"child" => ["2","40","50"]}}};
+
+ package xml_test2;
+ use Util::All -xml => [-args => {force_array => 0, key_attr => "hoge"}];
+ from_xml("t/data/test.xml");
+ # equal to: {"parent" => { "1" => {"child" => "1"}, "2" => {"child" => ["2","40","50"]}}};
+
+ package xml_test3;
+ use Util::All -xml;
+ from_xml("t/data/test.xml");
+ # equal to: {"parent" => [{hoge => 1, "child" => ["1"]}, {hoge => 2, "child" => ["2","40","50"]}]};
+
+ package xml_test4;
+ use Util::All -xml;
+ from_xml("t/data/test.xml", force_array => 0, key_attr => "hoge");
+ # equal to: {"parent" => { "1" => {"child" => "1"}, "2" => {"child" => ["2","40","50"]}}};
 
 
 

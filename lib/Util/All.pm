@@ -689,6 +689,20 @@ our $Utils = {
       }
     ],
     [
+      'IO::String',
+      '',
+      {
+        'to_fh' => sub {
+            sub {
+                my $scalar = shift @_;
+                'IO::String'->new(\$scalar);
+            }
+            ;
+        },
+        '-select' => []
+      }
+    ],
+    [
       'String::Util',
       '',
       {
@@ -1378,7 +1392,7 @@ dump code reference as string.
 =head3 ex_dumper *
 
   ex_dumper($data, \@keys);
-  ex_dumper($data, '__MOP__');
+  ex_dumper($data, ['__MOP__']);
 
 
 dump $data except @keys of hash
@@ -1416,6 +1430,14 @@ as same as dump. but it dump code reference as string.
   p($variable)
 
 as same as dump(function name is borrowed from Ruby).
+
+=head3 test code
+
+ use Util::All -debug;
+ my $d = ex_dumper({hoge => 1, fuga => 2, foo => {hoge => 3}}, ['hoge']);
+ my $VAR1;
+ eval "$d";
+ # equal to: {fuga => 2, foo => {}}
 
 =head2 -encode
 
@@ -1738,11 +1760,31 @@ encode_json of L<JSON::XS>
 
 =head4 unquote
 
+=head3 to_fh *
+
+  my $fh = to_fh($scalar);
+  print $_ while <$fh>;
+
+
+create IO::String object, which can be used as filehandle.
+
 =head3 strings *
 
   strings("111\0111");
 
 abstract printable characgter from scalar. just like strings command.
+
+=head3 test code
+
+ use Util::All -string;
+ my $s = "1\n2\n3\n4\n5\n";
+ my $fh = to_fh($s);
+ my $sum = 0;
+ while (<$fh>){ chomp;
+ $sum += $_ ;
+ $sum++};
+ $sum;
+ # equal to: 20
 
 =head3 test code
 
@@ -1873,6 +1915,26 @@ Load of L<YAML::XS>
  # equal to: "---\nhoge: 1\n"
 
 
+
+=head1 PLUGINS
+
+=over 4
+
+=item L<Util::All::Plugin::Email>
+
+=item L<Util::All::Plugin::Number>
+
+=item L<Util::All::Plugin::Csv>
+
+=item L<Util::All::Plugin::Xml>
+
+=item L<Util::All::Plugin::Prompt>
+
+=item L<Util::All::Plugin::Image>
+
+=item L<Util::All::Plugin::Datetime>
+
+=back
 
 =head1 YAML FILE STRUCTURE
 

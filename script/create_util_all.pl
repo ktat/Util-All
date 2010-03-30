@@ -8,6 +8,7 @@ use Data::Dumper;
 use Perl::Tidy qw/perltidy/;
 use FindBin;
 use List::MoreUtils ();
+use String::CamelCase;
 
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
@@ -27,7 +28,7 @@ sub main {
   my @defs = def_usage_from_file("functions.yml");
   my $plugins = pop @defs;
   my (@modules, @requires);
-  my ($modules, $requires) = write_file("all", @defs) or die "NG";
+  my ($modules, $requires) = write_file("all", @defs, $plugins) or die "NG";
   foreach my $k (keys %$plugins) {
     @defs = def_usage_from_file({$k => $plugins->{$k}});
     pop @defs;
@@ -160,7 +161,7 @@ sub def_usage_from_file {
 }
 
 sub write_file {
-  my ($kind, $new, $usage_data, $modules, $requires, $test) = @_;
+  my ($kind, $new, $usage_data, $modules, $requires, $test, $plugins) = @_;
   my $def_string = Dumper($new);
   my $success = 0;
 
@@ -174,15 +175,24 @@ sub write_file {
   $template =~s{###DEFINITION###}{$def_string};
   $template =~s{###USAGE###}{$usage};
   $template =~s{\$Utils1}{\$Utils}g;
+  if (defined $plugins) {
+    my @plugins;
+    foreach my $p (keys %$plugins) {
+      push @plugins, String::CamelCase::camelize($p);
+    }
+    my $plugin_text = join "\n\n", map "=item L<Util::All::Plugin::$_>", @plugins;
+    $template =~s{###PLUGINS###}{$plugin_text};
+  }
 
   my $out_file = $kind eq 'All' ? 'lib/Util/All.pm' : 'lib/Util/All/Plugin/' . ucfirst($kind) . '.pm';
   {
     open my $out, '>', $out_file or die $!;
     print $out $template;
     close $out;
+    my $k = lc $kind;
     print "Writing $out_file\n";
-    print "try perl -Ilib -MUtil::All=-all -e ''\n";
-    unless(system("perl -Ilib -MUtil::All=-all -e '';")) {
+    print "try perl -Ilib -MUtil::All=-$k -e ''\n";
+    unless(system("perl -Ilib -MUtil::All=-$k -e '';")) {
       print "OK\n";
       $success = 1;
     } else {

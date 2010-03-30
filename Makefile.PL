@@ -8,7 +8,6 @@ name           'Util-All';
 all_from       'lib/Util/All.pm';
 
 # Specific dependencies
-repository     'http://github.com/ktat/Util-All',
 requires       'Util::Any'  => '0.18',
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
@@ -38,6 +37,7 @@ requires       'Util::Any'  => '0.18',
 	'HTTP::Request::Common' => 0,
 	'Hash::Util' => 0,
 	'IO::Prompt' => 0,
+	'IO::String' => 0,
 	'Image::Info' => 0,
 	'Imager' => 0,
 	'JSON::XS' => 0,
