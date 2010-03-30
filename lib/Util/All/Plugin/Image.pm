@@ -142,6 +142,30 @@ return image type(Image::Info)
 resize image.
 
 
+=head3 test code
+
+ use Util::All -image;
+ convert_image("t/data/perl.jpg", "t/data/perl.png");
+ my $type = image_type("t/data/perl.png");
+ # equal to: "PNG"
+
+ use Util::All -image;
+ my $info = image_info("t/data/perl.png");
+ ($info->{width}, $info->{height});
+ # equal to: (100, 100)
+
+ use Util::All -image;
+ resize_image("t/data/perl.png", "t/data/perl_mini.png", 0.5);
+ my $info = image_info("t/data/perl_mini.png");
+ ($info->{width}, $info->{height});
+ # equal to: (50, 50)
+
+ use Util::All -image;
+ resize_image("t/data/perl.png", "t/data/perl_wide.png", [200,100]);
+ my $info = image_info("t/data/perl_wide.png");
+ ($info->{width}, $info->{height});
+ # equal to: (200, 100)
+
 
 
 =head1 AUTHOR

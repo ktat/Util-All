@@ -178,6 +178,10 @@ debug:
         - as same as dump. but it dump code reference as string.
   Tie::Trace:
     -select: ['watch']
+  Devel::Size:
+    -select: ['size', 'total_size']
+  Devel::Cycle:
+    -select: ['find_cycle']
 
 string:
   String::Util:
@@ -1422,6 +1426,19 @@ image:
           convert_image("before.jpg", "after.png");
           convert_image("before.jpg", "png"); # output to stdout as ping
         - convert images to other format.
+      - test:
+        - 
+          - use Util::All -image; convert_image("t/data/perl.jpg", "t/data/perl.png"); my $type = image_type("t/data/perl.png");
+          - '"PNG"'
+        - 
+          -  use Util::All -image; my $info = image_info("t/data/perl.png"); ($info->{width}, $info->{height});
+          - (100, 100)
+        - 
+          -  use Util::All -image; resize_image("t/data/perl.png", "t/data/perl_mini.png", 0.5); my $info = image_info("t/data/perl_mini.png"); ($info->{width}, $info->{height});
+          - (50, 50)
+        - 
+          -  use Util::All -image; resize_image("t/data/perl.png", "t/data/perl_wide.png", [200,100]); my $info = image_info("t/data/perl_wide.png"); ($info->{width}, $info->{height});
+          - (200, 100)
     resize_image:
       - |
         sub {

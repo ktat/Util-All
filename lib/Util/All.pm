@@ -320,6 +320,15 @@ our $Utils = {
   ],
   '-debug' => [
     [
+      'Devel::Cycle',
+      '',
+      {
+        '-select' => [
+          'find_cycle'
+        ]
+      }
+    ],
+    [
       'Tie::Trace',
       '',
       {
@@ -385,6 +394,16 @@ our $Utils = {
             }
             ;
         }
+      }
+    ],
+    [
+      'Devel::Size',
+      '',
+      {
+        '-select' => [
+          'size',
+          'total_size'
+        ]
       }
     ]
   ],
@@ -1364,6 +1383,10 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
 
 =head4 watch
 
+=head3 functions of L<Devel::Cycle>
+
+=head4 find_cycle
+
 =head3 functions of L<Data::Dump>
 
 =head4 dump
@@ -1373,6 +1396,12 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
 =head4 dd
 
 =head4 ddx
+
+=head3 functions of L<Devel::Size>
+
+=head4 size
+
+=head4 total_size
 
 =head3 dump
 

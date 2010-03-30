@@ -4,10 +4,13 @@ use strict;
 use Util::All '-debug';
 
 ok(defined &watch);
+ok(defined &find_cycle);
 ok(defined &dump);
 ok(defined &pp);
 ok(defined &dd);
 ok(defined &ddx);
+ok(defined &size);
+ok(defined &total_size);
 ok(defined &deep_dumper);
 ok(defined &ex_dumper);
 ok(defined &dumper);
