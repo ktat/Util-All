@@ -673,6 +673,45 @@ our $Utils = {
       }
     ]
   ],
+  '-oo' => [
+    [
+      'Class::Accessor::Fast',
+      '',
+      {
+        'mk_ro_accessors' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $cc = (caller 2)[0];
+            my $m = "Class::Accessor::Fast::$func";
+            sub {
+                $cc->$m(@_);
+            }
+            ;
+        },
+        '-select' => [],
+        'mk_wo_accessors' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $cc = (caller 2)[0];
+            my $m = "Class::Accessor::Fast::$func";
+            sub {
+                $cc->$m(@_);
+            }
+            ;
+        },
+        'mk_accessors' => sub {
+            my($pkg, $class, $func, $args, $kind_args) = @_;
+            my $cc = (caller 2)[0];
+            unless ($cc->isa('Class::Accessor::Fast')) {
+                eval "push \@${cc}::ISA, 'Class::Accessor::Fast'";
+            }
+            my $m = "Class::Accessor::Fast::$func";
+            sub {
+                $cc->$m(@_);
+            }
+            ;
+        }
+      }
+    ]
+  ],
   '-sha' => [
     [
       'Digest::SHA',
@@ -1724,6 +1763,81 @@ encode_json of L<JSON::XS>
 =head4 md5_hex
 
 =head4 md5_base64
+
+=head2 -oo
+
+provide constructor and accessors(Classs::Accessor::Fast)
+
+=head3 new
+
+  my $o = YourClass->new({foo => 1, bar => 1, buz => 2});
+
+constructor.
+
+=head3 mk_accessors
+
+  mk_accessors(qw/foo bar buz/);
+
+create get/set accessors.
+
+=head3 mk_ro_accessors
+
+  mk_ro_accessors(qw/foo bar buz/);
+
+create get accessors.
+
+=head3 mk_ro_accessors
+
+  mk_wo_accessors(qw/foo bar buz/);
+
+create set accessors.
+
+
+=head3 function enable to rename *
+
+mk_ro_accessors, mk_wo_accessors, mk_accessors
+
+=head3 test code
+
+ package Hoge1;
+ use Util::All -oo;
+ mk_accessors("foo", "bar");
+ my $o = Hoge1->new;
+ $o->foo(100);
+ $o->bar("ABC");
+ ($o->foo, $o->bar);
+ # equal to: (100, "ABC");
+
+ package Hoge2;
+ use Util::All -oo;
+ mk_ro_accessors("foo", "bar");
+ my $o = Hoge2->new({foo => 200, bar => 300});
+ ($o->foo, $o->bar);
+ # equal to: (200, 300);
+
+ package Hoge3;
+ use Util::All -oo;
+ mk_wo_accessors("foo", "bar");
+ my $o = Hoge3->new;
+ ($o->foo(300), $o->bar(400));
+ # equal to: (300, 400);
+
+ package Hoge4;
+ use Util::All -oo;
+ mk_ro_accessors("foo", "bar");
+ my $o = Hoge2->new({foo => 200, bar => 300});
+ eval {($o->foo(300), $o->bar(400))};
+ if($@){1}else{0};
+ # equal to: 1;
+
+ package Hoge5;
+ use Util::All -oo;
+ mk_wo_accessors("foo", "bar");
+ my $o = Hoge3->new;
+ ($o->foo(300), $o->bar(400));
+ eval {($o->foo, $o->bar)};
+ if($@){1}else{0};
+ # equal to: 1;
 
 =head2 -sha
 
