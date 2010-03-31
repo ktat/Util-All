@@ -1785,7 +1785,8 @@ encode_json of L<JSON::XS>
 
 =head2 -oo
 
-provide constructor and accessors(Classs::Accessor::Fast and Class::Data::Inheritable)
+provides simple OO interface.
+constructor and accessors(Classs::Accessor::Fast and Class::Data::Inheritable)
 
 =head3 new
 
@@ -1871,15 +1872,15 @@ classdata, wo_accessors, ro_accessors, accessors
  Hoge6->Foo;
  # equal to: "foo!"
 
- package Hoge6;
+ package Hoge7;
  use Util::All -oo;
  classdata("Foo");
- Hoge6->Foo("foo!");
- package Hoge7;
- push @Hoge7::ISA, 'Hoge6';
- my $s = Hoge7->Foo;
- Hoge7->Foo(100);
- $s.= Hoge7->Foo . Hoge6->Foo;
+ Hoge7->Foo("foo!");
+ package Hoge8;
+ push @Hoge8::ISA, 'Hoge7';
+ my $s = Hoge8->Foo;
+ Hoge8->Foo(100);
+ $s.= Hoge8->Foo . Hoge7->Foo;
  # equal to: "foo!100foo!"
 
 =head2 -sha

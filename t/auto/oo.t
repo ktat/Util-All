@@ -32,7 +32,7 @@ is_deeply(
   [do {"foo!"}],
 );
 is_deeply(
-  [do {package Hoge6; use Util::All -oo; classdata("Foo"); Hoge6->Foo("foo!"); package Hoge7; push @Hoge7::ISA, 'Hoge6'; my $s = Hoge7->Foo; Hoge7->Foo(100); $s.= Hoge7->Foo . Hoge6->Foo;}],
+  [do {package Hoge7; use Util::All -oo; classdata("Foo"); Hoge7->Foo("foo!"); package Hoge8; push @Hoge8::ISA, 'Hoge7'; my $s = Hoge8->Foo; Hoge8->Foo(100); $s.= Hoge8->Foo . Hoge7->Foo;}],
   [do {"foo!100foo!"}],
 );
 done_testing;
