@@ -621,6 +621,19 @@ our $Utils = {
       }
     ],
     [
+      'List::Pairwise',
+      '',
+      {
+        '-select' => [
+          'mapp',
+          'grepp',
+          'firstp',
+          'lastp',
+          'pair'
+        ]
+      }
+    ],
+    [
       'List::MoreUtils',
       '',
       {
@@ -1772,6 +1785,18 @@ encode_json of L<JSON::XS>
 =head4 uniq
 
 =head4 zip
+
+=head3 functions of L<List::Pairwise>
+
+=head4 mapp
+
+=head4 grepp
+
+=head4 firstp
+
+=head4 lastp
+
+=head4 pair
 
 =head2 -md5
 

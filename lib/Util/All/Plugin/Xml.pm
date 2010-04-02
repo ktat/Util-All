@@ -80,7 +80,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 parse XML file with XML::Simple. If xml has key attribute, you can pass key_attr => $key_name,
 then this return hash ref instead of array ref. As default, attribute name "id" is regarded as key attribute.
-This function pass fore_array => 1 to XML::Simple, If you don't want it, give force_array => 0 as option,
+This function pass force_array => 1 to XML::Simple, If you don't want it, give force_array => 0 as option,
 
 
 =head3 from_xml *
