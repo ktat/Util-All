@@ -49,7 +49,7 @@ sub utils {
         },
         'number_round' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $n = 'Number::Format'->new(%$kind_args);
+            my $n = 'Number::Format'->new(%$kind_args, %$args);
             sub {
                 $n->round(@_);
             }
@@ -122,7 +122,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
   sub {
       my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new(%$kind_args);
+      my $n = Number::Format->new( %$kind_args, %$args );
       sub {
           $n->round(@_);
         }

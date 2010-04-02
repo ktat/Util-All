@@ -384,7 +384,7 @@ cgi:
       - |
         sub {
           my ($pkg, $class, $func, $args, $kind_args) = @_;
-          my $_words = $kind_args->{words} || $args->{words};
+          my $_words = $args->{words} || $kind_args->{words};
           sub {
             my ($str, $words) = @_;
             utf8::decode($str)  if not utf8::is_utf8($str);
@@ -455,19 +455,26 @@ xml:
       sub {
         require String::CamelCase;
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $kind_args->{parser} || $args->{parser} || 'XML::Parser';
-        if (not defined($args->{ForceArray} ||= $kind_args->{force_array})) {
-          if (not defined($args->{ForceArray} ||= $args->{force_array})) {
-            $args->{ForceArray} = 1
-          }
+        local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $args->{parser} || $kind_args->{parser} || 'XML::Parser';
+        my %new_args;
+        if (not     defined($new_args{ForceArray} = $args->{ForceArray})
+            and not defined($new_args{ForceArray} = $args->{force_array})
+            and not defined($new_args{ForceArray} = $kind_args->{ForceArray})
+            and not defined($new_args{ForceArray} = $kind_args->{force_array})
+        ) {
+          $new_args{ForceArray} = 1
         }
-        if (my $key_attr = $kind_args->{key_attr} || $args->{key_attr}) {
-          $args->{KeyAttr} ||= $key_attr;
+        if (not     defined($new_args{KeyAttr} = $args->{KeyAttr})
+            and not defined($new_args{KeyAttr} = $args->{key_attr})
+            and not defined($new_args{KeyAttr} = $kind_args->{KeyAttr})
+            and not defined($new_args{KeyAttr} = $kind_args->{key_attr})
+        ) {
+          delete $new_args{KeyAttr};
         }
         sub {
           my ($file, %args) = @_;
           $args{String::CamelCase::camelize($_)} = delete $args{$_} for keys %args;
-          XML::Simple::XMLin($file, (%$args, %args));
+          XML::Simple::XMLin($file, (%new_args, %args));
         }
       }
      - usage:
@@ -543,8 +550,8 @@ charset:
           my ($pkg, $class, $func, $args, $kind_args) = @_;
           sub {
             my ($str, $width, $nl) = @_;
-            $width ||= $kind_args->{width} || $args->{width};
-            $nl ||= $kind_args->{nl} || $args->{nl} || "\n";
+            $width ||= $args->{width} || $kind_args->{width};
+            $nl ||= $args->{nl} || $kind_args->{nl} || "\n";
             my $is_utf8 = 0;
             utf8::decode($str) if not $is_utf8 = utf8::is_utf8($str);
             my $cnt = 0;
@@ -1097,7 +1104,7 @@ basecalc:
         sub {
           my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
-            Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->from_base(shift);
+            Math::BaseCalc->new(digits => $args->{digits} || $kind_args->{digits})->from_base(shift);
           }
         }
     to_base :
@@ -1105,7 +1112,7 @@ basecalc:
         sub {
            my($pkg, $class, $func, $args, $kind_args) = @_;
            sub {
-              Math::BaseCalc->new(digits => $kind_args->{digits} || $args->{digits})->to_base(shift);
+              Math::BaseCalc->new(digits => $args->{digits} || $kind_args->{digits})->to_base(shift);
            }
         }
   -usage: |
@@ -1195,67 +1202,67 @@ datetime: &datetime
     year   : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(years  => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(years  => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     month  : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(months => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(months => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     day    : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(days   => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(days   => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     hour   : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(hours  => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(hours  => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     minute : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(minutes => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(minutes => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     second : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub () { DateTime::Duration->new(seconds => 1, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub () { DateTime::Duration->new(seconds => 1, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     years  : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(years  => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     months : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(months => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(months => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     days   : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(days   => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     hours  : |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(hours  => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     minutes: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(minutes => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     seconds: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit") }
+        sub ($) { DateTime::Duration->new(seconds => shift, end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit") }
       }
     datetime_duration: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        sub {DateTime::Duration->new(end_of_month => $kind_args->{end_of_month} || $args->{end_of_month} || "limit", @_)}
+        sub {DateTime::Duration->new(end_of_month => $args->{end_of_month} || $kind_args->{end_of_month} || "limit", @_)}
       }
   Date::Parse:
     datetime_parse: |
@@ -1433,7 +1440,7 @@ number:
     number_round: |
       sub {
         my ($pkg, $class, $func, $args, $kind_args) = @_;
-        my $n = Number::Format->new(%$kind_args);
+        my $n = Number::Format->new(%$kind_args, %$args);
         sub {
           $n->round(@_);
         }
@@ -1676,6 +1683,62 @@ csv:
     -
       - package test_csv4; use Util::All -csv; open my $fh, "t/data/test.csv"; my $csv = parse_csv($fh); 1 while $csv->next; tell $fh;
       - 49
+
+storable:
+  Storable:
+    thaw:
+      -  sub {sub {Storable::thaw(@_)}}
+      - usage:
+        - $data = thaw($storable_data);
+        - retrieve data from stroable.
+    freeze:
+      -  sub {sub {Storable::freeze(@_)}}
+      - usage:
+        - $storable_data = freeze($data);
+        - serialize $storable_data
+  -test:
+    -
+      - thaw(freeze({a => 1}))->{a}
+      - 1
+    -
+      - thaw(freeze({a => 123}))->{a}
+      - 123
+    -
+      - use Util::All -base64; thaw(base64_decode('BAcIMTIzNDU2NzgECAgIAwEAAAAI5AEAAABi'))->{b};
+      - 100
+
+serialize:
+  -as_plugin: 1
+  Data::Serializer:
+    serialize:
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          my $ds = Data::Serializer->new(%$kind_args, %$args);
+          sub {
+            my $data = shift;
+            $ds->serialize($data);
+          }
+        }
+    deserialize:
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          my $ds = Data::Serializer->new(%$kind_args, %$args);
+          sub {
+            my $serialized_data = shift;
+            $ds->deserialize($serialized_data);
+          }
+        }
+  -usage: |
+    =heade3 serialize / deserialize
+        use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
+        my $serialized_data   = serialize({a => 123,  b => 223});
+        my $deserialized_data = deserialize($data);
+  -test:
+    -
+      - "package Hoge1; use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}}; my $serialized_data = serialize({a => 123,  b => 223}); deserialize($serialized_data);"
+      - '{a => 123, b => 223}'
 
 prompt:
   -as_plugin: 1

@@ -40,14 +40,14 @@ sub utils {
         'hour' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('hours', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'hours' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('hours', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
@@ -55,77 +55,77 @@ sub utils {
         'second' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('seconds', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'month' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('months', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('months', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minutes' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('minutes', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'days' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('days', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'seconds' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('seconds', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'minute' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('minutes', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'years' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('years', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'day' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('days', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('days', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'datetime_duration' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
-                'DateTime::Duration'->new('end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit', @_);
+                'DateTime::Duration'->new('end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit', @_);
             }
             ;
         },
         'year' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub () {
-                'DateTime::Duration'->new('years', 1, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('years', 1, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         },
         'months' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub ($) {
-                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$kind_args{'end_of_month'} || $$args{'end_of_month'} || 'limit');
+                'DateTime::Duration'->new('months', shift @_, 'end_of_month', $$args{'end_of_month'} || $$kind_args{'end_of_month'} || 'limit');
             }
             ;
         }

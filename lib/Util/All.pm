@@ -34,7 +34,7 @@ our $Utils = {
         'to_base' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
-                'Math::BaseCalc'->new('digits', $$kind_args{'digits'} || $$args{'digits'})->to_base(shift @_);
+                'Math::BaseCalc'->new('digits', $$args{'digits'} || $$kind_args{'digits'})->to_base(shift @_);
             }
             ;
         },
@@ -42,7 +42,7 @@ our $Utils = {
         'from_base' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
-                'Math::BaseCalc'->new('digits', $$kind_args{'digits'} || $$args{'digits'})->from_base(shift @_);
+                'Math::BaseCalc'->new('digits', $$args{'digits'} || $$kind_args{'digits'})->from_base(shift @_);
             }
             ;
         }
@@ -121,7 +121,7 @@ our $Utils = {
       {
         'encode_html_entities' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $_words = $$kind_args{'words'} || $$args{'words'};
+            my $_words = $$args{'words'} || $$kind_args{'words'};
             sub {
                 my($str, $words) = @_;
                 utf8::decode($str) if not utf8::is_utf8($str);
@@ -236,8 +236,8 @@ our $Utils = {
             my($pkg, $class, $func, $args, $kind_args) = @_;
             sub {
                 my($str, $width, $nl) = @_;
-                $width ||= $$kind_args{'width'} || $$args{'width'};
-                $nl ||= $$kind_args{'nl'} || $$args{'nl'} || "\n";
+                $width ||= $$args{'width'} || $$kind_args{'width'};
+                $nl ||= $$args{'nl'} || $$kind_args{'nl'} || "\n";
                 my $is_utf8 = 0;
                 utf8::decode($str) if not $is_utf8 = utf8::is_utf8($str);
                 my $cnt = 0;
@@ -763,6 +763,27 @@ our $Utils = {
           'sha512_hex',
           'sha512_base64'
         ]
+      }
+    ]
+  ],
+  '-storable' => [
+    [
+      'Storable',
+      '',
+      {
+        'freeze' => sub {
+            sub {
+                Storable::freeze(@_);
+            }
+            ;
+        },
+        '-select' => [],
+        'thaw' => sub {
+            sub {
+                Storable::thaw(@_);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -1811,7 +1832,7 @@ encode_json of L<JSON::XS>
 =head2 -oo
 
 provides simple OO interface.
-constructor and accessors(Classs::Accessor::Fast and Class::Data::Inheritable)
+constructor and accessors is provided as wrapper of lasss::Accessor::Fast and Class::Data::Inheritable.
 
 =head3 new
 
@@ -1935,6 +1956,32 @@ classdata, wo_accessors, ro_accessors, accessors
 =head4 sha512_hex
 
 =head4 sha512_base64
+
+=head2 -storable
+
+=head3 freeze *
+
+  $storable_data = freeze($data);
+
+serialize $storable_data
+
+=head3 thaw *
+
+  $data = thaw($storable_data);
+
+retrieve data from stroable.
+
+=head3 test code
+
+ thaw(freeze({a => 1}))->{a}
+ # equal to: 1
+
+ thaw(freeze({a => 123}))->{a}
+ # equal to: 123
+
+ use Util::All -base64;
+ thaw(base64_decode('BAcIMTIzNDU2NzgECAgIAwEAAAAI5AEAAABi'))->{b};
+ # equal to: 100
 
 =head2 -string
 
@@ -2139,6 +2186,8 @@ Load of L<YAML::XS>
 =item L<Util::All::Plugin::Csv>
 
 =item L<Util::All::Plugin::Xml>
+
+=item L<Util::All::Plugin::Serialize>
 
 =item L<Util::All::Plugin::Prompt>
 

@@ -31,19 +31,18 @@ sub utils {
         'from_xml' => sub {
             require String::CamelCase;
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$kind_args{'parser'} || $$args{'parser'} || 'XML::Parser';
-            if (not defined($$args{'ForceArray'} ||= $$kind_args{'force_array'})) {
-                if (not defined($$args{'ForceArray'} ||= $$args{'force_array'})) {
-                    $$args{'ForceArray'} = 1;
-                }
+            local $XML::Simple::XML_SIMPLE_PREFERRED_PARSER = $$args{'parser'} || $$kind_args{'parser'} || 'XML::Parser';
+            my %new_args;
+            if (not defined($new_args{'ForceArray'} = $$args{'ForceArray'}) and not defined($new_args{'ForceArray'} = $$args{'force_array'}) and not defined($new_args{'ForceArray'} = $$kind_args{'ForceArray'}) and not defined($new_args{'ForceArray'} = $$kind_args{'force_array'})) {
+                $new_args{'ForceArray'} = 1;
             }
-            if (my $key_attr = $$kind_args{'key_attr'} || $$args{'key_attr'}) {
-                $$args{'KeyAttr'} ||= $key_attr;
+            if (not defined($new_args{'KeyAttr'} = $$args{'KeyAttr'}) and not defined($new_args{'KeyAttr'} = $$args{'key_attr'}) and not defined($new_args{'KeyAttr'} = $$kind_args{'KeyAttr'}) and not defined($new_args{'KeyAttr'} = $$kind_args{'key_attr'})) {
+                delete $new_args{'KeyAttr'};
             }
             sub {
                 my($file, %args) = @_;
                 $args{String::CamelCase::camelize($_)} = delete $args{$_} foreach (keys %args);
-                XML::Simple::XMLin($file, (%$args, %args));
+                XML::Simple::XMLin($file, (%new_args, %args));
             }
             ;
         }
