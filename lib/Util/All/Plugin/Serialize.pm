@@ -15,19 +15,33 @@ sub utils {
         '-select' => [],
         'deserialize' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $ds = 'Data::Serializer'->new(%$kind_args, %$args);
+            my $ds;
+            $ds = 'Data::Serializer'->new(%$kind_args, %$args) if %$kind_args or %$args;
             sub {
-                my $serialized_data = shift @_;
-                $ds->deserialize($serialized_data);
+                my($serialized_data, $opt) = @_;
+                if (not $opt) {
+                    $ds->deserialize($serialized_data);
+                }
+                else {
+                    my $ds = 'Data::Serializer'->new(%$opt);
+                    $ds->deserialize($serialized_data);
+                }
             }
             ;
         },
         'serialize' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            my $ds = 'Data::Serializer'->new(%$kind_args, %$args);
+            my $ds;
+            $ds = 'Data::Serializer'->new(%$kind_args, %$args) if %$kind_args or %$args;
             sub {
-                my $data = shift @_;
-                $ds->serialize($data);
+                my($data, $opt) = @_;
+                if (not $opt) {
+                    $ds->serialize($data);
+                }
+                else {
+                    my $ds = 'Data::Serializer'->new(%$opt);
+                    $ds->serialize($data);
+                }
             }
             ;
         }
@@ -52,9 +66,15 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 =head2 -serialize
 
 =heade3 serialize / deserialize
-    use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
-    my $serialized_data   = serialize({a => 123,  b => 223});
-    my $deserialized_data = deserialize($data);
+
+serialize data usign L<Data::Serializer>.
+
+  use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
+  my $serialized_data   = serialize({a => 123,  b => 223});
+  my $deserialized_data = deserialize($data);
+
+  my $serialized_data   = serialize({a => 123,  b => 223}, {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1});
+  my $deserialized_data = deserialize($data, {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1});
 
 
 =head3 function enable to rename *
@@ -67,6 +87,13 @@ deserialize, serialize
  use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
  my $serialized_data = serialize({a => 123,  b => 223});
  deserialize($serialized_data);
+ # equal to: {a => 123, b => 223}
+
+ package Hoge2;
+ use Util::All -serialize;
+ my $opt = {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1};
+ my $serialized_data = serialize({a => 123,  b => 223}, $opt);
+ deserialize($serialized_data, $opt);
  # equal to: {a => 123, b => 223}
 
 
