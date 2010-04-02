@@ -38,7 +38,7 @@ oo:
         }
   -usage: |
       provides simple OO interface.
-      constructor and accessors is provided as wrapper of lasss::Accessor::Fast and Class::Data::Inheritable.
+      constructor and accessors is provided as wrapper of L<Class::Accessor::Fast> and L<Class::Data::Inheritable>.
       
       =head3 new
       
@@ -1743,7 +1743,7 @@ serialize:
           }
         }
   -usage: |
-      =heade3 serialize / deserialize
+      =head3 serialize / deserialize
       
       serialize data usign L<Data::Serializer>.
 

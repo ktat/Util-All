@@ -65,7 +65,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head2 -serialize
 
-=heade3 serialize / deserialize
+=head3 serialize / deserialize
 
 serialize data usign L<Data::Serializer>.
 

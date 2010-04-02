@@ -1832,7 +1832,7 @@ encode_json of L<JSON::XS>
 =head2 -oo
 
 provides simple OO interface.
-constructor and accessors is provided as wrapper of lasss::Accessor::Fast and Class::Data::Inheritable.
+constructor and accessors is provided as wrapper of L<Class::Accessor::Fast> and L<Class::Data::Inheritable>.
 
 =head3 new
 
