@@ -1285,19 +1285,31 @@ datetime: &datetime
     datetime_parse: |
       sub {
         my $i = 1;
-        unless ($INC{"Date/Manip.pm"}) {
-          require Date::Manip;
-          $i = 0;
+        if (not $INC{"Date/Manip.pm"}) {
+          $i = eval "require Date::Manip" ? 0 : 2;
         }
-        sub {
-          unless ($i) {
-            $i = 1;
-            Date::Manip::Date_Init();
-          }
-          my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
-          DateTime->new(year => $year + 1900, month => ++$month, day => $day,
-            hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
-            time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)} || 'local');
+        if ($i == 2) {
+          require DateTime::TimeZone;
+          return
+            sub {
+              my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
+              my $offset = defined $zone ? DateTime::TimeZone->offset_as_string($zone) : 'local';
+              DateTime->new(year => $year + 1900, month => ++$month, day => $day,
+                hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
+                time_zone => $offset);
+            }
+        } else {
+          return
+            sub {
+              unless ($i) {
+                $i = 1;
+                Date::Manip::Date_Init();
+              }
+              my ($ss,$mm,$hh,$day,$month,$year,$zone) = Date::Parse::strptime(@_);
+              DateTime->new(year => $year + 1900, month => ++$month, day => $day,
+                hour => $hh || 0, minute => $mm || 0, second => $ss || 0,
+                time_zone => $Date::Manip::Zone{n2o}->{Time::Zone::tz_name($zone)} || 'local');
+            };
         }
       }
   DateTime:

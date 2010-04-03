@@ -22,7 +22,6 @@ requires       'Util::Any'  => '0.18',
 	'Data::Dumper' => 0,
 	'Data::Recursive::Encode' => 0,
 	'Data::Serializer' => 0,
-	'Date::Manip' => 0,
 	'Date::Parse' => 0,
 	'DateTime' => 0,
 	'DateTime::Duration' => 0,
@@ -72,9 +71,12 @@ requires       'Util::Any'  => '0.18',
 	'XML::Parser' => 0,
 	'XML::Simple' => 0,
 	'YAML::XS' => 0,
-	'utf8' => 0
+	'utf8' => 0,
+	($] >= 5.010000 ? ('Date::Manip' => 0) : ())
 ;
-test_requires  'Test::More'  => '0.88';
+test_requires  'Test::More'  => '0.88',
+               'Crypt::CBC' => 0,
+               'Crypt::DES' => 0;
 no_index       'directory'   => 'demos';
 # install_script 'myscript';
 

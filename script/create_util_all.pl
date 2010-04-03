@@ -206,7 +206,8 @@ sub write_file {
 sub write_make_file {
   my ($modules, $requires) = @_;
   my $makefile = do {local $/; <DATA>};
-  my $dependent_modules = join ",\n", map {"\t'$_' => 0"} sort(List::MoreUtils::uniq(@$modules, @$requires));
+  my $dependent_modules = join ",\n", map {"\t'$_' => 0"} grep {$_ ne 'Date::Manip'} sort(List::MoreUtils::uniq(@$modules, @$requires));
+  $dependent_modules .=  qq{,\n\t(\$] >= 5.010000 ? ('Date::Manip' => 0) : ())};
   $makefile =~s{###DEPENDENT_MODULES###}{$dependent_modules};
   {
     open my $out, '>', 'Makefile.PL' or die $!;
@@ -359,7 +360,9 @@ requires       'Util::Any'  => '0.18',
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###
 ;
-test_requires  'Test::More'  => '0.88';
+test_requires  'Test::More'  => '0.88',
+               'Crypt::CBC' => 0,
+               'Crypt::DES' => 0;
 no_index       'directory'   => 'demos';
 # install_script 'myscript';
 
