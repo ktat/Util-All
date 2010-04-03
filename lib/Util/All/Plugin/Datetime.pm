@@ -3,8 +3,6 @@ package Util::All::Plugin::Datetime;
 use warnings;
 use strict;
 
-use Util::Any -Base, -Pluggable;
-
 sub utils {
   {
   '-datetime' => [

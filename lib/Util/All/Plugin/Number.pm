@@ -3,8 +3,6 @@ package Util::All::Plugin::Number;
 use warnings;
 use strict;
 
-use Util::Any -Base, -Pluggable;
-
 sub utils {
   {
   '-number' => [

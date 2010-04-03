@@ -3,8 +3,6 @@ package Util::All::Plugin::Prompt;
 use warnings;
 use strict;
 
-use Util::Any -Base, -Pluggable;
-
 sub utils {
   {
   '-prompt' => [

@@ -3,8 +3,6 @@ package Util::All::Plugin::Csv;
 use warnings;
 use strict;
 
-use Util::Any -Base, -Pluggable;
-
 sub utils {
   {
   '-csv' => [
