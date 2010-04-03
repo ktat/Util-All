@@ -1,0 +1,7 @@
+<xml>
+  <parent hoge="1"><child>1</child></parent>
+  <parent hoge="2"><child>2</child>
+  <child>40</child>
+  <child>50</child>
+  </parent>
+</xml>

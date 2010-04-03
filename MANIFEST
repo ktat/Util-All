@@ -12,6 +12,7 @@ lib/Util/All/Plugin/Email.pm
 lib/Util/All/Plugin/Image.pm
 lib/Util/All/Plugin/Number.pm
 lib/Util/All/Plugin/Prompt.pm
+lib/Util/All/Plugin/Serialize.pm
 lib/Util/All/Plugin/Xml.pm
 t/00-load.t
 t/pod-coverage.t

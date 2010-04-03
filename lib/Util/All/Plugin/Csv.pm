@@ -15,9 +15,9 @@ sub utils {
             $args ||= {};
             $kind_args ||= {};
             use strict 'refs';
-            if (not defined &Util::All::_Tmp::Text::CSV_XS::next) {
+            if (not defined &Util::All::_Tmp::Text::CSV::next) {
                 no strict 'refs';
-                *{'Util::All::_Tmp::Text::CSV_XS::next';} = sub {
+                *{'Util::All::_Tmp::Text::CSV::next';} = sub {
                     my $self = shift @_;
                     my $r;
                     not $$self{'pass_fh'} and close $$self{'fh'} unless $r = $$self{'sub'}();
@@ -28,7 +28,7 @@ sub utils {
             sub {
                 my $pass_fh = 0;
                 my($fh, $column_names) = @_;
-                my $csv = 'Text::CSV_XS'->new({'binary', 1, %$kind_args, %$args});
+                my $csv = 'Text::CSV'->new({'binary', 1, %$kind_args, %$args});
                 if (not ref $fh) {
                     my $file = $fh;
                     undef $fh;
@@ -51,7 +51,7 @@ sub utils {
                     }
                     ;
                 }
-                return bless({'sub', $sub, 'fh', $fh, 'pass_fh', $pass_fh}, 'Util::All::_Tmp::Text::CSV_XS');
+                return bless({'sub', $sub, 'fh', $fh, 'pass_fh', $pass_fh}, 'Util::All::_Tmp::Text::CSV');
             }
             ;
         },
@@ -90,7 +90,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
      print jion " ", %$hr, "\n";
   }
   
-  # pass options to Text::CSV_XS
+  # pass options to Text::CSV
   use Util::All -csv => {-args => {binary => 0, eol => "\r\n"}};
 
 

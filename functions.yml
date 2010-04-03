@@ -824,19 +824,36 @@ uri:
     uri_make:
       - |
         sub {
-          sub {
-            use utf8;
-            my ($url, $form) = @_;
-            my %form;
-            foreach my $k (keys %$form) {
-              my ($key, $value) = ($k, $form->{$k});
-              utf8::decode($key)   unless utf8::is_utf8($k);
-              utf8::decode($value) unless utf8::is_utf8($value);
-              $form{$key} = $value;
+          if (URI->VERSION <= 1.35) {
+            sub {
+              use utf8;
+              my ($url, $form) = @_;
+              my %form;
+              foreach my $k (keys %$form) {
+                my ($key, $value) = ($k, $form->{$k});
+                utf8::encode($key)   if utf8::is_utf8($k);
+                utf8::encode($value) if utf8::is_utf8($value);
+                $form{$key} = $value;
+              }
+              my $u = URI->new($url);
+              $u->query_form(%form);
+              $u->as_string;
             }
-            my $u = URI->new($url);
-            $u->query_form(%form);
-            $u->as_string;
+          } else {
+            sub {
+              use utf8;
+              my ($url, $form) = @_;
+              my %form;
+              foreach my $k (keys %$form) {
+                my ($key, $value) = ($k, $form->{$k});
+                utf8::decode($key)   unless utf8::is_utf8($k);
+                utf8::decode($value) unless utf8::is_utf8($value);
+                $form{$key} = $value;
+              }
+              my $u = URI->new($url);
+              $u->query_form(%form);
+              $u->as_string;
+            }
           }
         }
       - usage:
@@ -1629,14 +1646,14 @@ csv:
           $args ||= {};
           $kind_args ||= {};
           use strict;
-          if (not defined &Util::All::_Tmp::Text::CSV_XS::next) {
+          if (not defined &Util::All::_Tmp::Text::CSV::next) {
             no strict 'refs';
-            *{"Util::All::_Tmp::Text::CSV_XS::next"} = sub { my $self = shift; my $r; $r = $self->{sub}->() or (!$self->{pass_fh} and close $self->{fh}); return $r}
+            *{"Util::All::_Tmp::Text::CSV::next"} = sub { my $self = shift; my $r; $r = $self->{sub}->() or (!$self->{pass_fh} and close $self->{fh}); return $r}
           }
           sub {
             my $pass_fh = 0;
             my ($fh, $column_names) = @_;
-            my $csv = Text::CSV_XS->new({binary => 1, %$kind_args, %$args});
+            my $csv = Text::CSV->new({binary => 1, %$kind_args, %$args});
             unless (ref $fh) {
               my $file = $fh;
               undef $fh;
@@ -1651,7 +1668,7 @@ csv:
             } else {
               $sub = sub {$csv->getline($fh)};
             }
-            return bless {sub => $sub, fh => $fh, pass_fh => $pass_fh} => "Util::All::_Tmp::Text::CSV_XS";
+            return bless {sub => $sub, fh => $fh, pass_fh => $pass_fh} => "Util::All::_Tmp::Text::CSV";
           }
         }
       - usage:
@@ -1668,7 +1685,7 @@ csv:
              print jion " ", %$hr, "\n";
           }
           
-          # pass options to Text::CSV_XS
+          # pass options to Text::CSV
           use Util::All -csv => {-args => {binary => 0, eol => "\r\n"}};
   -test:
     -

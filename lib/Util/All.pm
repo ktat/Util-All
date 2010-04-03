@@ -849,20 +849,38 @@ our $Utils = {
       {
         '-select' => [],
         'uri_make' => sub {
-            sub {
-                my($url, $form) = @_;
-                my %form;
-                foreach my $k (keys %$form) {
-                    my($key, $value) = ($k, $$form{$k});
-                    utf8::decode($key) unless utf8::is_utf8($k);
-                    utf8::decode($value) unless utf8::is_utf8($value);
-                    $form{$key} = $value;
+            if ('URI'->VERSION <= 1.35) {
+                sub {
+                    my($url, $form) = @_;
+                    my %form;
+                    foreach my $k (keys %$form) {
+                        my($key, $value) = ($k, $$form{$k});
+                        utf8::encode($key) if utf8::is_utf8($k);
+                        utf8::encode($value) if utf8::is_utf8($value);
+                        $form{$key} = $value;
+                    }
+                    my $u = 'URI'->new($url);
+                    $u->query_form(%form);
+                    $u->as_string;
                 }
-                my $u = 'URI'->new($url);
-                $u->query_form(%form);
-                $u->as_string;
+                ;
             }
-            ;
+            else {
+                sub {
+                    my($url, $form) = @_;
+                    my %form;
+                    foreach my $k (keys %$form) {
+                        my($key, $value) = ($k, $$form{$k});
+                        utf8::decode($key) unless utf8::is_utf8($k);
+                        utf8::decode($value) unless utf8::is_utf8($value);
+                        $form{$key} = $value;
+                    }
+                    my $u = 'URI'->new($url);
+                    $u->query_form(%form);
+                    $u->as_string;
+                }
+                ;
+            }
         }
       }
     ],
