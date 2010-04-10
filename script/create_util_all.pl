@@ -353,12 +353,15 @@ use inc::Module::Install;
 # Define metadata
 name           'Util-All';
 all_from       'lib/Util/All.pm';
+repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.18',
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###
+,
+requires       'JSON'       => '2.21',
 ;
 test_requires  'Test::More'  => '0.88',
                'Crypt::CBC' => 0,

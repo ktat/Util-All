@@ -301,19 +301,49 @@ our $Utils = {
       'Scalar::Util',
       '',
       {
+        'readonly' => 'is_readonly',
+        'isweak' => 'is_weak',
         '-select' => [
-          'blessed',
           'dualvar',
-          'isvstring',
-          'isweak',
           'looks_like_number',
           'openhandle',
-          'readonly',
           'refaddr',
           'reftype',
           'set_prototype',
-          'tainted',
           'weaken'
+        ],
+        'blessed' => 'is_blessed',
+        'tainted' => 'is_tainted',
+        'isvstring' => 'is_vstring'
+      }
+    ],
+    [
+      'Data::Structure::Util',
+      '',
+      {
+        '-select' => [
+          'has_utf8',
+          'unbless'
+        ]
+      }
+    ],
+    [
+      'Data::Util',
+      '',
+      {
+        '-select' => [
+          'is_scalar_ref',
+          'is_array_ref',
+          'is_hash_ref',
+          'is_code_ref',
+          'is_glob_ref',
+          'is_rx',
+          'is_instance',
+          'is_invocant',
+          'is_value',
+          'is_string',
+          'is_number',
+          'is_integer'
         ]
       }
     ]
@@ -486,6 +516,16 @@ our $Utils = {
       }
     ],
     [
+      'Path::Class',
+      '',
+      {
+        '-select' => [
+          'file',
+          'dir'
+        ]
+      }
+    ],
+    [
       'File::Slurp',
       '',
       {
@@ -585,13 +625,19 @@ our $Utils = {
       {
         'to_json_file' => sub {
             require File::Slurp;
+            require Encode;
+            require Data::Structure::Util;
             sub {
-                File::Slurp::write_file(shift @_, JSON::XS::encode_json(shift @_));
+                my $d = shift @_;
+                my $f = shift @_;
+                File::Slurp::write_file($f, Data::Structure::Util::has_utf8($d) ? JSON::XS::encode_json($d) : Encode::encode('latin1', Encode::decode('utf8', JSON::XS::encode_json($d))));
             }
             ;
         },
-        'decode_json' => 'from_json',
-        '-select' => [],
+        '-select' => [
+          'encode_json',
+          'decode_json'
+        ],
         'from_json_file' => sub {
             require File::Slurp;
             sub ($) {
@@ -599,7 +645,22 @@ our $Utils = {
             }
             ;
         },
-        'encode_json' => 'to_json'
+        'from_json' => sub {
+            sub {
+                my $d = shift @_;
+                'JSON::XS'->new->utf8(!utf8::is_utf8($d))->decode($d);
+            }
+            ;
+        },
+        'to_json' => sub {
+            require Data::Structure::Util;
+            require Encode;
+            sub {
+                my $d = shift @_;
+                Data::Structure::Util::has_utf8($d) ? JSON::XS::encode_json($d) : Encode::encode('latin1', Encode::decode('utf8', JSON::XS::encode_json($d)));
+            }
+            ;
+        }
       }
     ]
   ],
@@ -842,6 +903,23 @@ our $Utils = {
       }
     ]
   ],
+  '-subroutine' => [
+    [
+      'Data::Util',
+      '',
+      {
+        '-select' => [
+          'install_subroutine',
+          'uninstall_subroutine',
+          'get_code_info',
+          'get_code_ref',
+          'curry',
+          'modify_subroutine',
+          'subroutine_modifier'
+        ]
+      }
+    ]
+  ],
   '-uri' => [
     [
       'URI',
@@ -956,10 +1034,25 @@ our $Utils = {
       'YAML::XS',
       '',
       {
-        'to_yaml_file' => sub {
-            require File::Slurp;
+        'to_yaml' => sub {
+            require Encode;
+            require Data::Structure::Util;
+            require Data::Recursive::Encode;
             sub {
-                File::Slurp::write_file(shift @_, YAML::XS::Dump(shift @_));
+                my $data = shift @_;
+                $data = 'Data::Recursive::Encode'->decode('utf8', $data) unless Data::Structure::Util::has_utf8($data);
+                YAML::XS::Dump($data);
+            }
+            ;
+        },
+        'to_yaml_file' => sub {
+            require Encode;
+            require Data::Structure::Util;
+            require Data::Recursive::Encode;
+            sub {
+                my($data, $file) = @_;
+                $data = 'Data::Recursive::Encode'->decode('utf8', $data) unless Data::Structure::Util::has_utf8($data);
+                File::Slurp::write_file($file, YAML::XS::Dump($data));
             }
             ;
         },
@@ -971,8 +1064,16 @@ our $Utils = {
             }
             ;
         },
-        'Dump' => 'to_yaml',
-        'Load' => 'from_yaml'
+        'from_yaml' => sub {
+            require Encode;
+            sub {
+                my $yaml = shift @_;
+                YAML::XS::Load(utf8::is_utf8($yaml) ? Encode::encode('utf8', $yaml) : $yaml);
+            }
+            ;
+        },
+        'Load' => 'decode_yaml',
+        'Dump' => 'encode_yaml'
       }
     ]
   ]
@@ -1461,21 +1562,17 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
 
 =head2 -data
 
+=head3 is_readonly
+
+readonly of L<Scalar::Util>
+
 =head3 functions of L<Scalar::Util>
 
-=head4 blessed
-
 =head4 dualvar
-
-=head4 isvstring
-
-=head4 isweak
 
 =head4 looks_like_number
 
 =head4 openhandle
-
-=head4 readonly
 
 =head4 refaddr
 
@@ -1483,9 +1580,55 @@ h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2
 
 =head4 set_prototype
 
-=head4 tainted
-
 =head4 weaken
+
+=head3 functions of L<Data::Structure::Util>
+
+=head4 has_utf8
+
+=head4 unbless
+
+=head3 functions of L<Data::Util>
+
+=head4 is_scalar_ref
+
+=head4 is_array_ref
+
+=head4 is_hash_ref
+
+=head4 is_code_ref
+
+=head4 is_glob_ref
+
+=head4 is_rx
+
+=head4 is_instance
+
+=head4 is_invocant
+
+=head4 is_value
+
+=head4 is_string
+
+=head4 is_number
+
+=head4 is_integer
+
+=head3 is_weak
+
+isweak of L<Scalar::Util>
+
+=head3 is_vstring
+
+isvstring of L<Scalar::Util>
+
+=head3 is_tainted
+
+tainted of L<Scalar::Util>
+
+=head3 is_blessed
+
+blessed of L<Scalar::Util>
 
 =head2 -debug
 
@@ -1598,6 +1741,12 @@ as same as dump(function name is borrowed from Ruby).
 
 =head2 -file
 
+=head3 functions of L<Path::Class>
+
+=head4 file
+
+=head4 dir
+
 =head3 functions of L<File::Path>
 
 =head4 make_path
@@ -1644,17 +1793,14 @@ copy of L<File::Copy>
 
 =head3 test code
 
- use Util::All -file;
  my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1);
  $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
  # equal to: 1
 
- use Util::All -file;
  my $fh = tempfile(template => "anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1);
  $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
  # equal to: 1
 
- use Util::All -file;
  my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1);
  $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
  # equal to: 1
@@ -1711,35 +1857,56 @@ http_post, http_put, http_get, http_head, http_delete
 
 =head3 to_json_file *
 
-  from_json_file($json_file);
+  to_json_file($data, $file);
 
-load JSON data from file
+write JSON to file.
+
+=head3 functions of L<JSON::XS>
+
+=head4 encode_json
+
+=head4 decode_json
 
 =head3 from_json_file *
 
   from_json_file($json_file);
 
-load JSON data from file
+load JSON data from file. returns Perl data whose utf8 flag is off.
 
-=head3 from_json
+=head3 from_json *
 
-decode_json of L<JSON::XS>
+  from_json($json_text);
 
-=head3 to_json
+from json text to perl data(utf8 flagged).
 
-encode_json of L<JSON::XS>
+=head3 to_json *
+
+  to_json($perl_data);
+
+from perl data to json text(utf8 encoded).
 
 =head3 test code
 
- package test_json;
- use Util::All -json, -debug;
- dump from_json(to_json({hoge => 1}));
- # equal to: '{ hoge => 1 }'
+ no utf8;
+ from_json(q/{"hoge":"あ"}/);
+ # equal to: use utf8; {hoge => "あ"}
 
- package test_json;
- use Util::All -json;
- to_json(from_json_file("t/data/test.json"));
- # equal to: qq{{"hoge":1}}
+ use utf8;
+ from_json(q/{"hoge":"あ"}/);
+ # equal to: use utf8; {hoge => "あ"}
+
+ no utf8;
+ to_json({hoge => 'あ'});
+ # equal to: no utf8; qq{{"hoge":"あ"}}
+
+ use utf8;
+ to_json({hoge => 'あ'});
+ # equal to: no utf8; qq{{"hoge":"あ"}}
+
+ no utf8;
+ to_json_file({hoge => "あいうえお"}, "t/data/test.out.json");
+ from_json_file("t/data/test.out.json");
+ # equal to: use utf8; {hoge => "あいうえお"}
 
 =head2 -list
 
@@ -2070,6 +2237,24 @@ abstract printable characgter from scalar. just like strings command.
  strings('111' . "\0" . '111');
  # equal to: "111111"
 
+=head2 -subroutine
+
+=head3 functions of L<Data::Util>
+
+=head4 install_subroutine
+
+=head4 uninstall_subroutine
+
+=head4 get_code_info
+
+=head4 get_code_ref
+
+=head4 curry
+
+=head4 modify_subroutine
+
+=head4 subroutine_modifier
+
 =head2 -uri
 
 =head3 functions of L<URI::Escape>
@@ -2159,15 +2344,34 @@ recursively make utf8 flag on(not destructive)
 
 =head2 -yaml
 
-=head3 to_yaml
-
-Dump of L<YAML::XS>
-
 =head3 to_yaml_file *
 
-  to_yaml_file($yaml_file);
+  to_yaml_file($data, $yaml_file);
 
 dump YAML data to file
+
+=head3 to_yaml *
+
+  sub {
+      require Encode;
+      require Data::Structure::Util;
+      require Data::Recursive::Encode;
+      sub {
+          my $data = shift;
+          $data = Data::Recursive::Encode->decode( 'utf8', $data )
+            unless Data::Structure::Util::has_utf8($data);
+          YAML::XS::Dump($data);
+        }
+    }
+
+
+=head3 decode_yaml
+
+Load of L<YAML::XS>
+
+=head3 encode_yaml
+
+Dump of L<YAML::XS>
 
 =head3 from_yaml_file *
 
@@ -2175,21 +2379,56 @@ dump YAML data to file
 
 load YAML data from file
 
-=head3 from_yaml
+=head3 from_yaml *
 
-Load of L<YAML::XS>
+  sub {
+      require Encode;
+      sub {
+          my $yaml = shift;
+          YAML::XS::Load(
+              utf8::is_utf8($yaml) ? Encode::encode( "utf8", $yaml ) : $yaml );
+        }
+    }
+
 
 =head3 test code
 
- package test_yaml;
- use Util::All -yaml, -debug;
- dump from_yaml(to_yaml({hoge => 1}));
- # equal to: '{ hoge => 1 }'
+ no utf8;
+ from_yaml( qq{---\nhoge: あ\n} );
+ # equal to: use utf8; { hoge => 'あ' };
 
- package test_yaml;
- use Util::All -yaml;
- to_yaml(from_yaml_file("t/data/test.yml"));
- # equal to: "---\nhoge: 1\n"
+ use utf8;
+ from_yaml( qq{---\nhoge: あ\n} );
+ # equal to: use utf8; { hoge => 'あ' };
+
+ no utf8;
+ decode_yaml( qq{---\nhoge: あ\n} );
+ # equal to: use utf8; { hoge => 'あ' };
+
+ no utf8;
+ to_yaml({hoge => 'あ'})
+ # equal to: no utf8; qq{---\nhoge: あ\n}
+
+ use utf8;
+ to_yaml({hoge => 'あ'})
+ # equal to: no utf8; qq{---\nhoge: あ\n}
+
+ use utf8;
+ encode_yaml({hoge => 'あ'})
+ # equal to: no utf8; qq{---\nhoge: あ\n}
+
+ from_yaml_file("t/data/test.yml");
+ # equal to: use utf8; {hoge => 'あ'};
+
+ use utf8;
+ to_yaml_file({hoge => "あいうえお"}, "t/data/test.out.yml");
+ from_yaml_file("t/data/test.out.yml");
+ # equal to: use utf8; {hoge => "あいうえお"}
+
+ no utf8;
+ to_yaml_file({hoge => "あいうえお"}, "t/data/test.out.yml");
+ from_yaml_file("t/data/test.out.yml");
+ # equal to: use utf8; {hoge => "あいうえお"}
 
 
 

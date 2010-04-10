@@ -94,19 +94,49 @@ oo:
       - '"foo!100foo!"'
 
 data:
+  Data::Structure::Util:
+    -select:
+      - has_utf8
+      - unbless
+  Data::Util:
+    -select:
+      - is_scalar_ref
+      - is_array_ref
+      - is_hash_ref
+      - is_code_ref
+      - is_glob_ref
+      - is_rx
+      - is_instance
+      - is_invocant
+      - is_value
+      - is_string
+      - is_number
+      - is_integer
   Scalar::Util:
-    - blessed
-    - dualvar
-    - isvstring
-    - isweak
-    - looks_like_number
-    - openhandle
-    - readonly
-    - refaddr
-    - reftype
-    - set_prototype
-    - tainted
-    - weaken
+    -select:
+      - dualvar
+      - looks_like_number
+      - openhandle
+      - refaddr
+      - reftype
+      - set_prototype
+      - weaken
+    isvstring: is_vstring
+    isweak  : is_weak
+    tainted : is_tainted
+    readonly: is_readonly
+    blessed : is_blessed
+
+subroutine:
+  Data::Util:
+    -select:
+      - install_subroutine
+      - uninstall_subroutine
+      - get_code_info
+      - get_code_ref
+      - curry
+      - modify_subroutine
+      - subroutine_modifier
 
 list:
   List::Util:
@@ -1074,45 +1104,136 @@ carp:
     - longmess
 
 yaml:
-  -require: ['File::Slurp']
+  -require: ['File::Slurp', 'Data::Structure::Util']
   YAML::XS:
-    Load: from_yaml
-    Dump: to_yaml
+    Dump: encode_yaml
+    Load: decode_yaml
     from_yaml_file:
       - sub {require File::Slurp; sub ($) { YAML::XS::Load(scalar File::Slurp::slurp(shift)) }}
       - from_yaml_file($yaml_file);
       - load YAML data from file
     to_yaml_file:
-      - sub {require File::Slurp; sub { File::Slurp::write_file(shift, YAML::XS::Dump(shift))}}
-      - to_yaml_file($yaml_file);
+      - |
+        sub { require Encode; require Data::Structure::Util; require Data::Recursive::Encode;
+           sub {
+              my ($data, $file) = @_;
+              $data = Data::Recursive::Encode->decode('utf8', $data) unless Data::Structure::Util::has_utf8($data);
+              File::Slurp::write_file($file, YAML::XS::Dump($data));
+           }
+        }
+      - to_yaml_file($data, $yaml_file);
       - dump YAML data to file
+    from_yaml:
+      - |
+        sub { require Encode;
+           sub {
+              my $yaml = shift;
+              YAML::XS::Load(utf8::is_utf8($yaml) ? Encode::encode("utf8", $yaml) : $yaml);
+           }
+        }
+    to_yaml:
+      - |
+        sub { require Encode; require Data::Structure::Util; require Data::Recursive::Encode;
+           sub {
+              my $data = shift;
+              $data = Data::Recursive::Encode->decode('utf8', $data) unless Data::Structure::Util::has_utf8($data);
+              YAML::XS::Dump($data);
+           }
+        }
   -test:
     -
-      - package test_yaml; use Util::All -yaml, -debug; dump from_yaml(to_yaml({hoge => 1}));
-      - "'{ hoge => 1 }'"
+      - 'no utf8; from_yaml( qq{---\nhoge: あ\n} );'
+      - use utf8; { hoge => 'あ' };
+    -
+      - 'use utf8; from_yaml( qq{---\nhoge: あ\n} );'
+      - use utf8; { hoge => 'あ' };
+    -
+      - 'no utf8; decode_yaml( qq{---\nhoge: あ\n} );'
+      - use utf8; { hoge => 'あ' };
+    -
+      - no utf8; to_yaml({hoge => 'あ'})
+      - 'no utf8; qq{---\nhoge: あ\n}'
+    -
+      - use utf8; to_yaml({hoge => 'あ'})
+      - 'no utf8; qq{---\nhoge: あ\n}'
+    -
+      - use utf8; encode_yaml({hoge => 'あ'})
+      - 'no utf8; qq{---\nhoge: あ\n}'
     - 
-      - package test_yaml; use Util::All -yaml; to_yaml(from_yaml_file("t/data/test.yml"));
-      - '"---\nhoge: 1\n"'
+      - from_yaml_file("t/data/test.yml");
+      - use utf8; {hoge => 'あ'};
+    - 
+      - use utf8; to_yaml_file({hoge => "あいうえお"}, "t/data/test.out.yml"); from_yaml_file("t/data/test.out.yml");
+      - use utf8; {hoge => "あいうえお"}
+    - 
+      - no utf8; to_yaml_file({hoge => "あいうえお"}, "t/data/test.out.yml"); from_yaml_file("t/data/test.out.yml");
+      - use utf8; {hoge => "あいうえお"}
 json:
-  -require: ['File::Slurp']
+  -require: ['File::Slurp', 'Encode', 'Data::Structure::Util']
   JSON::XS:
-    decode_json: from_json
-    encode_json: to_json
+    -select:
+      - encode_json
+      - decode_json
+    from_json:
+      - |
+        sub {
+          sub {
+            my $d = shift;
+            JSON::XS->new->utf8(!utf8::is_utf8($d))->decode($d);
+          }
+        }
+      - from_json($json_text);
+      - from json text to perl data(utf8 flagged).
+    to_json:
+      - |
+        sub { require Data::Structure::Util; require Encode;
+          sub {
+             my $d = shift;
+             Data::Structure::Util::has_utf8($d)
+                 ? JSON::XS::encode_json($d)
+                 : Encode::encode("latin1", Encode::decode("utf8", JSON::XS::encode_json($d)))
+          }
+        }
+      - to_json($perl_data);
+      - from perl data to json text(utf8 encoded).
     from_json_file:
-      - sub {require File::Slurp; sub ($) { JSON::XS::decode_json(scalar File::Slurp::slurp(shift)) }}
+      - |
+        sub {require File::Slurp;
+          sub ($) {
+             JSON::XS::decode_json(scalar File::Slurp::slurp(shift))
+          }
+        }
       - from_json_file($json_file);
-      - load JSON data from file
+      - load JSON data from file. returns Perl data whose utf8 flag is off.
     to_json_file:
-      - sub {require File::Slurp; sub { File::Slurp::write_file(shift, JSON::XS::encode_json(shift))}}
-      - from_json_file($json_file);
-      - load JSON data from file
+      - |
+        sub {require File::Slurp; require Encode; require Data::Structure::Util;
+           sub {
+             my $d = shift;
+             my $f = shift;
+             File::Slurp::write_file( $f, Data::Structure::Util::has_utf8($d)
+                                          ? JSON::XS::encode_json($d)
+                                          : Encode::encode("latin1", Encode::decode("utf8", JSON::XS::encode_json($d))) );
+           }
+        }
+      - to_json_file($data, $file);
+      - write JSON to file.
   -test:
     -
-      - package test_json; use Util::All -json, -debug; dump from_json(to_json({hoge => 1}));
-      - "'{ hoge => 1 }'"
+      - 'no utf8; from_json(q/{"hoge":"あ"}/);'
+      - use utf8; {hoge => "あ"}
+    -
+      - 'use utf8; from_json(q/{"hoge":"あ"}/);'
+      - use utf8; {hoge => "あ"}
+    -
+      - no utf8; to_json({hoge => 'あ'});
+      - no utf8; qq{{"hoge":"あ"}}
+    -
+      - use utf8; to_json({hoge => 'あ'});
+      - no utf8; qq{{"hoge":"あ"}}
     - 
-      - package test_json; use Util::All -json; to_json(from_json_file("t/data/test.json"));
-      - 'qq{{"hoge":1}}'
+      - no utf8; to_json_file({hoge => "あいうえお"}, "t/data/test.out.json"); from_json_file("t/data/test.out.json");
+      - 'use utf8; {hoge => "あいうえお"}'
 
 basecalc:
   Math::BaseCalc:
@@ -1362,6 +1483,10 @@ benchmark:
           if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
 
 file:
+  Path::Class:
+    -select:
+      - file
+      - dir
   File::Find:
     find : find_file
   File::Path:
@@ -1410,15 +1535,15 @@ file:
           If you don't want to lock temporary file, give exlock => 0 for arguments.
       - test:
         - 
-          - use Util::All -file; my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
+          - my $fh = tempfile("anyname*.dat", dir => "./t/data/", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.dat$} || $fh->filename;
           - 1
-          - use Util::All -file; my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
-          - 1
-        - 
-          - use Util::All -file; my $fh = tempfile(template => "anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+          - my $fh = tempfile("anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
           - 1
         - 
-          - use Util::All -file; my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
+          - my $fh = tempfile(template => "anyname", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{4}\.tmp$} || $fh->filename;
+          - 1
+        - 
+          - my $fh = tempfile("anynameXXXXXXXX", dir => "./t/data/", suffix => ".tmp", unlink => 1); $fh->filename =~m{^t/data/anyname\w{8}\.tmp$} || $fh->filename;
           - 1
 
 # bool:
@@ -1820,10 +1945,10 @@ prompt:
           }
         }
   -test:
-    - skip: $^O eq 'MSWin32';
+    - skip: $ENV{HARNESS_ACTIVE} or $^O eq 'MSWin32';
     -
-      - package Util::All::_prompt;use Util::All '-prompt'; $|=1; my $answer = required_prompt("input somthing(1):"); $answer !~ /%$/;
+      - $|=1; my $answer = required_prompt("input somthing(1):"); $answer !~ /%$/;
       - 1;
     -
-      - package Util::All::_prompt;use Util::All '-prompt'; $|=1; password_prompt("input somthing(2):"); my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn); $answer eq 'y';
+      - $|=1; password_prompt("input somthing(2):"); my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn); $answer eq 'y';
       - 1;

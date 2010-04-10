@@ -6,6 +6,7 @@ use inc::Module::Install;
 # Define metadata
 name           'Util-All';
 all_from       'lib/Util/All.pm';
+repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.18',
@@ -22,6 +23,8 @@ requires       'Util::Any'  => '0.18',
 	'Data::Dumper' => 0,
 	'Data::Recursive::Encode' => 0,
 	'Data::Serializer' => 0,
+	'Data::Structure::Util' => 0,
+	'Data::Util' => 0,
 	'Date::Parse' => 0,
 	'DateTime' => 0,
 	'DateTime::Duration' => 0,
@@ -54,6 +57,7 @@ requires       'Util::Any'  => '0.18',
 	'MIME::Types' => 0,
 	'Math::BaseCalc' => 0,
 	'Number::Format' => 0,
+	'Path::Class' => 0,
 	'Scalar::Util' => 0,
 	'Storable' => 0,
 	'String::CamelCase' => 0,
@@ -73,6 +77,8 @@ requires       'Util::Any'  => '0.18',
 	'YAML::XS' => 0,
 	'utf8' => 0,
 	($] >= 5.010000 ? ('Date::Manip' => 0) : ())
+,
+requires       'JSON'       => '2.21',
 ;
 test_requires  'Test::More'  => '0.88',
                'Crypt::CBC' => 0,

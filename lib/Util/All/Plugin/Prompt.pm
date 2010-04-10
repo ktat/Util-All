@@ -88,15 +88,11 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 test code
 
- package Util::All::_prompt;
- use Util::All '-prompt';
  $|=1;
  my $answer = required_prompt("input somthing(1):");
  $answer !~ /%$/;
  # equal to: 1;
 
- package Util::All::_prompt;
- use Util::All '-prompt';
  $|=1;
  password_prompt("input somthing(2):");
  my $answer = required_prompt("\ninputted value was displaied as '*' ?(y/n)", -yn);
