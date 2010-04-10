@@ -77,8 +77,6 @@ requires       'Util::Any'  => '0.18',
 	'YAML::XS' => 0,
 	'utf8' => 0,
 	($] >= 5.010000 ? ('Date::Manip' => 0) : ())
-,
-requires       'JSON'       => '2.21',
 ;
 test_requires  'Test::More'  => '0.88',
                'Crypt::CBC' => 0,
