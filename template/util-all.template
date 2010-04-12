@@ -7,6 +7,8 @@ use Util::Any -Base, -Pluggable;
 
 our $Utils = ###DEFINITION###;
 
+sub _default_kinds { '-modern' }
+
 $Utils->{'-html'} = Clone::clone($Utils->{'-cgi'});
 $Utils->{'-yml'}  = Clone::clone($Utils->{'-yaml'});
 

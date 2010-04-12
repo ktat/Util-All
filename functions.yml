@@ -1,4 +1,56 @@
 ---
+modern:
+  strict:
+    . :
+      - |
+        sub {
+          my ($pkg, $class, $func, $args, $kind_args) = @_;
+          unless ($kind_args->{disable}) {
+            warnings->import();
+            strict->import();
+            if ($] >= 5.01) {
+              require feature;
+              feature->import(':5.10');
+            }
+          }
+        }
+  -usage: |
+      this is automaticaly used. no need to call it.
+      It affects the the following to the calling source.
+      
+         use strict;
+         use warnings;
+         use featreu (':5.10'); # if your perl vesion > 5.10
+      
+      If you want to disable this.
+      
+        use Util::All -modern => [-args => {disable => 1}];
+
+argv:
+  -require: ['Term::Encoding']
+  Encode::Argv:
+   . :
+     - |
+       sub {
+         my ($pkg, $class, $func, $args, $kind_args) = @_;
+         my ($in, $to) = ('utf8', '');
+         if (ref $kind_args eq 'ARRAY') {
+            ($in, $to) = @$kind_args;
+         } elsif (ref $kind_args eq 'HASH') {
+            $in = $kind_args->{in} || 'utf8';
+            $to = $kind_args->{to};
+         } else {
+            $in = $kind_args;
+         }
+         Encode::Argv->import($in, $to ? $to : ());
+       }
+  -usage: |
+      make @ARGV's utf8 falg on/encode @ARGV.
+      
+        use Util::All -argv; # @ARGV's utf8 falg on (argument is regarded as UTF8)
+        use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 falg on (argument is regarded as euc-jp)
+        use Util::All -argv => {-args => ['utf8', 'euc-jp']}; # convert utf8 to euc-jp
+        use Util::All -argv => {-args => { in => 'utf8', to => 'euc-jp'}}; # as same as the above
 oo:
   Class::Data::Inheritable:
     classdata:

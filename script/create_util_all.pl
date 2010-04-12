@@ -97,7 +97,7 @@ sub def_usage_from_file {
           if ($def->{$k}->{$m}->{$f} =~m{^sub }) {
             # print Data::Dumper::Dumper(eval"$def->{$k}->{$m}->{$f}");
             if(exists $usage_test{usage}{$k}->{'-all'}) {
-              push @{$usage_test{usage}{$k}->{-renames} ||= []}, $f;
+              push @{$usage_test{usage}{$k}->{-renames} ||= []}, $f if $f ne '.';
             } elsif (exists $usage_test{usage}{$k}->{$f}) {
               $usage_test{usage}{$k}->{-rename}->{$f} = 1;
             } else {
@@ -305,11 +305,12 @@ __EOL
       push @funcs, @{$usage->{$kind}->{-rest}->{$_} || []} for keys %{$usage->{$kind}->{-rest}};
     }
     push @funcs, grep !/^-/, keys %{$usage->{$kind}};
-    @funcs = List::MoreUtils::uniq(@funcs);
+    @funcs = grep $_ ne '.', List::MoreUtils::uniq(@funcs);
     foreach my $func (@funcs) {
       print $fh "ok(defined \&$func);\n";
     }
     foreach my $func (sort keys %{$test->{$kind}}) {
+      push @funcs, $func;
       my $defs = $test->{$kind}->{$func};
       next if !$defs or !@$defs;
       my $skip = ref $defs->[0] eq 'HASH' ? shift(@$defs) : '';
@@ -341,6 +342,7 @@ EOL
     }
     print $fh "done_testing;";
     close $fh;
+    unlink sprintf "t/auto/%s.t", $kind unless @funcs;
   }
 }
 
@@ -356,7 +358,7 @@ all_from       'lib/Util/All.pm';
 repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
-requires       'Util::Any'  => '0.18',
+requires       'Util::Any'  => '0.20',
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###

@@ -9,7 +9,7 @@ all_from       'lib/Util/All.pm';
 repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
-requires       'Util::Any'  => '0.18',
+requires       'Util::Any'  => '0.20',
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 	'B::Deparse' => 0,
@@ -35,6 +35,7 @@ requires       'Util::Any'  => '0.18',
 	'Email::MIME' => 0,
 	'Email::Sender::Simple' => 0,
 	'Encode' => 0,
+	'Encode::Argv' => 0,
 	'File::Copy' => 0,
 	'File::Find' => 0,
 	'File::Path' => 0,
@@ -63,6 +64,7 @@ requires       'Util::Any'  => '0.18',
 	'String::CamelCase' => 0,
 	'String::Util' => 0,
 	'Template' => 0,
+	'Term::Encoding' => 0,
 	'Text::CSV' => 0,
 	'Tie::IxHash' => 0,
 	'Tie::Trace' => 0,
@@ -75,6 +77,7 @@ requires       'Util::Any'  => '0.18',
 	'XML::Parser' => 0,
 	'XML::Simple' => 0,
 	'YAML::XS' => 0,
+	'strict' => 0,
 	'utf8' => 0,
 	($] >= 5.010000 ? ('Date::Manip' => 0) : ())
 ;
