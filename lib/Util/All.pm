@@ -1170,7 +1170,7 @@ or
  my $new_str = char_convert($str, 'utf8'[, $icode]); # use Encode::Detect or Encode::Guess if not set $icode
 
  # use Encode::Guess and pass encoding to guess
- use Util::All -charaset => {char_convert => {guess => ["sjis", "euc-jp"]}};
+ use Util::All -charset => {char_convert => {guess => ["sjis", "euc-jp"]}};
  char_convert($str, "euc-jp");
 
  print h2z("A"); 
@@ -1237,7 +1237,7 @@ I want to add them into Util::All.
 Current planned naming rule is:
 
  MODIFICATION_VERB(_OBJECT)
- KIND_VERBE
+ KIND_VERB
  to_OBJECT
  from_OBJECT
 
@@ -1268,10 +1268,10 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head2 -argv
 
-make @ARGV's utf8 falg on/encode @ARGV.
+make @ARGV's utf8 flag on/encode @ARGV.
 
-  use Util::All -argv; # @ARGV's utf8 falg on (argument is regarded as UTF8)
-  use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 falg on (argument is regarded as euc-jp)
+  use Util::All -argv; # @ARGV's utf8 flag on (argument is regarded as UTF8)
+  use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 flag on (argument is regarded as euc-jp)
   use Util::All -argv => {-args => ['utf8', 'euc-jp']}; # convert utf8 to euc-jp
   use Util::All -argv => {-args => { in => 'utf8', to => 'euc-jp'}}; # as same as the above
 
@@ -1505,11 +1505,11 @@ If $str is utf8 flag on, return utf flagged value, if not return byte string.
 
 =head3 jfold
 
- jfold($sentense, $width, $new_line_char);
+ jfold($sentence, $width, $new_line_char);
  jfold("アイウエオ１２３４ABCD（）＊＆", 4); # "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
 
-This folds sentense. This regrads full-width char as 2 and half-width char as 1.
-The given string must be utf-8(flgged or non flagged).
+This folds sentence. This regards full-width char as 2 and half-width char as 1.
+The given string must be utf-8(flagged or non flagged).
 
 You can give default $width and/or $new_line_char.
 
@@ -1718,7 +1718,7 @@ blessed of L<Scalar::Util>
   dump(@vars);
 
 dump of L<Data::Dump>. 
-dump strucutre. In later case, result is dumped to STDERR.
+dump structure. In later case, result is dumped to STDERR.
 
 
 =head3 deep_dumper *
@@ -2072,12 +2072,12 @@ from perl data to json text(utf8 encoded).
 
 =head2 -modern
 
-this is automaticaly used. no need to call it.
+this is automatically used. no need to call it.
 It affects the the following to the calling source.
 
    use strict;
    use warnings;
-   use featreu (':5.10'); # if your perl vesion > 5.10
+   use feature (':5.10'); # if your perl version > 5.10
 
 If you want to disable this.
 
@@ -2286,7 +2286,7 @@ create IO::String object, which can be used as filehandle.
 
   strings("111\0111");
 
-abstract printable characgter from scalar. just like strings command.
+abstract printable character from scalar. just like strings command.
 
 =head3 test code
 
@@ -2550,7 +2550,7 @@ If you want to embed usage.
  Module::Name:
    - function_a
    - usage: 
-     - exapmle
+     - example
      - explanation
    - function_b
    - usage:
@@ -2591,7 +2591,7 @@ example can be array ref like the following.
          -  example2
        - explanation
 
-you cnan write code to skip test as the following.
+you can write code to skip test as the following.
 
      - test:
        - skip: $^O eq 'MSWin32';
@@ -2607,7 +2607,7 @@ See L<Util::Any/Sub::Exporter's GENERATOR WAY>.
  Module::Name:
    function_a: sub { sub { ... } }
 
-If you want ot embed usage
+If you want to embed usage
 
  Module::Name:
    - function_a: sub { sub { ... } }
@@ -2705,7 +2705,7 @@ define utils method. for example.
 =head2 ALL MODULE(S) IS/ARE LOADED WHEN USING Util::All?
 
 No. the related module(s) of your selected kind(s) is/are loaded.
-But, of cource, -all loads all modules.
+But, of course, -all loads all modules.
 
 =head2 WHY '-all' IS SLOW?
 

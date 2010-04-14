@@ -15,12 +15,12 @@ modern:
           }
         }
   -usage: |
-      this is automaticaly used. no need to call it.
+      this is automatically used. no need to call it.
       It affects the the following to the calling source.
       
          use strict;
          use warnings;
-         use featreu (':5.10'); # if your perl vesion > 5.10
+         use feature (':5.10'); # if your perl version > 5.10
       
       If you want to disable this.
       
@@ -45,10 +45,10 @@ argv:
          Encode::Argv->import($in, $to ? $to : ());
        }
   -usage: |
-      make @ARGV's utf8 falg on/encode @ARGV.
+      make @ARGV's utf8 flag on/encode @ARGV.
       
-        use Util::All -argv; # @ARGV's utf8 falg on (argument is regarded as UTF8)
-        use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 falg on (argument is regarded as euc-jp)
+        use Util::All -argv; # @ARGV's utf8 flag on (argument is regarded as UTF8)
+        use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 flag on (argument is regarded as euc-jp)
         use Util::All -argv => {-args => ['utf8', 'euc-jp']}; # convert utf8 to euc-jp
         use Util::All -argv => {-args => { in => 'utf8', to => 'euc-jp'}}; # as same as the above
 oo:
@@ -325,7 +325,7 @@ debug:
           - dump(@vars);
         - |
           dump of L<Data::Dump>. 
-          dump strucutre. In later case, result is dumped to STDERR.
+          dump structure. In later case, result is dumped to STDERR.
       - pp
       - usage:
         - pp("{ x => 1, y => 2, z => 3}");
@@ -390,7 +390,7 @@ string:
         }
       - usage:
         - strings("111\0111"); # return "111111"
-        - abstract printable characgter from scalar. just like strings command.
+        - abstract printable character from scalar. just like strings command.
       - test:
         -
           - package test_strings1; use Util::All -string; strings('111' . "\0" . '111');
@@ -808,11 +808,11 @@ charset:
    
     =head3 jfold
       
-     jfold($sentense, $width, $new_line_char);
+     jfold($sentence, $width, $new_line_char);
      jfold("アイウエオ１２３４ABCD（）＊＆", 4); # "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
    
-    This folds sentense. This regrads full-width char as 2 and half-width char as 1.
-    The given string must be utf-8(flgged or non flagged).
+    This folds sentence. This regards full-width char as 2 and half-width char as 1.
+    The given string must be utf-8(flagged or non flagged).
     
     You can give default $width and/or $new_line_char.
     
@@ -1871,7 +1871,7 @@ csv:
           
           my $csv = parse_csv($file_or_fh, ['name', 'age']);
           while (my $hr = $csv->next) {
-             print jion " ", %$hr, "\n";
+             print join " ", %$hr, "\n";
           }
           
           # pass options to Text::CSV

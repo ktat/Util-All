@@ -87,7 +87,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
   
   my $csv = parse_csv($file_or_fh, ['name', 'age']);
   while (my $hr = $csv->next) {
-     print jion " ", %$hr, "\n";
+     print join " ", %$hr, "\n";
   }
   
   # pass options to Text::CSV
