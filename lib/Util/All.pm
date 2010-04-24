@@ -40,6 +40,7 @@ our $Utils = {
           'ddx'
         ],
         'deep_dump' => sub {
+            require Data::Dumper;
             sub (@) {
                 local $Data::Dumper::Deparse = 1;
                 if (not defined wantarray) {
