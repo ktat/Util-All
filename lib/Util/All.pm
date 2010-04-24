@@ -71,6 +71,19 @@ our $Utils = {
             ;
         }
       }
+    ],
+    [
+      'Toolbox::Simple',
+      '',
+      {
+        '-select' => [
+          'dec2hex',
+          'hex2dec',
+          'dec2bin',
+          'dec2oct',
+          'oct2dec'
+        ]
+      }
     ]
   ],
   '-benchmark' => [
@@ -758,6 +771,20 @@ our $Utils = {
       }
     ]
   ],
+  '-math' => [
+    [
+      'Toolbox::Simple',
+      '',
+      {
+        '-select' => [
+          'lcm',
+          'gcd',
+          'gcf',
+          'is_prime'
+        ]
+      }
+    ]
+  ],
   '-md5' => [
     [
       'Digest::MD5',
@@ -909,9 +936,32 @@ our $Utils = {
       '',
       {
         'to_fh' => sub {
+            require LWP::Simple;
+            require IO::File;
             sub {
-                my $scalar = shift @_;
-                'IO::String'->new(\$scalar);
+                my $opt = $_[-1] =~ /^[rw+<>]+$/ ? pop @_ : '<';
+                if (@_ == 1) {
+                    my $target = $_[0];
+                    if (ref $target eq 'SCALAR') {
+                        return 'IO::String'->new($target);
+                    }
+                    elsif (not $target =~ /[\r\n]/ and -e $target) {
+                        return $IO::File->new($target, $opt);
+                    }
+                    else {
+                        return 'IO::String'->new(\$_[0]);
+                    }
+                }
+                else {
+                    my(%type) = @_;
+                    if (defined $type{'url'}) {
+                        my $scalar = LWP::Simple::get($type{'url'});
+                        return 'IO::String'->new(\$scalar);
+                    }
+                    elsif (defined $type{'file'}) {
+                        return 'IO::File'->new($type{'file'}, $opt);
+                    }
+                }
             }
             ;
         },
@@ -961,6 +1011,50 @@ our $Utils = {
           'modify_subroutine',
           'subroutine_modifier'
         ]
+      }
+    ]
+  ],
+  '-unicode' => [
+    [
+      'Unicode::String',
+      '',
+      {
+        '-select' => [
+          'utf32be',
+          'utf32le',
+          'utf16be',
+          'utf16le',
+          'utf8',
+          'utf7',
+          'latin1',
+          'uhex',
+          'uchr'
+        ]
+      }
+    ],
+    [
+      'Unicode::CharName',
+      '',
+      {
+        '-select' => [],
+        'unicode_name' => sub {
+            require Unicode::CharName;
+            require Encode;
+            sub {
+                my $s = shift @_;
+                Unicode::CharName::uname($s =~ /\D/ ? ord(utf8::is_utf8($s) ? $s : Encode::decode('utf8', $s)) : $s);
+            }
+            ;
+        },
+        'unicode_block' => sub {
+            require Unicode::CharName;
+            require Encode;
+            sub {
+                my $s = shift @_;
+                Unicode::CharName::ublock($s =~ /\D/ ? ord(utf8::is_utf8($s) ? $s : Encode::decode('utf8', $s)) : $s);
+            }
+            ;
+        }
       }
     ]
   ],
@@ -1271,9 +1365,9 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 make @ARGV's utf8 flag on/encode @ARGV.
 
   use Util::All -argv; # @ARGV's utf8 flag on (argument is regarded as UTF8)
-  use Util::All -argv => {-args => 'euc-jp'}; # @ARGV's utf8 flag on (argument is regarded as euc-jp)
-  use Util::All -argv => {-args => ['utf8', 'euc-jp']}; # convert utf8 to euc-jp
-  use Util::All -argv => {-args => { in => 'utf8', to => 'euc-jp'}}; # as same as the above
+  use Util::All -argv => [-args => 'euc-jp']; # @ARGV's utf8 flag on (argument is regarded as euc-jp)
+  use Util::All -argv => [-args => ['utf8', 'euc-jp']]; # convert utf8 to euc-jp
+  use Util::All -argv => [-args => { in => 'utf8', to => 'euc-jp'}]; # as same as the above
 
 
 =head2 -base64
@@ -1298,19 +1392,15 @@ decode_base64 of L<MIME::Base64>
 
 =head3 from_base / to_base
 
-  use Util::All -basecalc => {-args => {digits => [0,1]}};
+  use Util::All -basecalc => [-args => {digits => [0,1]}];
   to_base(4);     # 100
   from_base(100); # 4
 
 
-=head3 function enable to rename *
-
-to_base, from_base
-
 =head3 test code
 
  package test_basecalc1;
- use Util::All -basecalc => {-args => {digits => [0,1]}};
+ use Util::All -basecalc => [-args => {digits => [0,1]}];
  (to_base(4), from_base(100));
  # equal to: 100, 4
 
@@ -1394,44 +1484,47 @@ this function assumes given argument charset is utf8(utf8 flag on or off).
 decode HTML entity.  in void context, it modify argument itself.
 
 
-=head3 function enable to rename *
-
-encode_html_entities
-
 =head3 test code
 
+ package AAA;
  no utf8;
  use Util::All -cgi;
  encode_html_entities("あいうえお");
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
+ package BBB;
  use utf8;
  use Util::All -cgi;
  encode_html_entities("あいうえお");
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
+ package CCC;
  no utf8;
  use Util::All -cgi;
  encode_html_entities(my $s = "あいうえお");
  $s;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
+ package DDD;
  use utf8;
  use Util::All -cgi;
  encode_html_entities(my $s = "あいうえお");
  $s;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
+ package EEE;
  no utf8;
  use Util::All -cgi;
  decode_html_entities(encode_html_entities("あいうえお"));
  # equal to: use utf8; 'あいうえお'
 
+ package FFF;
  use utf8;
  use Util::All -cgi;
  decode_html_entities(encode_html_entities("あいうえお"));
  # equal to: use utf8; 'あいうえお'
 
+ package GGG;
  no utf8;
  use Util::All -cgi;
  my $str = "あいうえお";
@@ -1439,6 +1532,7 @@ encode_html_entities
  $str;
  # equal to: '&#x3042;&#x3044;&#x3046;&#x3048;&#x304A;'
 
+ package HHH;
  no utf8;
  use Util::All -cgi;
  my $str = "あいうえお";
@@ -1446,21 +1540,21 @@ encode_html_entities
  $str;
  # equal to: no utf8; 'あいうえお'
 
- package BB;
+ package III;
  no utf8;
  use Util::All -cgi => [encode_html_entities => {words => "<>"}];
  my $str = "あいうえお<&>";
  encode_html_entities($str);
  # equal to: use utf8; 'あいうえお&lt;&&gt;'
 
- package CC;
+ package JJJ;
  no utf8;
  use Util::All -cgi => [-args => {words => "<>"}];
  my $str = "あいうえお<&>";
  encode_html_entities($str);
  # equal to: use utf8; 'あいうえお&lt;&&gt;'
 
- package DD;
+ package KKK;
  no utf8;
  use Util::All -cgi => [-args => {words => "<>"}];
  my $str = "あいうえお<&>";
@@ -1519,38 +1613,41 @@ You can give default $width and/or $new_line_char.
  jfold("アイウエオ１２３４ABCD（）＊＆"); # "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆";
 
 
-=head3 function enable to rename *
-
-h2z_sym, h2z, z2h_alpha, z2h_num, h2z_num, h2z_kana, z2h_sym, h2z_alpha, z2h, z2h_kana, jfold, char_convert
-
 =head3 test code
 
+ package AAA;
  use Util::All -charset;
  jfold("アイウエオ１２３４ABCD（）＊＆", 4);
  # equal to: "アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"
 
+ package BBB;
  use Util::All -charset;
  jfold("ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊", 4);
  # equal to: "ｱｲｳｴ\nｵ１２\n３４\nＡＢ\nＣＤ\n（）\n＊"
 
+ package CCC;
  use Util::All -charset;
  jfold("～！＠＃＄％＾＆＊（）＿＋＝ー／＼；？＞＜。、，．：｛｝「」［］｜『』《》〔〕", 4);
  # equal to: "～！\n＠＃\n＄％\n＾＆\n＊（\n）＿\n＋＝\nー／\n＼；\n？＞\n＜。\n、，\n．：\n｛｝\n「」\n［］\n｜『\n』《\n》〔\n〕"
 
+ package DDD;
  use Util::All -charset;
  jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
  # equal to: "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
 
+ package EEE;
  use utf8;
  use Util::All -charset;
  jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
  # equal to: use utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
 
+ package FFF;
  no utf8;
  use Util::All -charset;
  jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");
  # equal to: no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"
 
+ package GGG;
  package charset_jfold;
  use Util::All -charset => [jfold => {width => 4, nl => "\t"}];
  jfold("アイウエオ１２３４ABCD（）＊＆");
@@ -1905,10 +2002,6 @@ do http method and get HTTP::Response object.
   http_head($url, \%query);
 
 
-=head3 function enable to rename *
-
-http_post, http_put, http_get, http_head, http_delete
-
 =head2 -json
 
 =head3 to_json_file *
@@ -2060,6 +2153,18 @@ from perl data to json text(utf8 encoded).
 
 =head4 pair
 
+=head2 -math
+
+=head3 functions of L<Toolbox::Simple>
+
+=head4 lcm
+
+=head4 gcd
+
+=head4 gcf
+
+=head4 is_prime
+
 =head2 -md5
 
 =head3 functions of L<Digest::MD5>
@@ -2073,7 +2178,7 @@ from perl data to json text(utf8 encoded).
 =head2 -modern
 
 this is automatically used. no need to call it.
-It affects the the following to the calling source.
+It affects the the following to the source of caller package.
 
    use strict;
    use warnings;
@@ -2119,10 +2224,6 @@ create set accessors.
 
 create class data(Class::Data::Inheritable).
 
-
-=head3 function enable to rename *
-
-classdata, wo_accessors, ro_accessors, accessors
 
 =head3 test code
 
@@ -2300,6 +2401,24 @@ abstract printable character from scalar. just like strings command.
  $sum;
  # equal to: 20
 
+ use Util::All -string;
+ my $s = "1\n2\n3\n4\n5\n";
+ my $fh = to_fh(\$s);
+ my $sum = 0;
+ while (<$fh>){ chomp;
+ $sum += $_ ;
+ $sum++};
+ $sum;
+ # equal to: 20
+
+ use Util::All -string;
+ my $fh = to_fh(url => "http://rwds.net/");
+ my $c = '';
+ while (<$fh>){m{<h1>(.+)</h1>} and do {$c = $1;
+ last} };
+ $c;
+ # equal to: "rwds.net"
+
 =head3 test code
 
  package test_strings1;
@@ -2324,6 +2443,25 @@ abstract printable character from scalar. just like strings command.
 =head4 modify_subroutine
 
 =head4 subroutine_modifier
+
+=head2 -unicode
+
+Unicode operation using Unicode::Stirng.
+
+  utf32be($str)->utf8;      # utf32be -> utf8 (byte string)
+  utf32le($str)->utf16le;   # utf32le -> utf16le (byte string)
+  utf16be($str)->utf8;      # utf16be -> utf8 (byte string)
+  utf16le($str)->utf32be;   # utf16le -> utf32be (byte string)
+  uhex(2026)->utf8;         # equal to "…"
+  uchr(8230)->utf8;         # equal to "…"
+
+If you want unicode name/block.
+
+  nicode_name(ord("\x{2026}"));  # equal to 'HORIZONTAL ELLIPSIS'
+  nicode_name('…');              # equal to 'HORIZONTAL ELLIPSIS'
+  nicode_block(8230);            # equal to 'General Punctuation'
+  nicode_block('…');            # equal to 'General Punctuation'
+
 
 =head2 -uri
 

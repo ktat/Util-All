@@ -67,7 +67,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 serialize data usign L<Data::Serializer>.
 
-  use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
+  use Util::All -serialize => [-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}];
   my $serialized_data   = serialize({a => 123,  b => 223});
   my $deserialized_data = deserialize($data);
 
@@ -75,14 +75,10 @@ serialize data usign L<Data::Serializer>.
   my $deserialized_data = deserialize($data, {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1});
 
 
-=head3 function enable to rename *
-
-deserialize, serialize
-
 =head3 test code
 
  package Hoge1;
- use Util::All -serialize => {-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}};
+ use Util::All -serialize => [-args => {serializer => 'Storable', digester => 'MD5', cipher => 'DES', secret => 'my secret', compress => 1}];
  my $serialized_data = serialize({a => 123,  b => 223});
  deserialize($serialized_data);
  # equal to: {a => 123, b => 223}

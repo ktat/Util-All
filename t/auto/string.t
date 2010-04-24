@@ -28,4 +28,12 @@ is_deeply(
   [do {use Util::All -string; my $s = "1\n2\n3\n4\n5\n"; my $fh = to_fh($s); my $sum = 0; while (<$fh>){ chomp; $sum += $_ ; $sum++}; $sum;}],
   [do {20}],
 );
+is_deeply(
+  [do {use Util::All -string; my $s = "1\n2\n3\n4\n5\n"; my $fh = to_fh(\$s); my $sum = 0; while (<$fh>){ chomp; $sum += $_ ; $sum++}; $sum;}],
+  [do {20}],
+);
+is_deeply(
+  [do {use Util::All -string; my $fh = to_fh(url => "http://rwds.net/"); my $c = ''; while (<$fh>){m{<h1>(.+)</h1>} and do {$c = $1; last} }; $c;}],
+  [do {"rwds.net"}],
+);
 done_testing;

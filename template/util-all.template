@@ -7,10 +7,9 @@ use Util::Any -Base, -Pluggable;
 
 our $Utils = ###DEFINITION###;
 
-sub _default_kinds { '-modern' }
+sub _default_kinds { '-modern', '-dumper' }
 
-$Utils->{'-html'} = Clone::clone($Utils->{'-cgi'});
-$Utils->{'-yml'}  = Clone::clone($Utils->{'-yaml'});
+$Utils->{'-yml'}    = Clone::clone($Utils->{'-yaml'});
 
 =head1 NAME
 

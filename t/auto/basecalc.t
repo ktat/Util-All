@@ -5,8 +5,13 @@ use Util::All '-basecalc';
 
 ok(defined &to_base);
 ok(defined &from_base);
+ok(defined &dec2hex);
+ok(defined &hex2dec);
+ok(defined &dec2bin);
+ok(defined &dec2oct);
+ok(defined &oct2dec);
 is_deeply(
-  [do {package test_basecalc1; use Util::All -basecalc => {-args => {digits => [0,1]}}; (to_base(4), from_base(100));}],
+  [do {package test_basecalc1; use Util::All -basecalc => [-args => {digits => [0,1]}]; (to_base(4), from_base(100));}],
   [do {100, 4}],
 );
 is_deeply(

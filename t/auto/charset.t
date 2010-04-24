@@ -19,31 +19,31 @@ ok(defined &char_from_to);
 ok(defined &char_encode);
 ok(defined &char_decode);
 is_deeply(
-  [do {use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4);}],
+  [do {package AAA; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4);}],
   [do {"アイ\nウエ\nオ１\n２３\n４AB\nCD（\n）＊\n＆"}],
 );
 is_deeply(
-  [do {use Util::All -charset; jfold("ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊", 4);}],
+  [do {package BBB; use Util::All -charset; jfold("ｱｲｳｴｵ１２３４ＡＢＣＤ（）＊", 4);}],
   [do {"ｱｲｳｴ\nｵ１２\n３４\nＡＢ\nＣＤ\n（）\n＊"}],
 );
 is_deeply(
-  [do {use Util::All -charset; jfold("～！＠＃＄％＾＆＊（）＿＋＝ー／＼；？＞＜。、，．：｛｝「」［］｜『』《》〔〕", 4);}],
+  [do {package CCC; use Util::All -charset; jfold("～！＠＃＄％＾＆＊（）＿＋＝ー／＼；？＞＜。、，．：｛｝「」［］｜『』《》〔〕", 4);}],
   [do {"～！\n＠＃\n＄％\n＾＆\n＊（\n）＿\n＋＝\nー／\n＼；\n？＞\n＜。\n、，\n．：\n｛｝\n「」\n［］\n｜『\n』《\n》〔\n〕"}],
 );
 is_deeply(
-  [do {use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
+  [do {package DDD; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
   [do {"アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"}],
 );
 is_deeply(
-  [do {use utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
+  [do {package EEE; use utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
   [do {use utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"}],
 );
 is_deeply(
-  [do {no utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
+  [do {package FFF; no utf8; use Util::All -charset; jfold("アイウエオ１２３４ABCD（）＊＆", 4, "\t");}],
   [do {no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"}],
 );
 is_deeply(
-  [do {package charset_jfold; use Util::All -charset => [jfold => {width => 4, nl => "\t"}]; jfold("アイウエオ１２３４ABCD（）＊＆");}],
+  [do {package GGG; package charset_jfold; use Util::All -charset => [jfold => {width => 4, nl => "\t"}]; jfold("アイウエオ１２３４ABCD（）＊＆");}],
   [do {no utf8; "アイ\tウエ\tオ１\t２３\t４AB\tCD（\t）＊\t＆"}],
 );
 is_deeply(

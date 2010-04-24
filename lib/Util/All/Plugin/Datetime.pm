@@ -216,10 +216,6 @@ example:
   use Util::All -datetime => [-args => {end_of_month => 'wrap'}];
 
 
-=head3 function enable to rename *
-
-now, today, datetime, hour, hours, second, month, minutes, days, seconds, minute, years, day, datetime_duration, year, months, datetime_parse
-
 =head3 test code
 
  package test_datetime1;

@@ -91,7 +91,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
   }
   
   # pass options to Text::CSV
-  use Util::All -csv => {-args => {binary => 0, eol => "\r\n"}};
+  use Util::All -csv => [-args => {binary => 0, eol => "\r\n"}];
 
 
 =head3 test code

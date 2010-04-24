@@ -189,10 +189,6 @@ As an additional argument, you can put hash ref as last argument
 which is equal to last argument of Email::Sender::Simple's sendmail.
 
 
-=head3 function enable to rename *
-
-send_template_email, send_email, parse_email, create_email
-
 
 
 =head1 AUTHOR

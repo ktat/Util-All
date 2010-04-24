@@ -17,6 +17,7 @@ local $Data::Dumper::Varname = 'Utils';
 
 my %CONF;
 @CONF{@ARGV} = ();
+my %PLUGINS;
 
 my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
 my $NOTEST       = exists $CONF{'-notest'} || 0;
@@ -29,11 +30,11 @@ sub main {
   my $plugins = pop @defs;
   my (@modules, @requires);
   my ($modules, $requires) = write_file("all", @defs, $plugins) or die "NG";
+  push @modules, @$modules;
+  push @requires, @$requires;
   foreach my $k (keys %$plugins) {
     @defs = def_usage_from_file({$k => $plugins->{$k}});
     pop @defs;
-    push @modules, @$modules;
-    push @requires, @$requires;
     ($modules, $requires) = write_file($k, @defs) or die "NG";
     push @modules, @$modules;
     push @requires, @$requires;
@@ -225,11 +226,11 @@ sub usage {
     $c .= '=head2 -' . $kind . "\n\n";
     if (exists $usage->{$kind}->{'-all'}) {
       $c .= $usage->{$kind}->{'-all'} . "\n\n";
-      if ($usage->{$kind}->{-renames}) {
-        $c .= "=head3 function enable to rename *\n\n";
-        $c .= join ", ", @{$usage->{$kind}->{-renames}};
-        $c .= "\n\n";
-      }
+#      if ($usage->{$kind}->{-renames}) {
+#        $c .= "=head3 function enable to rename *\n\n";
+#        $c .= join ", ", @{$usage->{$kind}->{-renames}};
+#        $c .= "\n\n";
+#      }
     } else {
       my %tmp;
       foreach my $f (keys %{$usage->{$kind}}) {
