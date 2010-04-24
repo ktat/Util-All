@@ -69,7 +69,7 @@ Thanks to the authors of the following modules which Util::All depends on.
 
 =item L<Util::All>
 
-complete list of All functions(includeing Util::ALL plugins) .
+collect perl utilities and group them by appropriate kind.
 
 =item L<Util::Any>
 

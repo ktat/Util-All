@@ -4017,7 +4017,7 @@ L<Benchmark>, L<CGI::Util>, L<Carp>, L<Class::Accessor::Fast>, L<Class::Data::In
 
 =item L<Util::All>
 
-complete list of All functions(includeing Util::ALL plugins) .
+collect perl utilities and group them by appropriate kind.
 
 =item L<Util::Any>
 
