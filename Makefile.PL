@@ -10,6 +10,7 @@ repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.20',
+               ($] <  5.009_005 ? ('MRO::Compat' => 0) : ()),
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 	'B::Deparse' => 0,

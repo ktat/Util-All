@@ -152,11 +152,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head1 PLUGINS
 
-=over 4
-
 ###PLUGINS###
-
-=back
 
 =head1 YAML FILE STRUCTURE
 
@@ -366,6 +362,8 @@ To do this, the following modules are required.
  File::Slurp
  Tie::IxHash
  Perl::Tidy
+ IO::String;
+ Pod::Abstract;
 
 If you think more functions should be in Util::All, please tell me them.
 
@@ -416,8 +414,12 @@ L<http://search.cpan.org/dist/Util-All/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to All Perl Users.
+Thanks for All Perl Users.
 When I find useful code, I write it here as memo.
+
+Thaks for the authors of the following modules which Util::All depends on.
+
+###DEPENDENT_MODULES###
 
 =head1 SEE ALSO
 

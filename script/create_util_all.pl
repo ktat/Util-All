@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
 use strict;
+use YAML::XS "Load";
 use YAML::Syck "LoadFile";
+use Clone;
 use File::Slurp 'slurp';
 use Tie::IxHash;
 use Data::Dumper;
@@ -9,6 +11,7 @@ use Perl::Tidy qw/perltidy/;
 use FindBin;
 use List::MoreUtils ();
 use String::CamelCase;
+require "$FindBin::Bin/lib/abstract_pod.pl";
 
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
@@ -50,12 +53,23 @@ sub def_usage_from_file {
   tie %{$usage_test{test} ||= {}}, 'Tie::IxHash';
 
   my $def = shift;
+  # $def = Load(scalar slurp($def)) unless ref $def;
   $def = LoadFile($def) unless ref $def;
 
   my @modules;
   my @requires;
   my $default_priority = 1000;
   my %plugins;
+
+  foreach my $k (keys %$def) {
+    if (my $alias = delete $def->{$k}->{'-alias_of'}) {
+      unless (ref $alias) {
+        $def->{$k} = Clone::clone($def->{$alias});
+      } else {
+        $def->{$k}->{$alias->[1]} = Clone::clone($def->{$alias->[0]}->{$alias->[1]});
+      }
+    }
+  }
 
   foreach my $k (sort keys %$def) {
     my %tmp;
@@ -119,7 +133,13 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage_test{usage}{$k}{$f};
-            $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "$f of L<$m>"];
+            if (my @pod = abstract_pod($m, $f)) {
+              my $pod = join "", @pod;
+              $pod =~s{^=item.+$}{}gm;
+              $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)\n\n" . $pod];
+            } else {
+              $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)"];
+            }
           }
         }
         my (@selected, $pre_func);
@@ -174,6 +194,10 @@ sub write_file {
   $kind = ucfirst($kind);
   $template =~s{###KIND###}{$kind}g;
   $template =~s{###DEFINITION###}{$def_string};
+  my %exclude;
+  @exclude{qw/utf8 strict B::Deparse Tie::Trace/} = ();
+  my $dependent_modules = join ", ", map {"L<$_>"} grep {!exists $exclude{$_}} sort(List::MoreUtils::uniq(@$modules, @$requires));
+  $template =~s{###DEPENDENT_MODULES###}{$dependent_modules};
   $template =~s{###USAGE###}{$usage};
   $template =~s{\$Utils1}{\$Utils}g;
   if (defined $plugins) {
@@ -181,7 +205,7 @@ sub write_file {
     foreach my $p (keys %$plugins) {
       push @plugins, String::CamelCase::camelize($p);
     }
-    my $plugin_text = join "\n\n", map "=item L<Util::All::Plugin::$_>", @plugins;
+    my $plugin_text = join "\n\n", map "=head2 L<Util::All::Plugin::$_>", @plugins;
     $template =~s{###PLUGINS###}{$plugin_text};
   }
 
@@ -238,9 +262,36 @@ sub usage {
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of L<$m>\n\n";
-            foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
-              $c .= "=head4 $func\n\n";
+            my @pods = abstract_pod($m, @{$usage->{$kind}->{'-rest'}->{$m}});
+            # $c .= "=over 4\n\n";
+            if (!@pods or join("", @pods) =~ m{^[\s\t]+$}s) {
+              foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
+                $c .= "=head4 $func\n\n";
+              }
+            } else {
+              my $last_pod = '';
+              foreach my $pod (@pods) {
+                next if $pod eq $last_pod;
+                if ($pod !~ m{^=cut}m) {
+                  $pod .= "\n=cut\n";
+                }
+                $pod =~s{^\s*\(not exported by default\)\s*$}{}mg;
+                $last_pod = $pod;
+                $pod =~s{^=head[12]}{=item};
+                if ($pod =~m{^=head[123]}m) {
+                  $pod =~s{^=head[123]}{\n\n=over 8\n\n=item}m;
+                  $pod =~s{^=head[123]}{=item}mg;
+                  $pod =~s{^=cut}{=back\n\n}m or die $pod;
+                  $pod =~s{^=item}{=head4};
+                  $c .= $pod;
+                } else {
+                  $pod =~s{^=item}{=head4};
+                  $pod =~s{^=cut\s*}{}m;
+                  $c .= $pod;
+                }
+              }
             }
+            # $c .= "=back\n\n";
           }
         } else {
           $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
@@ -360,6 +411,7 @@ repository     'git://github.com/ktat/Util-All.git';
 
 # Specific dependencies
 requires       'Util::Any'  => '0.20',
+               ($] <  5.009_005 ? ('MRO::Compat' => 0) : ()),
 # requires       'Task::Email::PEP::NoStore' => 0,
 #               'Errno::AnyString' => 0,
 ###DEPENDENT_MODULES###

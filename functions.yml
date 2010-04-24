@@ -9,9 +9,14 @@ modern:
           unless ($kind_args->{disable}) {
             warnings->import();
             strict->import();
+            if ($] <  5.009_005) {
+              require MRO::Compat;
+              MRO::Compat->import;
+            }
             if ($] >= 5.01) {
               require feature;
               feature->import(':5.10');
+              mro::set_mro( scalar caller(), 'c3' );
             }
           }
         }
@@ -318,7 +323,7 @@ debug:
           - use Util::All -debug; my $d = ex_dumper({hoge => 1, fuga => 2, foo => {hoge => 3}}, ['hoge']); my $VAR1; eval "$d";
           - '{fuga => 2, foo => {}}'
   Data::Dump:
-    -select: 
+    -select:
       - dump
       - usage:
         - 
@@ -364,6 +369,9 @@ debug:
     -select: ['size', 'total_size']
   Devel::Cycle:
     -select: ['find_cycle']
+
+dumper:
+ -alias_of: ['debug', 'Data::Dump']
 
 string:
   String::Util:
@@ -1295,6 +1303,10 @@ yaml:
     - 
       - no utf8; to_yaml_file({hoge => "あいうえお"}, "t/data/test.out.yml"); from_yaml_file("t/data/test.out.yml");
       - use utf8; {hoge => "あいうえお"}
+
+yml:
+  -alias_of: yaml
+
 json:
   -require: ['File::Slurp', 'Encode', 'Data::Structure::Util']
   JSON::XS:

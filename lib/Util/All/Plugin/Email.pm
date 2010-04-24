@@ -91,8 +91,8 @@ sub utils {
             ;
             sub {
                 my($header, $attributes, $parts_or_body) = @_;
-                $attributes = Clone::clone($attributes);
-                $parts_or_body = Clone::clone($parts_or_body) if ref $parts_or_body;
+                $attributes = &Clone::clone($attributes);
+                $parts_or_body = &Clone::clone($parts_or_body) if ref $parts_or_body;
                 my $charset = &$charset_resolver($attributes, $header);
                 if (ref $parts_or_body) {
                     'Email::MIME'->create('attributes', $attributes, 'parts', [map({my(@arg, $charset);
