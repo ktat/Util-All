@@ -1250,8 +1250,8 @@ carp:
     - cluck
     - carp
     - confess
-    - shortmess
-    - longmess
+#    - shortmess
+#    - longmess
 
 yaml:
   -require: ['File::Slurp', 'Data::Structure::Util']

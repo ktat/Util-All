@@ -333,11 +333,27 @@ create class data(Class::Data::Inheritable).
 
 =head3 functions of L<utf8>
 
-=head4 is_utf8
+=head4  $flag = utf8::is_utf8(STRING)
+
+(Since Perl 5.8.1)  Test whether STRING is in UTF-8 internally.
+Functionally the same as Encode::is_utf8().
+
 
 =head3 utf8_encode
 
 (encode of L<utf8>)
+
+
+
+Converts in-place the character sequence to the corresponding octet
+sequence in I<UTF-X>.  The UTF8 flag is turned off, so that after this
+operation, the string is a byte string.  Returns nothing.
+
+B<Note that this function does not handle arbitrary encodings.>
+Therefore Encode is recommended for the general purposes; see also
+L<Encode>.
+
+
 
 =head3 utf8_off *
 
@@ -349,9 +365,46 @@ recursively make utf8 flag off(not destructive)
 
 (upgrade of L<utf8>)
 
+
+
+Converts in-place the internal octet sequence in the native encoding
+(Latin-1 or EBCDIC) to the equivalent character sequence in I<UTF-X>.
+I<$string> already encoded as characters does no harm.  Returns the
+number of octets necessary to represent the string as I<UTF-X>.  Can be
+used to make sure that the UTF-8 flag is on, so that C<\w> or C<lc()>
+work as Unicode on strings containing characters in the range 0x80-0xFF
+(on ASCII and derivatives).
+
+B<Note that this function does not handle arbitrary encodings.>
+Therefore Encode is recommended for the general purposes; see also
+L<Encode>.
+
+
+
 =head3 utf8_downgrade
 
 (downgrade of L<utf8>)
+
+
+
+Converts in-place the internal octet sequence in I<UTF-X> to the
+equivalent octet sequence in the native encoding (Latin-1 or EBCDIC).
+I<$string> already encoded as native 8 bit does no harm.  Can be used to
+make sure that the UTF-8 flag is off, e.g. when you want to make sure
+that the substr() or length() function works with the usually faster
+byte algorithm.
+
+Fails if the original I<UTF-X> sequence cannot be represented in the
+native 8 bit encoding. On failure dies or, if the value of C<FAIL_OK> is
+true, returns false. 
+
+Returns true on success.
+
+B<Note that this function does not handle arbitrary encodings.>
+Therefore Encode is recommended for the general purposes; see also
+L<Encode>.
+
+
 
 =head3 utf8_on *
 
@@ -2954,7 +3007,7 @@ Negative values are only ok when they refer to a partition previously created:
 =head4 lastp BLOCK LIST
 
 
-=head4 * Johan Lodin for the C<pair> idea and implementation, as well as numerous other
+=head4  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
 contributions (see changelog)
 
 

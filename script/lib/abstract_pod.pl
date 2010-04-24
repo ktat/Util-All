@@ -19,7 +19,7 @@ sub abstract_pod {
 
   my @function_node;
   my $func_regexp = join "|", @functions;
-  $func_regexp  = qr{(^[^\$]?($func_regexp)|(\->($func_regexp)\b)|(\s($func_regexp)))\b};
+  $func_regexp    = qr{((^($func_regexp))|[^a-zA-Z_0-9_\$]($func_regexp)|(\->($func_regexp))|(\s($func_regexp)))\b};
   my @try = ($pa, $func_regexp);
   if ($module eq 'Carp') {
     @function_node = try_from_carp(@try);

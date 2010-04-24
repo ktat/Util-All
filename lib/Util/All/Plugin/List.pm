@@ -562,7 +562,7 @@ Negative values are only ok when they refer to a partition previously created:
 =head4 lastp BLOCK LIST
 
 
-=head4 * Johan Lodin for the C<pair> idea and implementation, as well as numerous other
+=head4  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
 contributions (see changelog)
 
 

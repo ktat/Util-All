@@ -266,6 +266,34 @@ sub write_make_file {
   return 1;
 }
 
+sub check_missing {
+  my ($funcs, $pods) = @_;
+  my %funcs;
+  my %pods;
+  @pods{0 .. $#{$pods}} = ();
+  @funcs{@$funcs} = ();
+  my %check;
+  foreach (my $i = 0; $i < @$pods; $i++) {
+    my $pod = $check{$i} ||= join "\n", grep /^=/, split /[\r\n]/, $pods->[$i];
+    foreach my $f (keys %funcs) {
+      if ($check{$i} =~ m{[^\w\$]$f}s and ($check{$i} =~ m{$f$}m or $check{$i} =~ m{$f\W}s)) {
+        $pods{$i}++;
+        $funcs{$f}++;
+      }
+    }
+  }
+  if (my @missing = grep !$funcs{$_}, keys %funcs) {
+    warn "! =================================================\n";
+    warn "! missing pods: ", join(", ", @missing), "\n";
+    warn "! =================================================\n";
+  }
+  if (my @rest = grep !$pods{$_}, keys %pods) {
+    warn "! =================================================\n";
+    warn "! pod is more than funcs: \n", join("\n", @{$pods}[@rest]), "\n";
+    warn "! =================================================\n";
+  }
+}
+
 sub usage {
   my ($usage, $test) = @_;
   my $c;
@@ -285,7 +313,11 @@ sub usage {
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of L<$m>\n\n";
-            my @pods = exists $IGNORE_POD{$m} ? () : (abstract_pod($m, @{$usage->{$kind}->{'-rest'}->{$m}}));
+            my @funcs = @{$usage->{$kind}->{'-rest'}->{$m}};
+            my @pods = exists $IGNORE_POD{$m} ? () : (abstract_pod($m, @funcs));
+            if (@funcs != @pods) {
+              check_missing(\@funcs, \@pods);
+            }
             # $c .= "=over 4\n\n";
             if (!@pods or join("", @pods) =~ m{^[\s\t]+$}s) {
               foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
@@ -305,10 +337,10 @@ sub usage {
                   $pod =~s{^=head[123]}{\n\n=over 8\n\n=item}m;
                   $pod =~s{^=head[123]}{=item}mg;
                   $pod =~s{^=cut}{=back\n\n}m or die $pod;
-                  $pod =~s{^=item}{=head4};
+                  $pod =~s{^=item\s+(\*)?}{=head4 };
                   $c .= $pod;
                 } else {
-                  $pod =~s{^=item}{=head4};
+                  $pod =~s{^=item\s+(\*)?}{=head4 };
                   $pod =~s{^=cut\s*}{}m;
                   $c .= $pod;
                 }
