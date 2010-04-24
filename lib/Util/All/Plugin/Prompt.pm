@@ -56,18 +56,7 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 functions of L<IO::Prompt>
 
-=head4 C<< Can't write prompt to read-only $_ >>
-
-You specified a filehandle to which the prompt should be written, but
-that filehandle was not writeable. Did you pass the wrong filehandle, or
-open it in the wrong mode?
-
-
-=head4 C<< Unknown flag ($s) in prompt >>
-
-The flag you specified wasn't one of those that C<prompt()> understands. Did
-you misspell it, perhaps?
-
+=head4 prompt
 
 =head3 required_prompt *
 

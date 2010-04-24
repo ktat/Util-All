@@ -414,10 +414,10 @@ L<http://search.cpan.org/dist/Util-All/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks for All Perl Users.
+Thanks to All Perl Users.
 When I find useful code, I write it here as memo.
 
-Thaks for the authors of the following modules which Util::All depends on.
+Thanks to the authors of the following modules which Util::All depends on.
 
 ###DEPENDENT_MODULES###
 

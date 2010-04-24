@@ -21,6 +21,8 @@ local $Data::Dumper::Varname = 'Utils';
 my %CONF;
 @CONF{@ARGV} = ();
 my %PLUGINS;
+my %IGNORE_POD;
+@IGNORE_POD{qw/IO::Prompt/} = ();
 
 my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
 my $NOTEST       = exists $CONF{'-notest'} || 0;
@@ -133,7 +135,7 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage_test{usage}{$k}{$f};
-            if (my @pod = abstract_pod($m, $f)) {
+            if (!exists $IGNORE_POD{$m} and my @pod = abstract_pod($m, $f)) {
               my $pod = join "", @pod;
               $pod =~s{^=item.+$}{}gm;
               $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)\n\n" . $pod];
@@ -262,7 +264,7 @@ sub usage {
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of L<$m>\n\n";
-            my @pods = abstract_pod($m, @{$usage->{$kind}->{'-rest'}->{$m}});
+            my @pods = exists $IGNORE_POD{$m} ? () : (abstract_pod($m, @{$usage->{$kind}->{'-rest'}->{$m}}));
             # $c .= "=over 4\n\n";
             if (!@pods or join("", @pods) =~ m{^[\s\t]+$}s) {
               foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {

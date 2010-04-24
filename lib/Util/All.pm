@@ -5123,10 +5123,10 @@ L<http://search.cpan.org/dist/Util-All/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks for All Perl Users.
+Thanks to All Perl Users.
 When I find useful code, I write it here as memo.
 
-Thaks for the authors of the following modules which Util::All depends on.
+Thanks to the authors of the following modules which Util::All depends on.
 
 L<Benchmark>, L<CGI::Util>, L<Carp>, L<Class::Accessor::Fast>, L<Class::Data::Inheritable>, L<Clone>, L<Data::Dump>, L<Data::Dumper>, L<Data::Recursive::Encode>, L<Data::Structure::Util>, L<Data::Util>, L<Date::Manip>, L<Devel::Cycle>, L<Devel::Size>, L<Digest::MD5>, L<Digest::SHA>, L<Encode>, L<Encode::Argv>, L<File::Copy>, L<File::Find>, L<File::Path>, L<File::Slurp>, L<File::Temp>, L<HTML::Entities>, L<HTTP::Request::Common>, L<Hash::Util>, L<IO::String>, L<JSON::XS>, L<LWP::UserAgent>, L<List::MoreUtils>, L<List::Pairwise>, L<List::Util>, L<MIME::Base64>, L<MIME::Base64::URLSafe>, L<MIME::Types>, L<Math::BaseCalc>, L<Path::Class>, L<Scalar::Util>, L<Storable>, L<String::CamelCase>, L<String::Util>, L<Template>, L<Term::Encoding>, L<Tie::IxHash>, L<Time::HiRes>, L<Toolbox::Simple>, L<Try::Tiny>, L<URI>, L<URI::Escape>, L<URI::Split>, L<Unicode::CharName>, L<Unicode::Japanese>, L<Unicode::String>, L<XML::Parser>, L<YAML::XS>
 
