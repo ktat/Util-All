@@ -201,8 +201,6 @@ our $Utils = {
 
 sub _default_kinds { '-modern', '-dumper' }
 
-$Utils->{'-yml'}    = Clone::clone($Utils->{'-yaml'});
-
 =head1 NAME
 
 Util::All -  (alpha software) collect perl utilities and group them by appropriate kind.
