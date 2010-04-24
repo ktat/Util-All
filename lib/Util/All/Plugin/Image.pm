@@ -111,30 +111,30 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 convert_image *
 
-  convert_image("before.jpg", "after.png");
-  convert_image("before.jpg", "png"); # output to stdout as ping
+    convert_image("before.jpg", "after.png");
+    convert_image("before.jpg", "png"); # output to stdout as ping
 
 
 convert images to other format.
 
 =head3 image_info *
 
-  my $info = image_info("picture.jpg");
+    my $info = image_info("picture.jpg");
 
 return image information(Image::Info)
 
 =head3 image_type *
 
-  my $info = image_type("picture.jpg");
+    my $info = image_type("picture.jpg");
 
 return image type(Image::Info)
 
 =head3 resize_image *
 
-  resize_image("before.jpg", "after.png", %option);
-  resize_image("before.jpg", "after.png", [200, 100]); # 200x100px
-  resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
-  resize_image("before.jpg", "png", 0.5);  # output 1/2 scale image to STDOUT as ping
+    resize_image("before.jpg", "after.png", %option);
+    resize_image("before.jpg", "after.png", [200, 100]); # 200x100px
+    resize_image("before.jpg", "after.png", 0.5); # 1/2 scale
+    resize_image("before.jpg", "png", 0.5);  # output 1/2 scale image to STDOUT as ping
 
 
 resize image.

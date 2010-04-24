@@ -66,13 +66,13 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 to_xml *
 
-  use Util::All -xml;
-  
-  my $xml = to_xml(\%structure);
-  my $xml = to_xml(\%structure, force_array => 0, key_attr => 'id');
-  
-  use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
-  my $xmls = to_xml(\%structure);
+    use Util::All -xml;
+    
+    my $xml = to_xml(\%structure);
+    my $xml = to_xml(\%structure, force_array => 0, key_attr => 'id');
+    
+    use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
+    my $xmls = to_xml(\%structure);
 
 
 parse XML file with XML::Simple. If xml has key attribute, you can pass key_attr => $key_name,
@@ -82,14 +82,14 @@ This function pass force_array => 1 to XML::Simple, If you don't want it, give f
 
 =head3 from_xml *
 
-  use Util::All -xml;
-  
-  $data = from_xml('hoge.xml');
-  $data = from_xml('hoge.xml', force_array => 0, key_attr => 'id'); # force_array is 1 as default.
-  
-  use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
-  
-  $data = from_xml('hoge.xml');
+    use Util::All -xml;
+    
+    $data = from_xml('hoge.xml');
+    $data = from_xml('hoge.xml', force_array => 0, key_attr => 'id'); # force_array is 1 as default.
+    
+    use Util::All -xml => [-args => {parser => 'XML::Parser', force_array => 0, key_attr => "id"}];
+    
+    $data = from_xml('hoge.xml');
 
 
 parse XML file with XML::Simple.

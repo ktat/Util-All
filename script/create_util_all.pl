@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use YAML::XS "Load";
+# use YAML::XS "Load";
 use YAML::Syck "LoadFile";
 use Clone;
 use File::Slurp 'slurp';
@@ -31,21 +31,46 @@ main();
 
 sub main {
   reset_test();
+  my %usage;
+
   my @defs = def_usage_from_file("functions.yml");
   my $plugins = pop @defs;
   my (@modules, @requires);
   my ($modules, $requires) = write_file("all", @defs, $plugins) or die "NG";
   push @modules, @$modules;
   push @requires, @$requires;
+  $usage{ROOT} = usage(@defs[1, 4]);
   foreach my $k (keys %$plugins) {
     @defs = def_usage_from_file({$k => $plugins->{$k}});
+    $usage{$k} = usage(@defs[1, 4]);
     pop @defs;
     ($modules, $requires) = write_file($k, @defs) or die "NG";
     push @modules, @$modules;
     push @requires, @$requires;
   }
+  write_file_again([@modules, @requires], \%usage);
   write_make_file(\@modules, \@requires);
   system("prove -Ilib t/ t/auto/;") unless $NOTEST;
+}
+
+sub write_file_again {
+  my ($modules, $usage) = @_;
+  my %exclude;
+  @exclude{qw/utf8 strict B::Deparse Tie::Trace/} = ();
+  my $dependent_modules = join ", ", map {"L<$_>"} grep {!exists $exclude{$_}} sort(List::MoreUtils::uniq(@$modules));
+  my $pm_file = "lib/Util/All.pm";
+  my $pm = File::Slurp::slurp($pm_file);
+  $pm =~s{###DEPENDENT_MODULES###}{$dependent_modules};
+  File::Slurp::write_file($pm_file, $pm);
+
+  my $pod = File::Slurp::slurp("template/util-all-manual.template");
+  $pod =~s{###DEPENDENT_MODULES###}{$dependent_modules};
+  my $usage_text = '';
+  foreach my $key (sort keys %$usage) {
+    $usage_text .= $usage->{$key} . "\n\n";
+  }
+  $pod =~ s{###USAGE###}{$usage_text};
+  File::Slurp::write_file("lib/Util/All/Manual.pod", $pod);
 }
 
 sub def_usage_from_file {
@@ -196,10 +221,6 @@ sub write_file {
   $kind = ucfirst($kind);
   $template =~s{###KIND###}{$kind}g;
   $template =~s{###DEFINITION###}{$def_string};
-  my %exclude;
-  @exclude{qw/utf8 strict B::Deparse Tie::Trace/} = ();
-  my $dependent_modules = join ", ", map {"L<$_>"} grep {!exists $exclude{$_}} sort(List::MoreUtils::uniq(@$modules, @$requires));
-  $template =~s{###DEPENDENT_MODULES###}{$dependent_modules};
   $template =~s{###USAGE###}{$usage};
   $template =~s{\$Utils1}{\$Utils}g;
   if (defined $plugins) {

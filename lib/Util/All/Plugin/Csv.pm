@@ -78,20 +78,20 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 parse_csv *
 
-  use Util::All -csv;
-  
-  my $csv = parse_csv($file_or_fh);
-  while (my $ar = $csv->next) {
-     print "@$ar\n";
-  }
-  
-  my $csv = parse_csv($file_or_fh, ['name', 'age']);
-  while (my $hr = $csv->next) {
-     print join " ", %$hr, "\n";
-  }
-  
-  # pass options to Text::CSV
-  use Util::All -csv => [-args => {binary => 0, eol => "\r\n"}];
+    use Util::All -csv;
+    
+    my $csv = parse_csv($file_or_fh);
+    while (my $ar = $csv->next) {
+       print "@$ar\n";
+    }
+    
+    my $csv = parse_csv($file_or_fh, ['name', 'age']);
+    while (my $hr = $csv->next) {
+       print join " ", %$hr, "\n";
+    }
+    
+    # pass options to Text::CSV
+    use Util::All -csv => [-args => {binary => 0, eol => "\r\n"}];
 
 
 =head3 test code

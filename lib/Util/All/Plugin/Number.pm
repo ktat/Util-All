@@ -83,70 +83,70 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 number_commify *
 
-  sub {
-  
-      # code is borrowed from Template::Plugin::Comma
-      sub {
-          local $_ = shift;
-          while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
-          return $_;
-        }
-    }
+    sub {
+    
+        # code is borrowed from Template::Plugin::Comma
+        sub {
+            local $_ = shift;
+            while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
+            return $_;
+          }
+      }
 
 
 =head3 number_price *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_price(@_);
-        }
-    }
+    sub {
+        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+        my $n = Number::Format->new( %$kind_args, %$args );
+        sub {
+            $n->format_price(@_);
+          }
+      }
 
 
 =head3 number_unit *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_bytes(@_);
-        }
-    }
+    sub {
+        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+        my $n = Number::Format->new( %$kind_args, %$args );
+        sub {
+            $n->format_bytes(@_);
+          }
+      }
 
 
 =head3 number_round *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->round(@_);
-        }
-    }
+    sub {
+        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+        my $n = Number::Format->new( %$kind_args, %$args );
+        sub {
+            $n->round(@_);
+          }
+      }
 
 
 =head3 to_number *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->unformat_number(@_);
-        }
-    }
+    sub {
+        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+        my $n = Number::Format->new( %$kind_args, %$args );
+        sub {
+            $n->unformat_number(@_);
+          }
+      }
 
 
 =head3 number_format *
 
-  sub {
-      my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-      my $n = Number::Format->new( %$kind_args, %$args );
-      sub {
-          $n->format_number(@_);
-        }
-    }
+    sub {
+        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
+        my $n = Number::Format->new( %$kind_args, %$args );
+        sub {
+            $n->format_number(@_);
+          }
+      }
 
 
 =head3 test code

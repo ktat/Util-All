@@ -1,6 +1,5 @@
 ---
 modern:
-  -as_plugin : 0
   strict:
     . :
       - |
@@ -34,6 +33,7 @@ modern:
 
 argv:
   -require: ['Term::Encoding']
+  -as_plugin : 1
   Encode::Argv:
    . :
      - |
@@ -152,6 +152,7 @@ oo:
       - '"foo!100foo!"'
 
 data:
+  -as_plugin : 1
   Data::Structure::Util:
     -select:
       - has_utf8
@@ -186,6 +187,7 @@ data:
     blessed : is_blessed
 
 subroutine:
+  -as_plugin : 1
   Data::Util:
     -select:
       - install_subroutine
@@ -197,6 +199,7 @@ subroutine:
       - subroutine_modifier
 
 list:
+  -as_plugin : 1
   List::Util:
     - first
     - max
@@ -245,6 +248,7 @@ list:
     - lastp
     - pair
 hash:
+  -as_plugin : 1
   Hash::Util:
     -select:
      - hash_seed
@@ -272,6 +276,7 @@ hash:
           - indexed my %hash; %hash = qw/5 1 4 2 3 3 2 4 1 5 0 6/;  keys %hash
           - qw/5 4 3 2 1 0/
 debug:
+  -as_plugin : 1
   -require: ['B::Deparse']
   Data::Dumper:
     Dumper:
@@ -374,6 +379,7 @@ dumper:
  -alias_of: ['debug', 'Data::Dump']
 
 string:
+  -as_plugin: 1
   String::Util:
     -select:
       - crunch
@@ -458,11 +464,13 @@ string:
     - wordsplit
 
 md5:
+  -as_plugin : 1
   Digest::MD5:
     - md5
     - md5_hex
     - md5_base64
 sha:
+  -as_plugin : 1
   Digest::SHA:
     - sha1
     - sha1_hex
@@ -501,6 +509,7 @@ utf8:
       - "''"
 
 unicode:
+   -as_plugin : 1
    Unicode::String: 
      -select: [ utf32be, utf32le, utf16be, utf16le, utf8, utf7, latin1, uhex, uchr ]
    Unicode::CharName:
@@ -540,6 +549,7 @@ unicode:
       nicode_block('…');            # equal to 'General Punctuation'
 
 cgi:
+  -as_plugin : 1
   CGI::Util:
     escape: cgi_escape
     unescape: cgi_unescape
@@ -612,8 +622,8 @@ cgi:
     decode HTML entity.  in void context, it modify argument itself.
    
 xml:
-  -require: ['XML::Parser', 'String::CamelCase']
   -as_plugin: 1
+  -require: ['XML::Parser', 'String::CamelCase']
   XML::Simple:
     from_xml:
      -  |
@@ -706,6 +716,7 @@ encode:
     - from_to
 
 charset:
+  -as_plugin : 1
   Encode:
     encode: char_encode
     decode: char_decode
@@ -979,6 +990,7 @@ charset:
       - use utf8; 'ｱｲｳｴｵ1234ABCD()*&'
 
 uri:
+  -as_plugin: 1
   URI::Escape:
     - uri_escape
     - uri_unescape
@@ -1033,6 +1045,7 @@ uri:
           - ('http://example.com/?foo=%E3%81%82')
 
 base64:
+  -as_plugin: 1
   MIME::Base64:
     encode_base64: base64_encode
     decode_base64: base64_decode
@@ -1041,6 +1054,7 @@ base64:
     urlsafe_b64decode: urlsafe_base64_decode
 
 http:
+  -as_plugin: 1
   -require : ['LWP::UserAgent']
   -usage : |
       =head3 http_* functions
@@ -1240,6 +1254,7 @@ carp:
 
 yaml:
   -require: ['File::Slurp', 'Data::Structure::Util']
+  -as_plugin: 1
   YAML::XS:
     Dump: encode_yaml
     Load: decode_yaml
@@ -1305,9 +1320,11 @@ yaml:
       - use utf8; {hoge => "あいうえお"}
 
 yml:
+  -as_plugin: 1
   -alias_of: yaml
 
 json:
+  -as_plugin: 1
   -require: ['File::Slurp', 'Encode', 'Data::Structure::Util']
   JSON::XS:
     -select:
@@ -1375,10 +1392,12 @@ json:
       - 'use utf8; {hoge => "あいうえお"}'
 
 math:
+  -as_plugin: 1
   Toolbox::Simple:
     -select: [lcm, gcd, gcf, is_prime]
 
 basecalc:
+  -as_plugin: 1
   Toolbox::Simple:
     -select: [dec2hex, hex2dec, dec2bin, dec2oct, oct2dec]
   Math::BaseCalc:
@@ -1416,7 +1435,7 @@ basecalc:
       - package test_basecalc3; use Util::All -basecalc => [from_base => {digits => [0,1], -as => 'from_base2'}]; from_base2(100);
       - 4
 
-datetime: &datetime
+datetime:
   -require: ['Date::Manip']
   -as_plugin: 1
   -usage: |
@@ -1586,6 +1605,7 @@ datetime: &datetime
 # date: *datetime
 
 benchmark:
+  -as_plugin: 1
   Benchmark:
     -select: 
       - timeit
@@ -1628,6 +1648,7 @@ benchmark:
           if $count can be negative or 0, it means the number of CPU seconds(0 is regarded as 3).
 
 file:
+  -as_plugin: 1
   Path::Class:
     -select:
       - file
@@ -1914,6 +1935,7 @@ image:
         - return image type(Image::Info)
 
 exception:
+  -as_plugin: 1
   Try::Tiny:
     - try
     - catch
@@ -1984,6 +2006,7 @@ csv:
       - 49
 
 storable:
+  -as_plugin: 1
   Storable:
     thaw:
       -  sub {sub {Storable::thaw(@_)}}

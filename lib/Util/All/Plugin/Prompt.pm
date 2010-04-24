@@ -60,30 +60,30 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 =head3 required_prompt *
 
-  sub {
-      sub {
-          my $message = shift;
-          my $answer;
-        PROMPT:
-          {
-              $answer = IO::Prompt::prompt( $message, @_ );
-              $answer->{value} or redo PROMPT;
-              return $answer->{value};
+    sub {
+        sub {
+            my $message = shift;
+            my $answer;
+          PROMPT:
+            {
+                $answer = IO::Prompt::prompt( $message, @_ );
+                $answer->{value} or redo PROMPT;
+                return $answer->{value};
+            }
           }
-        }
-    }
+      }
 
 
 =head3 password_prompt *
 
-  sub {
-      sub {
-          my $message = shift;
-          my $answer;
-          $answer = IO::Prompt::prompt( $message, -echo => "*", @_ );
-          $answer->{value};
-        }
-    }
+    sub {
+        sub {
+            my $message = shift;
+            my $answer;
+            $answer = IO::Prompt::prompt( $message, -echo => "*", @_ );
+            $answer->{value};
+          }
+      }
 
 
 =head3 test code
