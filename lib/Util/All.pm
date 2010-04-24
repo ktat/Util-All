@@ -213,7 +213,7 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-See L<Util::All::Manaual> to check complete list of functions that Util::All provides.
+See L<Util::All::Manual> to check complete list of functions that Util::All provides.
 
 When you want list utilities.
 
