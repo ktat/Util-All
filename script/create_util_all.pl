@@ -11,7 +11,7 @@ use Perl::Tidy qw/perltidy/;
 use FindBin;
 use List::MoreUtils ();
 use String::CamelCase;
-require "$FindBin::Bin/lib/abstract_pod.pl";
+use Pod::Section qw/select_podsection/;
 
 local $Data::Dumper::Deparse = 1;
 local $Data::Dumper::Terse   = 1;
@@ -160,7 +160,7 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage_test{usage}{$k}{$f};
-            if (!exists $IGNORE_POD{$m} and my @pod = abstract_pod($m, $f)) {
+            if (!exists $IGNORE_POD{$m} and my @pod = select_podsection($m, $f)) {
               my $pod = join "", @pod;
               $pod =~s{^=item.+$}{}gm;
               $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)\n\n" . $pod];
@@ -314,7 +314,7 @@ sub usage {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of L<$m>\n\n";
             my @funcs = @{$usage->{$kind}->{'-rest'}->{$m}};
-            my @pods = exists $IGNORE_POD{$m} ? () : (abstract_pod($m, @funcs));
+            my @pods = exists $IGNORE_POD{$m} ? () : (select_podsection($m, @funcs));
             if (@funcs != @pods) {
               check_missing(\@funcs, \@pods);
             }

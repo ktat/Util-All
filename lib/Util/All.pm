@@ -1078,8 +1078,8 @@ To do this, the following modules are required.
  File::Slurp
  Tie::IxHash
  Perl::Tidy
- IO::String;
- Pod::Abstract;
+ IO::String
+ Pod::Section
 
 If you think more functions should be in Util::All, please tell me them.
 
