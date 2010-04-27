@@ -81,10 +81,10 @@ our $Utils = {
                     require MRO::Compat;
                     'MRO::Compat'->import;
                 }
-                if ($] >= 5.01) {
+                elsif ($] >= 5.01) {
                     require feature;
                     'feature'->import(':5.10');
-                    &mro::set_mro(scalar caller(), 'c3');
+                    &mro::set_mro(scalar caller 2, 'c3');
                 }
             }
         }
@@ -561,6 +561,8 @@ It affects the the following to the source of caller package.
    use strict;
    use warnings;
    use feature (':5.10'); # if your perl version > 5.10
+   mro::set_mro( scalar caller(), 'c3' );
+   # or MRO::Compat->import
 
 If you want to disable this.
 
