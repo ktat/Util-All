@@ -1000,7 +1000,35 @@ uri:
     - uri_split
     - uri_join
   URI:
-    uri_make:
+    make_query:
+      - |
+        sub {
+          require URI::QueryParam;
+          sub {
+            use utf8;
+            my($form) = @_;
+            my $u = URI->new('', 'http');
+            foreach my $k (keys %$form) {
+              my($key, $value) = ($k, $$form{$k});
+              utf8::encode($key)   if utf8::is_utf8($k);
+              my @value = ref $value ? @$value : $value;
+              for (@value) {utf8::encode($_) if  utf8::is_utf8($_)}
+              $u->query_param($key => @value);
+            }
+            $u->query;
+          }
+        }
+      - usage:
+        - make_query({foo => "あ", bar => ["い", "う"]}); # return 'bar=%E3%81%86&bar=%E3%81%84&foo=%E3%81%82'
+        - create query parameter from hash.
+      - test:
+        - 
+          - make_query({foo => "あ", bar => ["い", "う"]});
+          - ('bar=%E3%81%86&bar=%E3%81%84&foo=%E3%81%82')
+        - 
+          - my $x = "あ"; utf8::decode($x); make_query({foo => $x});
+          - ('foo=%E3%81%82')
+    make_uri:
       - |
         sub {
           if (URI->VERSION <= 1.35) {
@@ -1040,10 +1068,10 @@ uri:
         - create URI with parameter.
       - test:
         - 
-          - uri_make('http://example.com/', { foo => "あ", bar => "い"});
+          - make_uri('http://example.com/', { foo => "あ", bar => "い"});
           - ('http://example.com/?bar=%E3%81%84&foo=%E3%81%82')
         - 
-          - my $x = "あ"; utf8::decode($x); uri_make('http://example.com/', { foo => $x});
+          - my $x = "あ"; utf8::decode($x); make_uri('http://example.com/', { foo => $x});
           - ('http://example.com/?foo=%E3%81%82')
 
 base64:

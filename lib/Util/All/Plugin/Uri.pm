@@ -10,8 +10,7 @@ sub utils {
       'URI',
       '',
       {
-        '-select' => [],
-        'uri_make' => sub {
+        'make_uri' => sub {
             if ('URI'->VERSION <= 1.35) {
                 sub {
                     my($url, $form) = @_;
@@ -44,6 +43,25 @@ sub utils {
                 }
                 ;
             }
+        },
+        '-select' => [],
+        'make_query' => sub {
+            require URI::QueryParam;
+            sub {
+                my($form) = @_;
+                my $u = 'URI'->new('', 'http');
+                foreach my $k (keys %$form) {
+                    my($key, $value) = ($k, $$form{$k});
+                    utf8::encode($key) if utf8::is_utf8($k);
+                    my(@value) = ref $value ? @$value : $value;
+                    foreach $_ (@value) {
+                        utf8::encode($_) if utf8::is_utf8($_);
+                    }
+                    $u->query_param($key, @value);
+                }
+                $u->query;
+            }
+            ;
         }
       }
     ],
@@ -163,21 +181,37 @@ in $path is always escaped, as it would otherwise be parsed back
 as a query or fragment.
 
 
-=head3 uri_make *
+=head3 make_uri *
 
     uri_make('http://example.com/', { foo => "あ", bar => "い"});
 
 create URI with parameter.
 
+=head3 make_query *
+
+    make_query({foo => "あ", bar => ["い", "う"]});
+
+create query parameter from hash.
+
 =head3 test code
 
- uri_make('http://example.com/', { foo => "あ", bar => "い"});
+ make_uri('http://example.com/', { foo => "あ", bar => "い"});
  # equal to: ('http://example.com/?bar=%E3%81%84&foo=%E3%81%82')
 
  my $x = "あ";
  utf8::decode($x);
- uri_make('http://example.com/', { foo => $x});
+ make_uri('http://example.com/', { foo => $x});
  # equal to: ('http://example.com/?foo=%E3%81%82')
+
+=head3 test code
+
+ make_query({foo => "あ", bar => ["い", "う"]});
+ # equal to: ('bar=%E3%81%86&bar=%E3%81%84&foo=%E3%81%82')
+
+ my $x = "あ";
+ utf8::decode($x);
+ make_query({foo => $x});
+ # equal to: ('foo=%E3%81%82')
 
 
 
