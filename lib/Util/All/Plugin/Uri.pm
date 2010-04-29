@@ -127,10 +127,10 @@ character class (between [ ]).  E.g.:
   "^A-Za-z"                     # everything not a letter
 
 The default set of characters to be escaped is all those which are
-I<not> part of the C<uric> character class shown above as well as the
-reserved characters.  I.e. the default is:
+I<not> part of the C<unreserved> character class shown above as well
+as the reserved characters.  I.e. the default is:
 
-  "^A-Za-z0-9\-_.!~*'()"
+    "^A-Za-z0-9\-\._~"
 
 
 =head4 uri_unescape($string,...)

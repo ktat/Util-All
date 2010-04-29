@@ -74,18 +74,16 @@ our $Utils = {
         '-select' => [],
         '.' => sub {
             my($pkg, $class, $func, $args, $kind_args) = @_;
-            unless ($$kind_args{'disable'}) {
-                'warnings'->import;
-                'strict'->import;
-                if ($] < 5.009005) {
-                    require MRO::Compat;
-                    'MRO::Compat'->import;
-                }
-                elsif ($] >= 5.01) {
-                    require feature;
-                    'feature'->import(':5.10');
-                    &mro::set_mro(scalar caller 2, 'c3');
-                }
+            'warnings'->import;
+            'strict'->import;
+            if ($] < 5.009005) {
+                require MRO::Compat;
+                'MRO::Compat'->import;
+            }
+            elsif ($] >= 5.01) {
+                require feature;
+                'feature'->import(':5.10');
+                &mro::set_mro(scalar caller 2, 'c3');
             }
         }
       }
@@ -212,10 +210,22 @@ our $VERSION = '0.01';
 
 See L<Util::All::Manual> to check complete list of functions that Util::All provides.
 
+ use Util::All;
+ # automatically use strict, use warnings, mro c3
+ # -dumper is automatically imported.
+ 
+ dump({1 => 2});
+ deep_dump(sub { return 1 });
+
 When you want list utilities.
 
  use Util::All -list;
  my @uniq = uniq @list;
+
+Only you want list any
+
+ use Util::All -list => ['any'];
+ my $any = any {$_ > 10} @array;
 
 When you want string utilities.
 
@@ -248,19 +258,7 @@ or
 
  print h2z("A"); 
  print z2h("А");
- print z2h_alpha("Аあ"); # only A is z2hed.
-
-When you want CGI utilities.
-
- use Util::All -cgi;
- cgi_escape("/%"); # %2F%25
- cgi_unescape("%2F%25") # /%
-
-When you want MD5 utilities
-
- use Util::All -md5;
-
- md5_base64($str);
+ print z2h_alpha("Аあ"); # only A is to be z2h
 
 When you want datetime utilities
 
@@ -322,8 +320,6 @@ For example:
  base64_unencode ... decode string by base64
  decode_html_entities  ... decode html entities
  encode_html_entities  ... encode html entities
- YAML::Syck::Load ...  from_yaml
- YAML::Syck::LoadFile ... to_yaml_file
  Mail::Sendmail::sendmail ... send_mail
 
 But, some functions, which I think no need to add kind, are exception.
@@ -566,7 +562,7 @@ It affects the the following to the source of caller package.
 
 If you want to disable this.
 
-  use Util::All -modern => [-args => {disable => 1}];
+  use Util::All -modern => [];
 
 
 =head2 -oo

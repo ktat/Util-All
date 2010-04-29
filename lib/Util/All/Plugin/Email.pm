@@ -84,6 +84,15 @@ sub utils {
                     $$attributes{'encoding'} = '7bit';
                 }
                 elsif ($charset) {
+                    my $i = 0;
+                    foreach my $head (@$header) {
+                        next if ++$i % 2;
+                        Encode::from_to($head, $charset, 'MIME-Header');
+                    }
+                    $$attributes{'encoding'} = '8bit';
+                    $charset = '';
+                }
+                else {
                     $$attributes{'encoding'} = 'base64';
                 }
                 return $charset;
@@ -103,7 +112,7 @@ sub utils {
                         @arg = ('body', scalar File::Slurp::slurp($body_or_file), 'attributes', $attr);
                     }
                     else {
-                        $charset = &$charset_resolver($attributes, {});
+                        $charset = &$charset_resolver($attributes, []);
                         @arg = ('attributes', $attributes, 'body', $body_or_file);
                     }
                     'Email::MIME'->create(@arg);} @$parts_or_body)], $charset ? 'header_str' : 'header', $header);

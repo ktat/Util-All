@@ -5,17 +5,15 @@ modern:
       - |
         sub {
           my ($pkg, $class, $func, $args, $kind_args) = @_;
-          unless ($kind_args->{disable}) {
-            warnings->import();
-            strict->import();
-            if ($] <  5.009_005) {
-              require MRO::Compat;
-              MRO::Compat->import;
-            } elsif ($] >= 5.01) {
-              require feature;
-              feature->import(':5.10');
-              mro::set_mro( scalar caller(2), 'c3' );
-            }
+          warnings->import();
+          strict->import();
+          if ($] <  5.009_005) {
+            require MRO::Compat;
+            MRO::Compat->import;
+          } elsif ($] >= 5.01) {
+            require feature;
+            feature->import(':5.10');
+            mro::set_mro( scalar caller(2), 'c3' );
           }
         }
   -usage: |
@@ -30,7 +28,7 @@ modern:
       
       If you want to disable this.
       
-        use Util::All -modern => [-args => {disable => 1}];
+        use Util::All -modern => [];
 
 argv:
   -require: ['Term::Encoding']
@@ -1129,7 +1127,15 @@ email:
                # $head = Encode::encode('MIME-Header-ISO_2022_JP' => $head);
              }
              $attributes->{encoding} = '7bit';
-           } elsif($charset) {
+           } elsif ($charset) {
+             my $i = 0;
+             foreach my $head (@$header) {
+               next if ++$i % 2;
+               Encode::from_to($head, $charset, 'MIME-Header');
+             }
+             $attributes->{encoding} = '8bit';
+             $charset = '';
+           } else {
              $attributes->{encoding} = 'base64';
            }
            return $charset;
@@ -1152,7 +1158,7 @@ email:
                                         @arg = (body => scalar File::Slurp::slurp($body_or_file),
                                                 attributes => $attr);
                                       } else {
-                                        $charset = $charset_resolver->($attributes, {});
+                                        $charset = $charset_resolver->($attributes, []);
                                         @arg = (attributes => $attributes, body => $body_or_file);
                                       }
                                       Email::MIME->create(@arg);
