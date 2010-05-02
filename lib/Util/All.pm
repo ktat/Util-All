@@ -337,6 +337,8 @@ see L<Util::Any/"USE Sub::Exporter's GENERATOR WAY">
 
 NOTE THAT: -modern & -dumper is automatically imported.
 
+NOTE THAT: almost all of functions' explantion is cited from original modules' document.
+
 =head2 -carp
 
 =head3 functions of L<Carp>
