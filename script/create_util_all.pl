@@ -26,7 +26,7 @@ my %CONF;
 @CONF{@ARGV} = ();
 my %PLUGINS;
 my %IGNORE_POD;
-@IGNORE_POD{qw/IO::Prompt/} = ();
+# @IGNORE_POD{qw/IO::Prompt/} = ();
 
 my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
 my $NOTEST       = exists $CONF{'-notest'} || 0;
