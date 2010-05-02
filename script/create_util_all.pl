@@ -37,7 +37,7 @@ sub main {
   reset_test();
   my %usage;
 
-  my @defs = def_usage_from_file("functions.yml");
+  my @defs = def_usage_from_file("$FindBin::Bin/definition/functions.yml");
   my $plugins = pop @defs;
   my @modules = @REQUIRES;
   my @requires = @modules;

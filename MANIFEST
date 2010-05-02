@@ -2,9 +2,9 @@ Changes
 MANIFEST
 Makefile.PL
 README
-functions.yml
-util-all.template
-create_util_all.pl
+template/util-all.template
+script/create_util_all.pl
+script/definition/functions.yml
 lib/Util/All.pm
 lib/Util/All/Plugin/Csv.pm
 lib/Util/All/Plugin/Datetime.pm
