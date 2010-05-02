@@ -6,7 +6,7 @@ use strict;
 sub utils {
   ###DEFINITION###;
 }
-
+###ADDITIONAL_CODE###
 =head1 NAME
 
 Util::All::Plugin::###KIND###; -  Util::All plugin for ###KIND###

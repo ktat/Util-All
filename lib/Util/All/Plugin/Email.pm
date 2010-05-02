@@ -71,40 +71,13 @@ sub utils {
             require MIME::Types;
             require File::Slurp;
             my $mime = 'MIME::Types'->new;
-            my $charset_resolver = sub {
-                my($attributes, $header) = @_;
-                my $charset = $$attributes{'charset'} || '';
-                if ($charset =~ /iso[-_]2022[-_]jp/o or $charset =~ /\bjis$/o) {
-                    $charset = '';
-                    my $i = 0;
-                    foreach my $head (@$header) {
-                        next if ++$i % 2;
-                        Encode::from_to($head, 'iso-2022-jp', 'MIME-Header-ISO_2022_JP');
-                    }
-                    $$attributes{'encoding'} = '7bit';
-                }
-                elsif ($charset) {
-                    my $i = 0;
-                    foreach my $head (@$header) {
-                        next if ++$i % 2;
-                        Encode::from_to($head, $charset, 'MIME-Header');
-                    }
-                    $$attributes{'encoding'} = '8bit';
-                    $charset = '';
-                }
-                else {
-                    $$attributes{'encoding'} = 'base64';
-                }
-                return $charset;
-            }
-            ;
             sub {
                 my($header, $attributes, $parts_or_body) = @_;
                 $attributes = &Clone::clone($attributes);
                 $parts_or_body = &Clone::clone($parts_or_body) if ref $parts_or_body;
-                my $charset = &$charset_resolver($attributes, $header);
                 if (ref $parts_or_body) {
-                    'Email::MIME'->create('attributes', $attributes, 'parts', [map({my(@arg, $charset);
+                    my($charset, $_charset, $flg) = Util::All::Plugin::Email::_charset_resolver($attributes, $header);
+                    'Email::MIME'->create('attributes', $attributes, 'parts', [map({my @arg;
                     my($attributes, $body_or_file) = ref $_ ? @$_ : ({}, $_);
                     if (-e $body_or_file) {
                         my($ext) = $body_or_file =~ /\.(.+?)$/;
@@ -112,13 +85,24 @@ sub utils {
                         @arg = ('body', scalar File::Slurp::slurp($body_or_file), 'attributes', $attr);
                     }
                     else {
-                        $charset = &$charset_resolver($attributes, []);
+                        $$attributes{'content_type'} ||= 'text/plain';
+                        my($charset, $_charset) = Util::All::Plugin::Email::_charset_resolver($attributes, []);
+                        if ($$attributes{'content_type'} =~ m[^text/]i and $flg and $_charset) {
+                            $body_or_file = Encode::encode($_charset, $body_or_file);
+                        }
                         @arg = ('attributes', $attributes, 'body', $body_or_file);
                     }
                     'Email::MIME'->create(@arg);} @$parts_or_body)], $charset ? 'header_str' : 'header', $header);
                 }
                 else {
+                    my($charset, $_charset, $flg) = Util::All::Plugin::Email::_charset_resolver($attributes, $header);
                     $$attributes{'content_type'} ||= 'text/plain';
+                    if ($charset and not $flg) {
+                        $parts_or_body = Encode::decode($_charset, $parts_or_body);
+                    }
+                    elsif (not $charset and $flg) {
+                        $parts_or_body = Encode::encode($_charset, $parts_or_body);
+                    }
                     'Email::MIME'->create('attributes', $attributes, $charset ? 'body_str' : 'body', $parts_or_body, $charset ? 'header_str' : 'header', $header);
                 }
             }
@@ -130,6 +114,40 @@ sub utils {
 }
 ;
 }
+
+sub _charset_resolver {
+  my ($attributes, $header) = @_;
+  my $charset = $attributes->{charset} || '';
+  my $_charset = $charset;
+  my $flagged = 0;
+  if ($charset =~m{iso[-_]2022[-_]jp}o or $charset =~m{\bjis$}o) {
+    $charset = '';
+    my $i = 0;
+    foreach my $head (@$header) {
+      next if ++$i % 2;
+      if ($flagged ||= utf8::is_utf8($head)) {
+        $head = Encode::encode('MIME-Header-ISO_2022_JP' => $head);
+      } else {
+        Encode::from_to($head, "iso-2022-jp", 'MIME-Header-ISO_2022_JP');
+      }
+    }
+    $attributes->{encoding} = '7bit';
+  } elsif ($charset) {
+    my $i = 0;
+    foreach my $head (@$header) {
+      next if ++$i % 2;
+      $flagged = utf8::is_utf8($head);
+      unless ($flagged) {
+        $head = Encode::decode($charset, $head);
+      }
+    }
+    $attributes->{encoding} = '8bit';
+  } else {
+    $attributes->{encoding} = 'base64';
+  }
+  return ($charset, $_charset, $flagged);
+}
+
 
 =head1 NAME
 

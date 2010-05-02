@@ -217,11 +217,15 @@ sub write_file {
 
   my $usage = usage($usage_data, $test);
   generate_test($usage_data, $test);
-
+  my $additional_code = '';
+  if (-e (my $additional = "$FindBin::Bin/../template/$kind.code")) {
+    $additional_code = slurp($additional);
+  }
   $kind = ucfirst($kind);
   $template =~s{###KIND###}{$kind}g;
   $template =~s{###DEFINITION###}{$def_string};
   $template =~s{###USAGE###}{$usage};
+  $template =~s{###ADDITIONAL_CODE###}{$additional_code};
   $template =~s{\$Utils1}{\$Utils}g;
   if (defined $plugins) {
     my @plugins;
