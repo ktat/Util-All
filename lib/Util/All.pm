@@ -804,69 +804,69 @@ Note that the interaction between alarms and sleeps is unspecified.
 
 =head1 PLUGINS
 
-=head2 L<Util::All::Plugin::Subroutine>
-
-=head2 L<Util::All::Plugin::Storable>
-
-=head2 L<Util::All::Plugin::File>
-
-=head2 L<Util::All::Plugin::String>
-
-=head2 L<Util::All::Plugin::Email>
-
-=head2 L<Util::All::Plugin::Http>
-
-=head2 L<Util::All::Plugin::Csv>
-
-=head2 L<Util::All::Plugin::Xml>
-
-=head2 L<Util::All::Plugin::Debug>
-
 =head2 L<Util::All::Plugin::Argv>
-
-=head2 L<Util::All::Plugin::List>
 
 =head2 L<Util::All::Plugin::Base64>
 
-=head2 L<Util::All::Plugin::Sha>
+=head2 L<Util::All::Plugin::Basecalc>
+
+=head2 L<Util::All::Plugin::Benchmark>
 
 =head2 L<Util::All::Plugin::Cgi>
 
-=head2 L<Util::All::Plugin::Yml>
-
-=head2 L<Util::All::Plugin::Basecalc>
-
 =head2 L<Util::All::Plugin::Charset>
+
+=head2 L<Util::All::Plugin::Csv>
 
 =head2 L<Util::All::Plugin::Data>
 
-=head2 L<Util::All::Plugin::Uri>
+=head2 L<Util::All::Plugin::Datetime>
 
-=head2 L<Util::All::Plugin::Prompt>
+=head2 L<Util::All::Plugin::Debug>
+
+=head2 L<Util::All::Plugin::Email>
+
+=head2 L<Util::All::Plugin::Exception>
+
+=head2 L<Util::All::Plugin::File>
 
 =head2 L<Util::All::Plugin::Hash>
+
+=head2 L<Util::All::Plugin::Http>
+
+=head2 L<Util::All::Plugin::Image>
+
+=head2 L<Util::All::Plugin::Json>
+
+=head2 L<Util::All::Plugin::List>
+
+=head2 L<Util::All::Plugin::Math>
 
 =head2 L<Util::All::Plugin::Md5>
 
 =head2 L<Util::All::Plugin::Number>
 
+=head2 L<Util::All::Plugin::Prompt>
+
 =head2 L<Util::All::Plugin::Serialize>
 
-=head2 L<Util::All::Plugin::Datetime>
+=head2 L<Util::All::Plugin::Sha>
 
-=head2 L<Util::All::Plugin::Json>
+=head2 L<Util::All::Plugin::Storable>
+
+=head2 L<Util::All::Plugin::String>
+
+=head2 L<Util::All::Plugin::Subroutine>
 
 =head2 L<Util::All::Plugin::Unicode>
 
-=head2 L<Util::All::Plugin::Math>
+=head2 L<Util::All::Plugin::Uri>
 
-=head2 L<Util::All::Plugin::Image>
+=head2 L<Util::All::Plugin::Xml>
 
 =head2 L<Util::All::Plugin::Yaml>
 
-=head2 L<Util::All::Plugin::Exception>
-
-=head2 L<Util::All::Plugin::Benchmark>
+=head2 L<Util::All::Plugin::Yml>
 
 =head1 YAML FILE STRUCTURE
 

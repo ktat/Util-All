@@ -1709,6 +1709,8 @@ which is equal to last argument of Email::Sender::Simple's sendmail.
 
 
 
+
+
 =head2 -exception
 
 =head3 functions of L<Try::Tiny>

@@ -18,6 +18,10 @@ local $Data::Dumper::Terse   = 1;
 local $Data::Dumper::Indent  = 1;
 local $Data::Dumper::Varname = 'Utils';
 
+# not defined in functions.yml
+my @SEPARATE_PLUGINS = ('Email');
+my @REQUIRES         = ('Email::Sender::Simple','Email::MIME', 'Template', 'Clone', 'MIME::Types');
+
 my %CONF;
 @CONF{@ARGV} = ();
 my %PLUGINS;
@@ -35,7 +39,8 @@ sub main {
 
   my @defs = def_usage_from_file("functions.yml");
   my $plugins = pop @defs;
-  my (@modules, @requires);
+  my @modules = @REQUIRES;
+  my @requires = @modules;
   my ($modules, $requires) = write_file("all", @defs, $plugins) or die "NG";
   push @modules, @$modules;
   push @requires, @$requires;
@@ -48,6 +53,8 @@ sub main {
     push @modules, @$modules;
     push @requires, @$requires;
   }
+  @requires = sort @requires;
+  usage_from_plugin(\%usage, @SEPARATE_PLUGINS);
   write_file_again([@modules, @requires], \%usage);
   write_make_file(\@modules, \@requires);
   system("prove -Ilib t/ t/auto/;") unless $NOTEST;
@@ -208,6 +215,14 @@ sub def_usage_from_file {
   return (\%new, $usage_test{usage}, \@modules, \@requires, $usage_test{test}, \%plugins);
 }
 
+sub usage_from_plugin {
+  my ($usage, @plugins) =@_;
+  foreach my $p (@plugins) {
+    my $name = lc($p);
+    $usage->{$name} = select_podsection("Util::All::Plugin::$p", '-' . $name);
+  }
+}
+
 sub write_file {
   my ($kind, $new, $usage_data, $modules, $requires, $test, $plugins) = @_;
   my $def_string = Dumper($new);
@@ -232,7 +247,7 @@ sub write_file {
     foreach my $p (keys %$plugins) {
       push @plugins, String::CamelCase::camelize($p);
     }
-    my $plugin_text = join "\n\n", map "=head2 L<Util::All::Plugin::$_>", @plugins;
+    my $plugin_text = join "\n\n", map "=head2 L<Util::All::Plugin::$_>", sort @plugins, @SEPARATE_PLUGINS;
     $template =~s{###PLUGINS###}{$plugin_text};
   }
 
