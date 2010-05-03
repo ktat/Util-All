@@ -358,6 +358,7 @@ debug:
            require Data::Dumper;
            sub(@) {
              local $Data::Dumper::Deparse = 1;
+             local $Data::Dumper::Terse = 1;
              if (not defined wantarray) {
                print STDERR Data::Dumper::Dumper(@_);
              } else {

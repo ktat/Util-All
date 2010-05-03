@@ -36,6 +36,7 @@ main();
 sub main {
   reset_test();
   my %usage;
+  my %usage_simple;
 
   my @defs = def_usage_from_file("$FindBin::Bin/definition/functions.yml");
   my $plugins = pop @defs;
@@ -44,10 +45,10 @@ sub main {
   my ($modules, $requires) = write_file("all", @defs, $plugins) or die "NG";
   push @modules, @$modules;
   push @requires, @$requires;
-  $usage{ROOT} = usage(@defs[1, 4]);
+  ($usage{ROOT}, $usage_simple{ROOT}) = usage(@defs[1, 4]);
   foreach my $k (keys %$plugins) {
     @defs = def_usage_from_file({$k => $plugins->{$k}});
-    $usage{$k} = usage(@defs[1, 4]);
+    ($usage{$k}, $usage_simple{$k}) = usage(@defs[1, 4]);
     pop @defs;
     ($modules, $requires) = write_file($k, @defs) or die "NG";
     push @modules, @$modules;
@@ -55,7 +56,7 @@ sub main {
   }
   @requires = sort @requires;
   usage_from_plugin(\%usage, @SEPARATE_PLUGINS);
-  write_file_again([@modules, @requires], \%usage);
+  write_file_again([@modules, @requires], \%usage_simple);
   write_make_file(\@modules, \@requires);
   system("prove -Ilib t/ t/auto/;") unless $NOTEST;
 }
@@ -74,7 +75,11 @@ sub write_file_again {
   $pod =~s{###DEPENDENT_MODULES###}{$dependent_modules};
   my $usage_text = '';
   foreach my $key (sort keys %$usage) {
-    $usage_text .= $usage->{$key} . "\n\n";
+    if ($key ne 'ROOT') {
+      my $module = ucfirst $key;
+      $usage->{$key} =~ s{^(=head2 -.+)}{$1 (L<Util::All::Plugin::$module>)}m;
+    }
+    $usage_text .= $usage->{$key} . "\n";
   }
   $pod =~ s{###USAGE###}{$usage_text};
   File::Slurp::write_file("lib/Util/All/Manual.pod", $pod);
@@ -315,11 +320,13 @@ sub check_missing {
 
 sub usage {
   my ($usage, $test) = @_;
-  my $c;
+  my ($c, $d);
   foreach my $kind (keys %$usage) {
     $c .= '=head2 -' . $kind . "\n\n";
+    $d .= '=head2 -' . $kind . "\n\n";
     if (exists $usage->{$kind}->{'-all'}) {
       $c .= $usage->{$kind}->{'-all'} . "\n\n";
+      $d .= $usage->{$kind}->{'-all'} . "\n\n";
 #      if ($usage->{$kind}->{-renames}) {
 #        $c .= "=head3 function enable to rename *\n\n";
 #        $c .= join ", ", @{$usage->{$kind}->{-renames}};
@@ -332,6 +339,7 @@ sub usage {
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
             $c .= "=head3 functions of L<$m>\n\n";
+            $d .= "=head3 functions of L<$m>\n\n";
             my @funcs = @{$usage->{$kind}->{'-rest'}->{$m}};
             my @pods = exists $IGNORE_POD{$m} ? () : (select_podsection($m, @funcs));
             if (@funcs != @pods) {
@@ -341,6 +349,7 @@ sub usage {
             if (!@pods or join("", @pods) =~ m{^[\s\t]+$}s) {
               foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
                 $c .= "=head4 $func\n\n";
+                $d .= "=head4 $func\n\n";
               }
             } else {
               my $last_pod = '';
@@ -358,17 +367,22 @@ sub usage {
                   $pod =~s{^=cut}{=back\n\n}m or die $pod;
                   $pod =~s{^=item\s+(\*)?}{=head4 };
                   $c .= $pod;
+                  $d .= $pod;
                 } else {
                   $pod =~s{^=item\s+(\*)?}{=head4 };
                   $pod =~s{^=cut\s*}{}m;
                   $c .= $pod;
+                  $d .= $pod;
                 }
               }
             }
             # $c .= "=back\n\n";
           }
         } else {
-          $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
+          # $c .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
+          # $d .= "=head3 $f" . ($usage->{$kind}->{'-rename'}->{$f} ? ' *' : '') . "\n\n";
+          $c .= "=head3 $f\n\n";
+          $d .= "=head3 $f\n\n";
           if ($usage->{$kind}->{$f}->[0]) {
             $tmp{$f} = 1;
             if (ref $usage->{$kind}->{$f}->[0] eq 'ARRAY') {
@@ -376,10 +390,12 @@ sub usage {
             }
             $usage->{$kind}->{$f}->[0] =~s{^}{  }mg;
             $c .= $usage->{$kind}->{$f}->[0] . "\n\n";;
+            $d .= $usage->{$kind}->{$f}->[0] . "\n\n";;
           }
           if ($usage->{$kind}->{$f}->[1]) {
             $tmp{$f} = 1;
             $c .= $usage->{$kind}->{$f}->[1] . "\n\n";;
+            $d .= $usage->{$kind}->{$f}->[1] . "\n\n";;
           }
         }
       }
@@ -400,7 +416,7 @@ sub usage {
       }
     }
   }
-  return $c;
+  return ($c, $d);
 }
 
 sub reset_test {
