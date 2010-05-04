@@ -25,8 +25,11 @@ my @REQUIRES         = ('Email::Sender::Simple','Email::MIME', 'Template', 'Clon
 my %CONF;
 @CONF{@ARGV} = ();
 my %PLUGINS;
+my %IGNORE_POD_ALL;
 my %IGNORE_POD;
-# @IGNORE_POD{qw/IO::Prompt/} = ();
+@IGNORE_POD_ALL{qw/Data::Dump/} = ();
+@IGNORE_POD{keys %IGNORE_POD_ALL} = ();
+
 
 my $USE_PERLTIDY = !(exists $CONF{'-notidy'}) || 0;
 my $NOTEST       = exists $CONF{'-notest'} || 0;
@@ -172,10 +175,11 @@ sub def_usage_from_file {
             push @funcs, delete $def->{$k}->{$m}->{$f};
           } else {
             delete $usage_test{usage}{$k}{$f};
+            my $cited = qq{(This explanation is cited from L<$m>)\n\n};
             if (!exists $IGNORE_POD{$m} and my @pod = select_podsection($m, $f)) {
               my $pod = join "", @pod;
               $pod =~s{^=item.+$}{}gm;
-              $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)\n\n" . $pod];
+              $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)\n\n" . $pod . $cited];
             } else {
               $usage_test{usage}{$k}{$def->{$k}->{$m}->{$f}} = ["", "($f of L<$m>)"];
             }
@@ -338,8 +342,7 @@ sub usage {
         next if $f eq '-rename' or $f eq '-renames';
         if ($f eq '-rest') {
           foreach my $m (keys %{$usage->{$kind}->{'-rest'}}) {
-            $c .= "=head3 functions of L<$m>\n\n";
-            $d .= "=head3 functions of L<$m>\n\n";
+            my $cited = qq{(This explanation is cited from L<$m>)\n\n};
             my @funcs = @{$usage->{$kind}->{'-rest'}->{$m}};
             my @pods = exists $IGNORE_POD{$m} ? () : (select_podsection($m, @funcs));
             if (@funcs != @pods) {
@@ -347,9 +350,11 @@ sub usage {
             }
             # $c .= "=over 4\n\n";
             if (!@pods or join("", @pods) =~ m{^[\s\t]+$}s) {
-              foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
-                $c .= "=head4 $func\n\n";
-                $d .= "=head4 $func\n\n";
+              unless (exists $IGNORE_POD_ALL{$m}) {
+                foreach my $func (@{$usage->{$kind}->{'-rest'}->{$m}}) {
+                  $c .= "=head3 $func\n\n";
+                  $d .= "=head3 $func\n\n";
+                }
               }
             } else {
               my $last_pod = '';
@@ -365,15 +370,17 @@ sub usage {
                   $pod =~s{^=head[123]}{\n\n=over 8\n\n=item}m;
                   $pod =~s{^=head[123]}{=item}mg;
                   $pod =~s{^=cut}{=back\n\n}m or die $pod;
-                  $pod =~s{^=item\s+(\*)?}{=head4 };
+                  $pod =~s{^=item\s+(\*)?}{=head3 };
                   $c .= $pod;
                   $d .= $pod;
                 } else {
-                  $pod =~s{^=item\s+(\*)?}{=head4 };
+                  $pod =~s{^=item\s+(\*)?}{=head3 };
                   $pod =~s{^=cut\s*}{}m;
                   $c .= $pod;
                   $d .= $pod;
                 }
+                $c .= $cited;
+                $d .= $cited;
               }
             }
             # $c .= "=back\n\n";

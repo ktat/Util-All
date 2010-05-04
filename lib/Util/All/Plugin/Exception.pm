@@ -33,9 +33,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -exception
 
-=head3 functions of L<Try::Tiny>
-
-=head4 try (&;@)
+=head3 try (&;@)
 
 Takes one mandatory try subroutine, an optional catch subroutine & finally
 subroutine.
@@ -55,7 +53,9 @@ still be invoked.
 Once all execution is finished then the finally block if given will execute.
 
 
-=head4 catch (&;$)
+(This explanation is cited from L<Try::Tiny>)
+
+=head3 catch (&;$)
 
 Intended to be used in the second argument position of C<try>.
 
@@ -69,6 +69,8 @@ Inside the catch block the previous value of C<$@> is still available for use.
 This value may or may not be meaningful depending on what happened before the
 C<try>, but it might be a good idea to preserve it in an error stack.
 
+
+(This explanation is cited from L<Try::Tiny>)
 
 
 

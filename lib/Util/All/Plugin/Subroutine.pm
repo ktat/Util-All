@@ -38,9 +38,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -subroutine
 
-=head3 functions of L<Data::Util>
-
-=head4 install_subroutine(package, name => subr [, ...])
+=head3 install_subroutine(package, name => subr [, ...])
 
 Installs I<subr> into I<package> as I<name>.
 
@@ -66,7 +64,9 @@ To re-install I<subr>, use C<< no warnings 'redefine' >> directive:
 	install_subroutine($package, $name => $subr);
 
 
-=head4 uninstall_subroutine(package, names...)
+(This explanation is cited from L<Data::Util>)
+
+=head3 uninstall_subroutine(package, names...)
 
 Uninstalls I<names> from I<package>.
 
@@ -91,7 +91,9 @@ For example:
 	uninstall_subroutine(\$pkg, { hello => \&Bar::hello });
 
 
-=head4 get_code_info(subr)
+(This explanation is cited from L<Data::Util>)
+
+=head3 get_code_info(subr)
 
 Returns a pair of elements, the package name and the subroutine name of I<subr>.
 
@@ -99,7 +101,9 @@ It is similar to C<Sub::Identify::get_code_info()>, but it returns the fully
 qualified name in scalar context.
 
 
-=head4 get_code_ref(package, name, flag?)
+(This explanation is cited from L<Data::Util>)
+
+=head3 get_code_ref(package, name, flag?)
 
 Returns I<&package::name> if it exists, not touching the symbol in the stash.
 
@@ -113,7 +117,9 @@ For example:
 	$code = get_code_ref($pkg, $name, -create); # like \&{$pkg.'::'.$name}
 
 
-=head4 curry(subr, args and/or placeholders)
+(This explanation is cited from L<Data::Util>)
+
+=head3 curry(subr, args and/or placeholders)
 
 Makes I<subr> curried and returns the curried subroutine.
 
@@ -122,7 +128,9 @@ This is also considered as lightweight closures.
 See also L<Data::Util::Curry>.
 
 
-=head4 modify_subroutine(subr, ...)
+(This explanation is cited from L<Data::Util>)
+
+=head3 modify_subroutine(subr, ...)
 
 Modifies I<subr> with subroutine modifiers and returns the modified subroutine.
 This is also considered as lightweight closures.
@@ -139,24 +147,32 @@ C<subroutine_modifier()> is property accessors, but it does not bless the
 modified subroutines.
 
 
-=head4 subroutine_modifier(subr)
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(subr)
 
 Returns whether I<subr> is a modified subroutine.
 
 
-=head4 subroutine_modifier(modified_subr, property)
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(modified_subr, property)
 
 Gets I<property> from I<modified>.
 
 Valid properties are: C<before>, C<around>, C<after>.
 
 
-=head4 subroutine_modifier(modified_subr, modifier => [subroutine(s)])
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(modified_subr, modifier => [subroutine(s)])
 
 Adds subroutine I<modifier> to I<modified_subr>.
 
 Valid modifiers are: C<before>, C<around>, C<after>.
 
+
+(This explanation is cited from L<Data::Util>)
 
 
 

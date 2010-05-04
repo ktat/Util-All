@@ -59,12 +59,12 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 %hash is indexed.
 
-=head3 functions of L<Hash::Util>
-
-=head4 B<lock_keys>
+=head3 B<lock_keys>
 
 
-=head4 B<unlock_keys>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_keys>
 
   lock_keys(%hash);
   lock_keys(%hash, @keys);
@@ -87,10 +87,14 @@ after this sub executes.
 Both routines return a reference to the hash operated on.
 
 
-=head4 B<lock_value>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<lock_value>
 
 
-=head4 B<unlock_value>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_value>
 
   lock_value  (%hash, $key);
   unlock_value(%hash, $key);
@@ -104,10 +108,14 @@ regardless of this setting.
 Returns a reference to the %hash.
 
 
-=head4 B<lock_hash>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<lock_hash>
 
 
-=head4 B<unlock_hash>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_hash>
 
     lock_hash(%hash);
 
@@ -123,7 +131,9 @@ and deleted.
 Returns a reference to the %hash.
 
 
-=head4 B<hash_seed>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<hash_seed>
 
     my $hash_seed = hash_seed();
 
@@ -137,6 +147,8 @@ see L<perlsec/"Algorithmic Complexity Attacks"> for more information.
 B<Do not disclose the hash seed> to people who don't need to know it.
 See also L<perlrun/PERL_HASH_SEED_DEBUG>.
 
+
+(This explanation is cited from L<Hash::Util>)
 
 
 

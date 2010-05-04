@@ -96,24 +96,26 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -file
 
-=head3 functions of L<Path::Class>
-
-=head4 file
+=head3 file
 
 A synonym for C<< Path::Class::File->new >>.
 
 
-=head4 dir
+(This explanation is cited from L<Path::Class>)
+
+=head3 dir
 
 A synonym for C<< Path::Class::Dir->new >>.
 
 
-=head3 functions of L<File::Path>
+(This explanation is cited from L<Path::Class>)
 
-=head4 make_path( $dir1, $dir2, .... )
+=head3 make_path( $dir1, $dir2, .... )
 
 
-=head4 make_path( $dir1, $dir2, ...., \%opts )
+(This explanation is cited from L<File::Path>)
+
+=head3 make_path( $dir1, $dir2, ...., \%opts )
 
 The C<make_path> function creates the given directories if they don't
 exists before, much like the Unix command C<mkdir -p>.
@@ -185,10 +187,14 @@ Group ownwership of directories that already exist will not be changed.
 =back
 
 
-=head4 remove_tree( $dir1, $dir2, .... )
+(This explanation is cited from L<File::Path>)
+
+=head3 remove_tree( $dir1, $dir2, .... )
 
 
-=head4 remove_tree( $dir1, $dir2, ...., \%opts )
+(This explanation is cited from L<File::Path>)
+
+=head3 remove_tree( $dir1, $dir2, ...., \%opts )
 
 The C<remove_tree> function deletes the given directories and any
 files and subdirectories they might contain, much like the Unix
@@ -257,9 +263,9 @@ of hand. This is the safest course of action.
 =back
 
 
-=head3 functions of L<File::Slurp>
+(This explanation is cited from L<File::Path>)
 
-=head4 B<read_file>
+=head3 B<read_file>
 
 This sub reads in an entire file and returns its contents to the
 caller. In list context it will return a list of lines (using the
@@ -362,7 +368,9 @@ read abother file if it fails.
 =back
 
 
-=head4 B<write_file>
+(This explanation is cited from L<File::Slurp>)
+
+=head3 B<write_file>
 
 This sub writes out an entire file in one call.
 
@@ -475,6 +483,8 @@ will croak.
 =back
 
 
+(This explanation is cited from L<File::Slurp>)
+
 =head3 find_file
 
 (find of L<File::Find>)
@@ -490,6 +500,8 @@ the C<&wanted> subroutine.  (See below for details on how to use the
 C<&wanted> function).  Additionally, for each directory found, it will
 C<chdir()> into that directory and continue the search, invoking the
 C<&wanted> function on each file or subdirectory in the directory.
+
+(This explanation is cited from L<File::Find>)
 
 
 
@@ -530,6 +542,8 @@ copy of the file under the destination name.
 
 You may use the "mv" alias for this function in the same way that
 you may use the "cp" alias for C<copy>.
+
+(This explanation is cited from L<File::Copy>)
 
 
 
@@ -614,6 +628,8 @@ upon the file, but will generally be the whole file (up to 2MB), or
 
 You may use the syntax C<use File::Copy "cp"> to get at the
 "cp" alias for this function. The syntax is I<exactly> the same.
+
+(This explanation is cited from L<File::Copy>)
 
 
 

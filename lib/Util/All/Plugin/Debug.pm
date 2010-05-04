@@ -112,9 +112,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -debug
 
-=head3 functions of L<Tie::Trace>
-
-=head4 watch
+=head3 watch
 
  watch $variables;
 
@@ -133,9 +131,9 @@ If the variables has values before C<watch>, it is no problem. Tie::Trace work w
  watch %hash;
 
 
-=head3 functions of L<Devel::Cycle>
+(This explanation is cited from L<Tie::Trace>)
 
-=head4 find_cycle($object_reference,[$callback])
+=head3 find_cycle($object_reference,[$callback])
 
 The find_cycle() function will traverse the object reference and print
 a report to STDOUT identifying any memory cycles it finds.
@@ -170,65 +168,18 @@ If a reference is a weak ref produced using Scalar::Util's weaken()
 function then it won't contribute to cycles.
 
 
-=head3 functions of L<Data::Dump>
+(This explanation is cited from L<Devel::Cycle>)
 
-=head4 dump( ... )
-
-
-=head4 pp( ... )
-
-Returns a string containing a Perl expression.  If you pass this
-string to Perl's built-in eval() function it should return a copy of
-the arguments you passed to dump().
-
-If you call the function with multiple arguments then the output will
-be wrapped in parenthesis "( ..., ... )".  If you call the function with a
-single argument the output will not have the wrapping.  If you call the function with
-a single scalar (non-reference) argument it will just return the
-scalar quoted if needed, but never break it into multiple lines.  If you
-pass multiple arguments or references to arrays of hashes then the
-return value might contain line breaks to format it for easier
-reading.  The returned string will never be "\n" terminated, even if
-contains multiple lines.  This allows code like this to place the
-semicolon in the expected place:
-
-   print '$obj = ', dump($obj), ";\n";
-
-If dump() is called in void context, then the dump is printed on
-STDERR and then "\n" terminated.  You might find this useful for quick
-debug printouts, but the dd*() functions might be better alternatives
-for this.
-
-There is no difference between dump() and pp(), except that dump()
-shares its name with a not-so-useful perl builtin.  Because of this
-some might want to avoid using that name.
-
-
-=head4 dd( ... )
-
-
-=head4 ddx( ... )
-
-These functions will call dump() on their argument and print the
-result to STDOUT (actually, it's the currently selected output handle, but
-STDOUT is the default for that).
-
-The difference between them is only that ddx() will prefix the lines
-it prints with "# " and mark the first line with the file and line
-number where it was called.  This is meant to be useful for debug
-printouts of state within programs.
-
-
-=head3 functions of L<Devel::Size>
-
-=head4 size($ref)
+=head3 size($ref)
 
 The C<size> function returns the amount of memory the variable
 returns.  If the variable is a hash or an array, it only reports
 the amount used by the structure, I<not> the contents.
 
 
-=head4 total_size($ref)
+(This explanation is cited from L<Devel::Size>)
+
+=head3 total_size($ref)
 
 The C<total_size> function will traverse the variable and look
 at the sizes of contents.  Any references contained in the variable
@@ -237,6 +188,8 @@ total size of a multidimensional data structure.  At the moment
 there is no way to get the size of an array or a hash and its
 elements without using this function.
 
+
+(This explanation is cited from L<Devel::Size>)
 
 =head3 dump
 
@@ -274,19 +227,25 @@ in a list context.
 
 
 
+(This explanation is cited from L<Data::Dumper>)
+
 
 
 =head3 ddx
 
     dd(@vars);
 
+ddx of L<Data::Dump>.
 as same as dd but output to STDOUT with line number.
+
 
 =head3 dd
 
     dd(@vars);
 
+dd of L<Data::Dump>.
 as same as dump but output to STDOUT.
+
 
 =head3 pp
 

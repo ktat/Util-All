@@ -53,9 +53,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -prompt
 
-=head3 functions of L<IO::Prompt>
-
-=head4 Arguments to C<prompt>
+=head3 Arguments to C<prompt>
 
 Any argument not of the following forms is treated as part of the text of the
 prompt itself.
@@ -130,6 +128,8 @@ Flags can be "cuddled". For example:
 
      prompt("next: ", -tyn1s=>0.2)   # -tty, -yes, -no, -one_char, -speed=>0.2
 
+
+(This explanation is cited from L<IO::Prompt>)
 
 =head3 required_prompt
 

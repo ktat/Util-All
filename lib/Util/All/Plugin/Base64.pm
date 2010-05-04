@@ -61,6 +61,8 @@ characters each and it will end with $eol unless it is empty.  Pass an
 empty string as second argument if you do not want the encoded string
 to be broken into lines.
 
+(This explanation is cited from L<MIME::Base64>)
+
 
 
 =head3 urlsafe_base64_encode
@@ -84,6 +86,8 @@ are never decoded.
 If the length of the string to decode, after ignoring
 non-base64 chars, is not a multiple of 4 or if padding occurs too early,
 then a warning is generated if perl is running under C<-w>.
+
+(This explanation is cited from L<MIME::Base64>)
 
 
 

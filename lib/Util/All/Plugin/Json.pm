@@ -73,9 +73,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 write JSON to file.
 
-=head3 functions of L<JSON::XS>
-
-=head4 $json_text = encode_json $perl_scalar
+=head3 $json_text = encode_json $perl_scalar
 
 Converts the given Perl data structure to a UTF-8 encoded, binary string
 (that is, the string contains octets only). Croaks on error.
@@ -87,7 +85,9 @@ This function call is functionally identical to:
 Except being faster.
 
 
-=head4 $perl_scalar = decode_json $json_text
+(This explanation is cited from L<JSON::XS>)
+
+=head3 $perl_scalar = decode_json $json_text
 
 The opposite of C<encode_json>: expects an UTF-8 (binary) string and tries
 to parse that as an UTF-8 encoded JSON text, returning the resulting
@@ -99,6 +99,8 @@ This function call is functionally identical to:
 
 Except being faster.
 
+
+(This explanation is cited from L<JSON::XS>)
 
 =head3 from_json_file
 

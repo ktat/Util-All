@@ -102,12 +102,12 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -uri
 
-=head3 functions of L<URI::Escape>
-
-=head4 uri_escape( $string )
+=head3 uri_escape( $string )
 
 
-=head4 uri_escape( $string, $unsafe )
+(This explanation is cited from L<URI::Escape>)
+
+=head3 uri_escape( $string, $unsafe )
 
 Replaces each unsafe character in the $string with the corresponding
 escape sequence and returns the result.  The $string argument should
@@ -132,7 +132,9 @@ as the reserved characters.  I.e. the default is:
     "^A-Za-z0-9\-\._~"
 
 
-=head4 uri_unescape($string,...)
+(This explanation is cited from L<URI::Escape>)
+
+=head3 uri_unescape($string,...)
 
 Returns a string with each %XX sequence replaced with the actual byte
 (octet).
@@ -155,9 +157,9 @@ If the uri_unescape() function is passed multiple strings, then each
 one is returned unescaped.
 
 
-=head3 functions of L<URI::Split>
+(This explanation is cited from L<URI::Escape>)
 
-=head4 ($scheme, $auth, $path, $query, $frag) = uri_split($uri)
+=head3 ($scheme, $auth, $path, $query, $frag) = uri_split($uri)
 
 Breaks up a URI string into its component
 parts.  An C<undef> value is returned for those parts that are not
@@ -168,7 +170,9 @@ No sensible value is returned if this function is called in a scalar
 context.
 
 
-=head4 $uri = uri_join($scheme, $auth, $path, $query, $frag)
+(This explanation is cited from L<URI::Split>)
+
+=head3 $uri = uri_join($scheme, $auth, $path, $query, $frag)
 
 Puts together a URI string from its parts.
 Missing parts are signaled by passing C<undef> for the corresponding
@@ -179,6 +183,8 @@ that would confuse a parser.  For instance, any occurrence of '?' or '#'
 in $path is always escaped, as it would otherwise be parsed back
 as a query or fragment.
 
+
+(This explanation is cited from L<URI::Split>)
 
 =head3 make_uri
 

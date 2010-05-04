@@ -339,8 +339,6 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -carp
 
-=head3 functions of L<Carp>
-
 
 
 
@@ -367,56 +365,9 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 =back
 
 
+(This explanation is cited from L<Carp>)
+
 =head2 -dumper
-
-=head3 functions of L<Data::Dump>
-
-=head4 dump( ... )
-
-
-=head4 pp( ... )
-
-Returns a string containing a Perl expression.  If you pass this
-string to Perl's built-in eval() function it should return a copy of
-the arguments you passed to dump().
-
-If you call the function with multiple arguments then the output will
-be wrapped in parenthesis "( ..., ... )".  If you call the function with a
-single argument the output will not have the wrapping.  If you call the function with
-a single scalar (non-reference) argument it will just return the
-scalar quoted if needed, but never break it into multiple lines.  If you
-pass multiple arguments or references to arrays of hashes then the
-return value might contain line breaks to format it for easier
-reading.  The returned string will never be "\n" terminated, even if
-contains multiple lines.  This allows code like this to place the
-semicolon in the expected place:
-
-   print '$obj = ', dump($obj), ";\n";
-
-If dump() is called in void context, then the dump is printed on
-STDERR and then "\n" terminated.  You might find this useful for quick
-debug printouts, but the dd*() functions might be better alternatives
-for this.
-
-There is no difference between dump() and pp(), except that dump()
-shares its name with a not-so-useful perl builtin.  Because of this
-some might want to avoid using that name.
-
-
-=head4 dd( ... )
-
-
-=head4 ddx( ... )
-
-These functions will call dump() on their argument and print the
-result to STDOUT (actually, it's the currently selected output handle, but
-STDOUT is the default for that).
-
-The difference between them is only that ddx() will prefix the lines
-it prints with "# " and mark the first line with the file and line
-number where it was called.  This is meant to be useful for debug
-printouts of state within programs.
-
 
 =head3 dump
 
@@ -431,13 +382,17 @@ dump structure. In later case, result is dumped to STDERR.
 
   dd(@vars);
 
+ddx of L<Data::Dump>.
 as same as dd but output to STDOUT with line number.
+
 
 =head3 dd
 
   dd(@vars);
 
+dd of L<Data::Dump>.
 as same as dump but output to STDOUT.
+
 
 =head3 pp
 
@@ -459,9 +414,7 @@ as same as dump(function name is borrowed from Ruby).
 
 =head2 -encode
 
-=head3 functions of L<Encode>
-
-=head4 $octets  = encode(ENCODING, $string [, CHECK])
+=head3 $octets  = encode(ENCODING, $string [, CHECK])
 
 Encodes a string from Perl's internal form into I<ENCODING> and returns
 a sequence of octets.  ENCODING can be either a canonical name or
@@ -482,7 +435,9 @@ contains completely valid utf8 string. See L<Encode/"The UTF8 flag"> below.
 If the $string is C<undef> then C<undef> is returned.
 
 
-=head4 $string = decode(ENCODING, $octets [, CHECK])
+(This explanation is cited from L<Encode>)
+
+=head3 $string = decode(ENCODING, $octets [, CHECK])
 
 Decodes a sequence of octets assumed to be in I<ENCODING> into Perl's
 internal form and returns the resulting string.  As in encode(),
@@ -503,7 +458,9 @@ below.
 If the $string is C<undef> then C<undef> is returned.
 
 
-=head4 [$length =] from_to($octets, FROM_ENC, TO_ENC [, CHECK])
+(This explanation is cited from L<Encode>)
+
+=head3 [$length =] from_to($octets, FROM_ENC, TO_ENC [, CHECK])
 
 Converts B<in-place> data between two encodings. The data in $octets
 must be encoded as octets and not as characters in Perl's internal
@@ -548,6 +505,8 @@ then C<encode> as follows;
 
   $octets = encode($to, decode($from, $octets, $check_from), $check_to);
 
+
+(This explanation is cited from L<Encode>)
 
 =head2 -modern
 
@@ -603,13 +562,13 @@ create class data(Class::Data::Inheritable).
 
 =head2 -utf8
 
-=head3 functions of L<utf8>
-
-=head4  $flag = utf8::is_utf8(STRING)
+=head3  $flag = utf8::is_utf8(STRING)
 
 (Since Perl 5.8.1)  Test whether STRING is in UTF-8 internally.
 Functionally the same as Encode::is_utf8().
 
+
+(This explanation is cited from L<utf8>)
 
 =head3 utf8_encode
 
@@ -624,6 +583,8 @@ operation, the string is a byte string.  Returns nothing.
 B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
+
+(This explanation is cited from L<utf8>)
 
 
 
@@ -651,6 +612,8 @@ B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
 
+(This explanation is cited from L<utf8>)
+
 
 
 =head3 utf8_downgrade
@@ -676,6 +639,8 @@ B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
 
+(This explanation is cited from L<utf8>)
+
 
 
 =head3 utf8_on
@@ -686,9 +651,7 @@ recursively make utf8 flag on(not destructive)
 
 =head2 -utime
 
-=head3 functions of L<Time::HiRes>
-
-=head4 usleep ( $useconds )
+=head3 usleep ( $useconds )
 
 Sleeps for the number of microseconds (millionths of a second)
 specified.  Returns the number of microseconds actually slept.
@@ -700,7 +663,9 @@ C<Time::HiRes::clock_nanosleep()>.
 Do not expect usleep() to be exact down to one microsecond.
 
 
-=head4 nanosleep ( $nanoseconds )
+(This explanation is cited from L<Time::HiRes>)
+
+=head3 nanosleep ( $nanoseconds )
 
 Sleeps for the number of nanoseconds (1e9ths of a second) specified.
 Returns the number of nanoseconds actually slept (accurate only to
@@ -713,7 +678,9 @@ Do not expect nanosleep() to be exact down to one nanosecond.
 Getting even accuracy of one thousand nanoseconds is good.
 
 
-=head4 ualarm ( $useconds [, $interval_useconds ] )
+(This explanation is cited from L<Time::HiRes>)
+
+=head3 ualarm ( $useconds [, $interval_useconds ] )
 
 Issues a C<ualarm> call; the C<$interval_useconds> is optional and
 will be zero if unspecified, resulting in C<alarm>-like behaviour.
@@ -722,6 +689,8 @@ ualarm(0) will cancel an outstanding ualarm().
 
 Note that the interaction between alarms and sleeps is unspecified.
 
+
+(This explanation is cited from L<Time::HiRes>)
 
 
 

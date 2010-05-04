@@ -8,8 +8,6 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -carp
 
-=head3 functions of L<Carp>
-
 
 
 
@@ -36,56 +34,9 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 =back
 
 
+(This explanation is cited from L<Carp>)
+
 =head2 -dumper
-
-=head3 functions of L<Data::Dump>
-
-=head4 dump( ... )
-
-
-=head4 pp( ... )
-
-Returns a string containing a Perl expression.  If you pass this
-string to Perl's built-in eval() function it should return a copy of
-the arguments you passed to dump().
-
-If you call the function with multiple arguments then the output will
-be wrapped in parenthesis "( ..., ... )".  If you call the function with a
-single argument the output will not have the wrapping.  If you call the function with
-a single scalar (non-reference) argument it will just return the
-scalar quoted if needed, but never break it into multiple lines.  If you
-pass multiple arguments or references to arrays of hashes then the
-return value might contain line breaks to format it for easier
-reading.  The returned string will never be "\n" terminated, even if
-contains multiple lines.  This allows code like this to place the
-semicolon in the expected place:
-
-   print '$obj = ', dump($obj), ";\n";
-
-If dump() is called in void context, then the dump is printed on
-STDERR and then "\n" terminated.  You might find this useful for quick
-debug printouts, but the dd*() functions might be better alternatives
-for this.
-
-There is no difference between dump() and pp(), except that dump()
-shares its name with a not-so-useful perl builtin.  Because of this
-some might want to avoid using that name.
-
-
-=head4 dd( ... )
-
-
-=head4 ddx( ... )
-
-These functions will call dump() on their argument and print the
-result to STDOUT (actually, it's the currently selected output handle, but
-STDOUT is the default for that).
-
-The difference between them is only that ddx() will prefix the lines
-it prints with "# " and mark the first line with the file and line
-number where it was called.  This is meant to be useful for debug
-printouts of state within programs.
-
 
 =head3 dump
 
@@ -100,13 +51,17 @@ dump structure. In later case, result is dumped to STDERR.
 
     dd(@vars);
 
+ddx of L<Data::Dump>.
 as same as dd but output to STDOUT with line number.
+
 
 =head3 dd
 
     dd(@vars);
 
+dd of L<Data::Dump>.
 as same as dump but output to STDOUT.
+
 
 =head3 pp
 
@@ -128,9 +83,7 @@ as same as dump(function name is borrowed from Ruby).
 
 =head2 -encode
 
-=head3 functions of L<Encode>
-
-=head4 $octets  = encode(ENCODING, $string [, CHECK])
+=head3 $octets  = encode(ENCODING, $string [, CHECK])
 
 Encodes a string from Perl's internal form into I<ENCODING> and returns
 a sequence of octets.  ENCODING can be either a canonical name or
@@ -151,7 +104,9 @@ contains completely valid utf8 string. See L<Encode/"The UTF8 flag"> below.
 If the $string is C<undef> then C<undef> is returned.
 
 
-=head4 $string = decode(ENCODING, $octets [, CHECK])
+(This explanation is cited from L<Encode>)
+
+=head3 $string = decode(ENCODING, $octets [, CHECK])
 
 Decodes a sequence of octets assumed to be in I<ENCODING> into Perl's
 internal form and returns the resulting string.  As in encode(),
@@ -172,7 +127,9 @@ below.
 If the $string is C<undef> then C<undef> is returned.
 
 
-=head4 [$length =] from_to($octets, FROM_ENC, TO_ENC [, CHECK])
+(This explanation is cited from L<Encode>)
+
+=head3 [$length =] from_to($octets, FROM_ENC, TO_ENC [, CHECK])
 
 Converts B<in-place> data between two encodings. The data in $octets
 must be encoded as octets and not as characters in Perl's internal
@@ -217,6 +174,8 @@ then C<encode> as follows;
 
   $octets = encode($to, decode($from, $octets, $check_from), $check_to);
 
+
+(This explanation is cited from L<Encode>)
 
 =head2 -modern
 
@@ -272,13 +231,13 @@ create class data(Class::Data::Inheritable).
 
 =head2 -utf8
 
-=head3 functions of L<utf8>
-
-=head4  $flag = utf8::is_utf8(STRING)
+=head3  $flag = utf8::is_utf8(STRING)
 
 (Since Perl 5.8.1)  Test whether STRING is in UTF-8 internally.
 Functionally the same as Encode::is_utf8().
 
+
+(This explanation is cited from L<utf8>)
 
 =head3 utf8_encode
 
@@ -293,6 +252,8 @@ operation, the string is a byte string.  Returns nothing.
 B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
+
+(This explanation is cited from L<utf8>)
 
 
 
@@ -320,6 +281,8 @@ B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
 
+(This explanation is cited from L<utf8>)
+
 
 
 =head3 utf8_downgrade
@@ -345,6 +308,8 @@ B<Note that this function does not handle arbitrary encodings.>
 Therefore Encode is recommended for the general purposes; see also
 L<Encode>.
 
+(This explanation is cited from L<utf8>)
+
 
 
 =head3 utf8_on
@@ -355,9 +320,7 @@ recursively make utf8 flag on(not destructive)
 
 =head2 -utime
 
-=head3 functions of L<Time::HiRes>
-
-=head4 usleep ( $useconds )
+=head3 usleep ( $useconds )
 
 Sleeps for the number of microseconds (millionths of a second)
 specified.  Returns the number of microseconds actually slept.
@@ -369,7 +332,9 @@ C<Time::HiRes::clock_nanosleep()>.
 Do not expect usleep() to be exact down to one microsecond.
 
 
-=head4 nanosleep ( $nanoseconds )
+(This explanation is cited from L<Time::HiRes>)
+
+=head3 nanosleep ( $nanoseconds )
 
 Sleeps for the number of nanoseconds (1e9ths of a second) specified.
 Returns the number of nanoseconds actually slept (accurate only to
@@ -382,7 +347,9 @@ Do not expect nanosleep() to be exact down to one nanosecond.
 Getting even accuracy of one thousand nanoseconds is good.
 
 
-=head4 ualarm ( $useconds [, $interval_useconds ] )
+(This explanation is cited from L<Time::HiRes>)
+
+=head3 ualarm ( $useconds [, $interval_useconds ] )
 
 Issues a C<ualarm> call; the C<$interval_useconds> is optional and
 will be zero if unspecified, resulting in C<alarm>-like behaviour.
@@ -391,6 +358,8 @@ ualarm(0) will cancel an outstanding ualarm().
 
 Note that the interaction between alarms and sleeps is unspecified.
 
+
+(This explanation is cited from L<Time::HiRes>)
 
 
 =head2 -argv (L<Util::All::Plugin::Argv>)
@@ -426,6 +395,8 @@ characters each and it will end with $eol unless it is empty.  Pass an
 empty string as second argument if you do not want the encoded string
 to be broken into lines.
 
+(This explanation is cited from L<MIME::Base64>)
+
 
 
 =head3 urlsafe_base64_encode
@@ -450,6 +421,8 @@ If the length of the string to decode, after ignoring
 non-base64 chars, is not a multiple of 4 or if padding occurs too early,
 then a warning is generated if perl is running under C<-w>.
 
+(This explanation is cited from L<MIME::Base64>)
+
 
 
 
@@ -465,9 +438,7 @@ then a warning is generated if perl is running under C<-w>.
 
 =head2 -benchmark (L<Util::All::Plugin::Benchmark>)
 
-=head3 functions of L<Benchmark>
-
-=head4 timeit(COUNT, CODE)
+=head3 timeit(COUNT, CODE)
 
 Arguments: COUNT is the number of times to run the loop, and CODE is
 the code to run.  CODE may be either a code reference or a string to
@@ -476,7 +447,9 @@ be eval'd; either way it will be run in the caller's package.
 Returns: a Benchmark object.
 
 
-=head4 timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] )
 
 Time COUNT iterations of CODE. CODE may be a string to eval or a
 code reference; either way the CODE will run in the caller's package.
@@ -509,7 +482,9 @@ interesting number than the actually spent seconds.
 Returns a Benchmark object.
 
 
-=head4 timethese ( COUNT, CODEHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timethese ( COUNT, CODEHASHREF, [ STYLE ] )
 
 The CODEHASHREF is a reference to a hash containing names as keys
 and either a string to eval or a code reference for each value.
@@ -525,13 +500,17 @@ The COUNT can be zero or negative, see timethis().
 Returns a hash reference of Benchmark objects, keyed by name.
 
 
-=head4 timediff ( T1, T2 )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timediff ( T1, T2 )
 
 Returns the difference between two Benchmark times as a Benchmark
 object suitable for passing to timestr().
 
 
-=head4 timestr ( TIMEDIFF, [ STYLE, [ FORMAT ] ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timestr ( TIMEDIFF, [ STYLE, [ FORMAT ] ] )
 
 Returns a string that formats the times in the TIMEDIFF object in
 the requested STYLE. TIMEDIFF is expected to be a Benchmark object
@@ -549,10 +528,14 @@ FORMAT is the L<printf(3)>-style format specifier (without the
 leading '%') to use to print the times. It defaults to '5.2f'.
 
 
-=head4 cmpthese ( COUNT, CODEHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 cmpthese ( COUNT, CODEHASHREF, [ STYLE ] )
 
 
-=head4 cmpthese ( RESULTSHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 cmpthese ( RESULTSHASHREF, [ STYLE ] )
 
 Optionally calls timethese(), then outputs comparison chart.  This:
 
@@ -598,7 +581,9 @@ this is typical of benchmarking.  If this were a real benchmark, you would
 probably want to run a lot more iterations.
 
 
-=head4 countit(TIME, CODE)
+(This explanation is cited from L<Benchmark>)
+
+=head3 countit(TIME, CODE)
 
 Arguments: TIME is the minimum length of time to run CODE for, and CODE is
 the code to run.  CODE may be either a code reference or a string to
@@ -613,11 +598,15 @@ by the times that you are concerned with, not just the iterations.
 Returns: a Benchmark object.
 
 
-=head4 timesum ( T1, T2 )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timesum ( T1, T2 )
 
 Returns the sum of two Benchmark times as a Benchmark object suitable
 for passing to timestr().
 
+
+(This explanation is cited from L<Benchmark>)
 
 =head3 timesamearg
 
@@ -744,11 +733,11 @@ Returns true if SCALAR is readonly.
     $readonly = foo($bar);              # false
     $readonly = foo(0);                 # true
 
+(This explanation is cited from L<Scalar::Util>)
 
 
-=head3 functions of L<Scalar::Util>
 
-=head4 dualvar NUM, STRING
+=head3 dualvar NUM, STRING
 
 Returns a scalar that has the value NUM in a numeric context and the
 value STRING in a string context.
@@ -758,13 +747,17 @@ value STRING in a string context.
     $str = $foo . " world";             # Hello world
 
 
-=head4 looks_like_number EXPR
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 looks_like_number EXPR
 
 Returns true if perl thinks EXPR is a number. See
 L<perlapi/looks_like_number>.
 
 
-=head4 openhandle FH
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 openhandle FH
 
 Returns FH if FH may be used as a filehandle and is open, or FH is a tied
 handle. Otherwise C<undef> is returned.
@@ -775,7 +768,9 @@ handle. Otherwise C<undef> is returned.
     $fh = openhandle("scalar");		# undef
     
 
-=head4 refaddr EXPR
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 refaddr EXPR
 
 If EXPR evaluates to a reference the internal memory address of
 the referenced value is returned. Otherwise C<undef> is returned.
@@ -788,7 +783,9 @@ the referenced value is returned. Otherwise C<undef> is returned.
     $addr = refaddr $obj;               # eg 88123488
 
 
-=head4 reftype EXPR
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 reftype EXPR
 
 If EXPR evaluates to a reference the type of the variable referenced
 is returned. Otherwise C<undef> is returned.
@@ -801,7 +798,9 @@ is returned. Otherwise C<undef> is returned.
     $type = reftype $obj;               # HASH
 
 
-=head4 set_prototype CODEREF, PROTOTYPE
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 set_prototype CODEREF, PROTOTYPE
 
 Sets the prototype of the given function, or deletes it if PROTOTYPE is
 undef. Returns the CODEREF.
@@ -809,7 +808,9 @@ undef. Returns the CODEREF.
     set_prototype \&foo, '$$';
 
 
-=head4 weaken REF
+(This explanation is cited from L<Scalar::Util>)
+
+=head3 weaken REF
 
 REF will be turned into a weak reference. This means that it will not
 hold a reference count on the object it references. Also when the reference
@@ -845,9 +846,9 @@ be destroyed because there is now always a strong reference to them in the
 @object array.
 
 
-=head3 functions of L<Data::Structure::Util>
+(This explanation is cited from L<Scalar::Util>)
 
-=head4 unbless($ref)
+=head3 unbless($ref)
 
 Remove the blessing from any objects found within the passed data
 structure. For example:
@@ -870,7 +871,9 @@ Note that the structure looks inside blessed objects for other
 objects to unbless.
 
 
-=head4 has_utf8($var)
+(This explanation is cited from L<Data::Structure::Util>)
+
+=head3 has_utf8($var)
 
 Returns C<$var> if the utf8 flag is enabled for C<$var> or any scalar
 that a data structure passed in C<$var> contains.
@@ -886,39 +889,51 @@ defined value if the data structure does not contain a utf8 flagged
 scalar.
 
 
-=head3 functions of L<Data::Util>
+(This explanation is cited from L<Data::Structure::Util>)
 
-=head4 is_scalar_ref(value)
+=head3 is_scalar_ref(value)
 
 For a SCALAR reference.
 
 
-=head4 is_array_ref(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_array_ref(value)
 
 For an ARRAY reference.
 
 
-=head4 is_hash_ref(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_hash_ref(value)
 
 For a HASH reference.
 
 
-=head4 is_code_ref(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_code_ref(value)
 
 For a CODE reference.
 
 
-=head4 is_glob_ref(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_glob_ref(value)
 
 For a GLOB reference.
 
 
-=head4 is_rx(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_rx(value)
 
 For a regular expression reference generated by the C<qr//> operator.
 
 
-=head4 is_instance(value, class)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_instance(value, class)
 
 For an instance of I<class>.
 
@@ -926,14 +941,18 @@ It is equivalent to something like
 C<< Scalar::Util::blessed($value) && $value->isa($class) >>.
 
 
-=head4 is_invocant(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_invocant(value)
 
 For an invocant, i.e. a blessed reference or existent package name.
 
 If I<value> is a valid class name but does not exist, it will return false.
 
 
-=head4 is_value(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_value(value)
 
 Checks whether I<value> is a primitive value, i.e. a defined, non-ref, and
 non-type-glob value.
@@ -941,7 +960,9 @@ non-type-glob value.
 This function has no counterpart for validation.
 
 
-=head4 is_string(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_string(value)
 
 Checks whether I<value> is a string with non-zero-length contents,
 equivalent to C<< is_value($value) && length($value) > 0 >>.
@@ -949,7 +970,9 @@ equivalent to C<< is_value($value) && length($value) > 0 >>.
 This function has no counterpart for validation.
 
 
-=head4 is_number(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_number(value)
 
 Checks whether I<value> is a number.
 Here, a B<number> means that the perl parser can understand it and that
@@ -964,7 +987,9 @@ C<not a number>.
 This function has no counterpart for validation.
 
 
-=head4 is_integer(value)
+(This explanation is cited from L<Data::Util>)
+
+=head3 is_integer(value)
 
 Checks whether I<value> is an integer.
 An B<integer> is also a B<number>, so this function
@@ -972,6 +997,8 @@ refuses C<infinity> and C<not a number>. See also C<is_number()>.
 
 This function has no counterpart for validation.
 
+
+(This explanation is cited from L<Data::Util>)
 
 =head3 is_weak
 
@@ -991,6 +1018,8 @@ B<NOTE>: Copying a weak reference creates a normal, strong, reference.
     $copy = $ref;
     $weak = isweak($ref);               # false
 
+(This explanation is cited from L<Scalar::Util>)
+
 
 
 =head3 is_vstring
@@ -1005,6 +1034,8 @@ If EXPR is a scalar which was coded as a vstring the result is true.
     $fmt  = isvstring($vs) ? "%vd" : "%s"; #true
     printf($fmt,$vs);
 
+(This explanation is cited from L<Scalar::Util>)
+
 
 
 =head3 is_tainted
@@ -1017,6 +1048,8 @@ Return true if the result of EXPR is tainted
 
     $taint = tainted("constant");       # false
     $taint = tainted($ENV{PWD});        # true if running under -T
+
+(This explanation is cited from L<Scalar::Util>)
 
 
 
@@ -1037,6 +1070,8 @@ that it is blessed into is returned. Otherwise C<undef> is returned.
 
    $obj    = bless [], "Foo";
    $class  = blessed $obj;              # "Foo"
+
+(This explanation is cited from L<Scalar::Util>)
 
 
 
@@ -1082,9 +1117,7 @@ example:
 
 =head2 -debug (L<Util::All::Plugin::Debug>)
 
-=head3 functions of L<Tie::Trace>
-
-=head4 watch
+=head3 watch
 
  watch $variables;
 
@@ -1103,9 +1136,9 @@ If the variables has values before C<watch>, it is no problem. Tie::Trace work w
  watch %hash;
 
 
-=head3 functions of L<Devel::Cycle>
+(This explanation is cited from L<Tie::Trace>)
 
-=head4 find_cycle($object_reference,[$callback])
+=head3 find_cycle($object_reference,[$callback])
 
 The find_cycle() function will traverse the object reference and print
 a report to STDOUT identifying any memory cycles it finds.
@@ -1140,65 +1173,18 @@ If a reference is a weak ref produced using Scalar::Util's weaken()
 function then it won't contribute to cycles.
 
 
-=head3 functions of L<Data::Dump>
+(This explanation is cited from L<Devel::Cycle>)
 
-=head4 dump( ... )
-
-
-=head4 pp( ... )
-
-Returns a string containing a Perl expression.  If you pass this
-string to Perl's built-in eval() function it should return a copy of
-the arguments you passed to dump().
-
-If you call the function with multiple arguments then the output will
-be wrapped in parenthesis "( ..., ... )".  If you call the function with a
-single argument the output will not have the wrapping.  If you call the function with
-a single scalar (non-reference) argument it will just return the
-scalar quoted if needed, but never break it into multiple lines.  If you
-pass multiple arguments or references to arrays of hashes then the
-return value might contain line breaks to format it for easier
-reading.  The returned string will never be "\n" terminated, even if
-contains multiple lines.  This allows code like this to place the
-semicolon in the expected place:
-
-   print '$obj = ', dump($obj), ";\n";
-
-If dump() is called in void context, then the dump is printed on
-STDERR and then "\n" terminated.  You might find this useful for quick
-debug printouts, but the dd*() functions might be better alternatives
-for this.
-
-There is no difference between dump() and pp(), except that dump()
-shares its name with a not-so-useful perl builtin.  Because of this
-some might want to avoid using that name.
-
-
-=head4 dd( ... )
-
-
-=head4 ddx( ... )
-
-These functions will call dump() on their argument and print the
-result to STDOUT (actually, it's the currently selected output handle, but
-STDOUT is the default for that).
-
-The difference between them is only that ddx() will prefix the lines
-it prints with "# " and mark the first line with the file and line
-number where it was called.  This is meant to be useful for debug
-printouts of state within programs.
-
-
-=head3 functions of L<Devel::Size>
-
-=head4 size($ref)
+=head3 size($ref)
 
 The C<size> function returns the amount of memory the variable
 returns.  If the variable is a hash or an array, it only reports
 the amount used by the structure, I<not> the contents.
 
 
-=head4 total_size($ref)
+(This explanation is cited from L<Devel::Size>)
+
+=head3 total_size($ref)
 
 The C<total_size> function will traverse the variable and look
 at the sizes of contents.  Any references contained in the variable
@@ -1207,6 +1193,8 @@ total size of a multidimensional data structure.  At the moment
 there is no way to get the size of an array or a hash and its
 elements without using this function.
 
+
+(This explanation is cited from L<Devel::Size>)
 
 =head3 dump
 
@@ -1244,19 +1232,25 @@ in a list context.
 
 
 
+(This explanation is cited from L<Data::Dumper>)
+
 
 
 =head3 ddx
 
   dd(@vars);
 
+ddx of L<Data::Dump>.
 as same as dd but output to STDOUT with line number.
+
 
 =head3 dd
 
   dd(@vars);
 
+dd of L<Data::Dump>.
 as same as dump but output to STDOUT.
+
 
 =head3 pp
 
@@ -1279,9 +1273,7 @@ as same as dump(function name is borrowed from Ruby).
 
 =head2 -exception (L<Util::All::Plugin::Exception>)
 
-=head3 functions of L<Try::Tiny>
-
-=head4 try (&;@)
+=head3 try (&;@)
 
 Takes one mandatory try subroutine, an optional catch subroutine & finally
 subroutine.
@@ -1301,7 +1293,9 @@ still be invoked.
 Once all execution is finished then the finally block if given will execute.
 
 
-=head4 catch (&;$)
+(This explanation is cited from L<Try::Tiny>)
+
+=head3 catch (&;$)
 
 Intended to be used in the second argument position of C<try>.
 
@@ -1316,27 +1310,31 @@ This value may or may not be meaningful depending on what happened before the
 C<try>, but it might be a good idea to preserve it in an error stack.
 
 
+(This explanation is cited from L<Try::Tiny>)
+
 
 =head2 -file (L<Util::All::Plugin::File>)
 
-=head3 functions of L<Path::Class>
-
-=head4 file
+=head3 file
 
 A synonym for C<< Path::Class::File->new >>.
 
 
-=head4 dir
+(This explanation is cited from L<Path::Class>)
+
+=head3 dir
 
 A synonym for C<< Path::Class::Dir->new >>.
 
 
-=head3 functions of L<File::Path>
+(This explanation is cited from L<Path::Class>)
 
-=head4 make_path( $dir1, $dir2, .... )
+=head3 make_path( $dir1, $dir2, .... )
 
 
-=head4 make_path( $dir1, $dir2, ...., \%opts )
+(This explanation is cited from L<File::Path>)
+
+=head3 make_path( $dir1, $dir2, ...., \%opts )
 
 The C<make_path> function creates the given directories if they don't
 exists before, much like the Unix command C<mkdir -p>.
@@ -1408,10 +1406,14 @@ Group ownwership of directories that already exist will not be changed.
 =back
 
 
-=head4 remove_tree( $dir1, $dir2, .... )
+(This explanation is cited from L<File::Path>)
+
+=head3 remove_tree( $dir1, $dir2, .... )
 
 
-=head4 remove_tree( $dir1, $dir2, ...., \%opts )
+(This explanation is cited from L<File::Path>)
+
+=head3 remove_tree( $dir1, $dir2, ...., \%opts )
 
 The C<remove_tree> function deletes the given directories and any
 files and subdirectories they might contain, much like the Unix
@@ -1480,9 +1482,9 @@ of hand. This is the safest course of action.
 =back
 
 
-=head3 functions of L<File::Slurp>
+(This explanation is cited from L<File::Path>)
 
-=head4 B<read_file>
+=head3 B<read_file>
 
 This sub reads in an entire file and returns its contents to the
 caller. In list context it will return a list of lines (using the
@@ -1585,7 +1587,9 @@ read abother file if it fails.
 =back
 
 
-=head4 B<write_file>
+(This explanation is cited from L<File::Slurp>)
+
+=head3 B<write_file>
 
 This sub writes out an entire file in one call.
 
@@ -1698,6 +1702,8 @@ will croak.
 =back
 
 
+(This explanation is cited from L<File::Slurp>)
+
 =head3 find_file
 
 (find of L<File::Find>)
@@ -1713,6 +1719,8 @@ the C<&wanted> subroutine.  (See below for details on how to use the
 C<&wanted> function).  Additionally, for each directory found, it will
 C<chdir()> into that directory and continue the search, invoking the
 C<&wanted> function on each file or subdirectory in the directory.
+
+(This explanation is cited from L<File::Find>)
 
 
 
@@ -1753,6 +1761,8 @@ copy of the file under the destination name.
 
 You may use the "mv" alias for this function in the same way that
 you may use the "cp" alias for C<copy>.
+
+(This explanation is cited from L<File::Copy>)
 
 
 
@@ -1838,6 +1848,8 @@ upon the file, but will generally be the whole file (up to 2MB), or
 You may use the syntax C<use File::Copy "cp"> to get at the
 "cp" alias for this function. The syntax is I<exactly> the same.
 
+(This explanation is cited from L<File::Copy>)
+
 
 
 
@@ -1849,12 +1861,12 @@ You may use the syntax C<use File::Copy "cp"> to get at the
 
 %hash is indexed.
 
-=head3 functions of L<Hash::Util>
-
-=head4 B<lock_keys>
+=head3 B<lock_keys>
 
 
-=head4 B<unlock_keys>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_keys>
 
   lock_keys(%hash);
   lock_keys(%hash, @keys);
@@ -1877,10 +1889,14 @@ after this sub executes.
 Both routines return a reference to the hash operated on.
 
 
-=head4 B<lock_value>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<lock_value>
 
 
-=head4 B<unlock_value>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_value>
 
   lock_value  (%hash, $key);
   unlock_value(%hash, $key);
@@ -1894,10 +1910,14 @@ regardless of this setting.
 Returns a reference to the %hash.
 
 
-=head4 B<lock_hash>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<lock_hash>
 
 
-=head4 B<unlock_hash>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<unlock_hash>
 
     lock_hash(%hash);
 
@@ -1913,7 +1933,9 @@ and deleted.
 Returns a reference to the %hash.
 
 
-=head4 B<hash_seed>
+(This explanation is cited from L<Hash::Util>)
+
+=head3 B<hash_seed>
 
     my $hash_seed = hash_seed();
 
@@ -1927,6 +1949,8 @@ see L<perlsec/"Algorithmic Complexity Attacks"> for more information.
 B<Do not disclose the hash seed> to people who don't need to know it.
 See also L<perlrun/PERL_HASH_SEED_DEBUG>.
 
+
+(This explanation is cited from L<Hash::Util>)
 
 
 =head2 -http (L<Util::All::Plugin::Http>)
@@ -1985,9 +2009,7 @@ resize image.
 
 write JSON to file.
 
-=head3 functions of L<JSON::XS>
-
-=head4 $json_text = encode_json $perl_scalar
+=head3 $json_text = encode_json $perl_scalar
 
 Converts the given Perl data structure to a UTF-8 encoded, binary string
 (that is, the string contains octets only). Croaks on error.
@@ -1999,7 +2021,9 @@ This function call is functionally identical to:
 Except being faster.
 
 
-=head4 $perl_scalar = decode_json $json_text
+(This explanation is cited from L<JSON::XS>)
+
+=head3 $perl_scalar = decode_json $json_text
 
 The opposite of C<encode_json>: expects an UTF-8 (binary) string and tries
 to parse that as an UTF-8 encoded JSON text, returning the resulting
@@ -2011,6 +2035,8 @@ This function call is functionally identical to:
 
 Except being faster.
 
+
+(This explanation is cited from L<JSON::XS>)
 
 =head3 from_json_file
 
@@ -2033,9 +2059,7 @@ from perl data to json text(utf8 encoded).
 
 =head2 -list (L<Util::All::Plugin::List>)
 
-=head3 functions of L<List::Util>
-
-=head4 first BLOCK LIST
+=head3 first BLOCK LIST
 
 Similar to C<grep> in that it evaluates BLOCK setting C<$_> to each element
 of LIST in turn. C<first> returns the first element where the result from
@@ -2054,7 +2078,9 @@ for example wanted() could be defined() which would return the first
 defined value in @list
 
 
-=head4 max LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 max LIST
 
 Returns the entry in the list with the highest numerical value. If the
 list is empty then C<undef> is returned.
@@ -2068,7 +2094,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a > $b ? $a : $b } 1..10
 
 
-=head4 maxstr LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 maxstr LIST
 
 Similar to C<max>, but treats all the entries in the list as strings
 and returns the highest string as defined by the C<gt> operator.
@@ -2083,7 +2111,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a gt $b ? $a : $b } 'A'..'Z'
 
 
-=head4 min LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 min LIST
 
 Similar to C<max> but returns the entry in the list with the lowest
 numerical value. If the list is empty then C<undef> is returned.
@@ -2097,7 +2127,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a < $b ? $a : $b } 1..10
 
 
-=head4 minstr LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 minstr LIST
 
 Similar to C<min>, but treats all the entries in the list as strings
 and returns the lowest string as defined by the C<lt> operator.
@@ -2112,7 +2144,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a lt $b ? $a : $b } 'A'..'Z'
 
 
-=head4 reduce BLOCK LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 reduce BLOCK LIST
 
 Reduces LIST by calling BLOCK, in a scalar context, multiple times,
 setting C<$a> and C<$b> each time. The first call will be with C<$a>
@@ -2130,14 +2164,18 @@ element is returned and BLOCK is not executed.
     $foo = reduce { $a . $b } @bar                  # concat
 
 
-=head4 shuffle LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 shuffle LIST
 
 Returns the elements of LIST in a random order
 
     @cards = shuffle 0..51      # 0..51 in a random order
 
 
-=head4 sum LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 sum LIST
 
 Returns the sum of all the elements in LIST. If LIST is empty then
 C<undef> is returned.
@@ -2151,9 +2189,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a + $b } 1..10
 
 
-=head3 functions of L<List::MoreUtils>
+(This explanation is cited from L<List::Util>)
 
-=head4 any BLOCK LIST
+=head3 any BLOCK LIST
 
 Returns a true value if any item in LIST meets the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -2164,7 +2202,9 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 all BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 all BLOCK LIST
 
 Returns a true value if all items in LIST meet the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -2175,7 +2215,9 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 none BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 none BLOCK LIST
 
 Logically the negation of C<any>. Returns a true value if no item in LIST meets the
 criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -2186,7 +2228,9 @@ criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 notall BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 notall BLOCK LIST
 
 Logically the negation of C<all>. Returns a true value if not all items in LIST meet
 the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -2197,7 +2241,9 @@ the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 true BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 true BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is true. Sets C<$_> for 
 each item in LIST in turn:
@@ -2205,7 +2251,9 @@ each item in LIST in turn:
     printf "%i item(s) are defined", true { defined($_) } @list;
 
 
-=head4 false BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 false BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is false. Sets C<$_> for
 each item in LIST in turn:
@@ -2213,10 +2261,14 @@ each item in LIST in turn:
     printf "%i item(s) are not defined", false { defined($_) } @list;
 
 
-=head4 firstidx BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 firstidx BLOCK LIST
 
 
-=head4 first_index BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 first_index BLOCK LIST
 
 Returns the index of the first element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -2231,10 +2283,14 @@ Returns C<-1> if no such item could be found.
 C<first_index> is an alias for C<firstidx>.
 
 
-=head4 lastidx BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 lastidx BLOCK LIST
 
 
-=head4 last_index BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 last_index BLOCK LIST
 
 Returns the index of the last element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -2249,7 +2305,9 @@ Returns C<-1> if no such item could be found.
 C<last_index> is an alias for C<lastidx>.
 
 
-=head4 insert_after BLOCK VALUE LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 insert_after BLOCK VALUE LIST
 
 Inserts VALUE after the first item in LIST for which the criterion in BLOCK is true. Sets C<$_> for
 each item in LIST in turn.
@@ -2261,7 +2319,9 @@ each item in LIST in turn.
     This is a longer list
 
 
-=head4 insert_after_string STRING VALUE LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 insert_after_string STRING VALUE LIST
 
 Inserts VALUE after the first item in LIST which is equal to STRING. 
 
@@ -2272,7 +2332,9 @@ Inserts VALUE after the first item in LIST which is equal to STRING.
     This is a longer list
 
 
-=head4 apply BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 apply BLOCK LIST
 
 Applies BLOCK to each item in LIST and returns a list of the values after BLOCK
 has been applied. In scalar context, the last element is returned.  This
@@ -2292,7 +2354,9 @@ Think of it as syntactic sugar for
     for (my @mult = @list) { $_ *= 2 }
 
 
-=head4 after BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 after BLOCK LIST
 
 Returns a list of the values of LIST after (and not including) the point
 where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
@@ -2300,23 +2364,31 @@ where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
     @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
 
 
-=head4 after_incl BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 after_incl BLOCK LIST
 
 Same as C<after> but also inclues the element for which BLOCK is true.
 
 
-=head4 before BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 before BLOCK LIST
 
 Returns a list of values of LIST upto (and not including) the point where BLOCK
 returns a true value. Sets C<$_> for each element in LIST in turn.
 
 
-=head4 before_incl BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 before_incl BLOCK LIST
 
 Same as C<before> but also includes the element for which BLOCK is true.
 
 
-=head4 indexes BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 indexes BLOCK LIST
 
 Evaluates BLOCK for each element in LIST (assigned to C<$_>) and returns a list
 of the indices of those elements for which BLOCK returned a true value. This is
@@ -2325,10 +2397,14 @@ just like C<grep> only that it returns indices instead of values:
     @x = indexes { $_ % 2 == 0 } (1..10);   # returns 1, 3, 5, 7, 9
 
 
-=head4 firstval BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 firstval BLOCK LIST
 
 
-=head4 first_value BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 first_value BLOCK LIST
 
 Returns the first element in LIST for which BLOCK evaluates to true. Each
 element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
@@ -2337,10 +2413,14 @@ has been found.
 C<first_val> is an alias for C<firstval>.
 
 
-=head4 lastval BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 lastval BLOCK LIST
 
 
-=head4 last_value BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 last_value BLOCK LIST
 
 Returns the last value in LIST for which BLOCK evaluates to true. Each element
 of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
@@ -2349,7 +2429,9 @@ found.
 C<last_val> is an alias for C<lastval>.
 
 
-=head4 pairwise BLOCK ARRAY1 ARRAY2
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 pairwise BLOCK ARRAY1 ARRAY2
 
 Evaluates BLOCK for each pair of elements in ARRAY1 and ARRAY2 and returns a
 new list consisting of BLOCK's return values. The two elements are set to C<$a>
@@ -2366,7 +2448,9 @@ them will modify the input arrays.
     @x = pairwise { ($a, $b) } @a, @b;	# returns a, 1, b, 2, c, 3
 
 
-=head4 each_array ARRAY1 ARRAY2 ...
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 each_array ARRAY1 ARRAY2 ...
 
 Creates an array iterator to return the elements of the list of arrays ARRAY1,
 ARRAY2 throughout ARRAYn in turn.  That is, the first time it is called, it
@@ -2384,13 +2468,17 @@ If the iterator is passed an argument of 'C<index>', then it retuns
 the index of the last fetched set of values, as a scalar.
 
 
-=head4 each_arrayref LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 each_arrayref LIST
 
 Like each_array, but the arguments are references to arrays, not the
 plain arrays.
 
 
-=head4 natatime BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 natatime BLOCK LIST
 
 Creates an array iterator, for looping over an array in chunks of
 C<$n> items at a time.  (n at a time, get it?).  An example is
@@ -2412,10 +2500,14 @@ This prints
     g
 
 
-=head4 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
 
-=head4 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
 Returns a list consisting of the first elements of each array, then
 the second, then the third, etc, until all arrays are exhausted.
@@ -2434,7 +2526,9 @@ Examples:
 C<zip> is an alias for C<mesh>.
 
 
-=head4 uniq LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 uniq LIST
 
 Returns a new list by stripping duplicate values in LIST. The order of
 elements in the returned list is the same as in LIST. In scalar context,
@@ -2444,7 +2538,9 @@ returns the number of unique elements in LIST.
     my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
 
 
-=head4 minmax LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 minmax LIST
 
 Calculates the minimum and maximum of LIST and returns a two element list with
 the first element being the minimum and the second the maximum. Returns the empty
@@ -2460,7 +2556,9 @@ fairly big in order for minmax to win over a naive implementation. This
 limitation does not apply to the XS version.
 
 
-=head4 part BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 part BLOCK LIST
 
 Partitions LIST based on the return value of BLOCK which denotes into which partition
 the current value is put.
@@ -2489,54 +2587,66 @@ Negative values are only ok when they refer to a partition previously created:
     my @part = part { $idx[$++ % 3] } 1 .. 8;	# [1, 4, 7], [2, 3, 5, 6, 8]
 
 
-=head3 functions of L<List::Pairwise>
+(This explanation is cited from L<List::MoreUtils>)
 
-=head4 mapp BLOCK LIST
-
-
-=head4 grepp BLOCK LIST
+=head3 mapp BLOCK LIST
 
 
-=head4 firstp BLOCK LIST
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 grepp BLOCK LIST
 
 
-=head4 lastp BLOCK LIST
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 firstp BLOCK LIST
 
 
-=head4  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 lastp BLOCK LIST
+
+
+(This explanation is cited from L<List::Pairwise>)
+
+=head3  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
 contributions (see changelog)
 
+
+(This explanation is cited from L<List::Pairwise>)
 
 
 =head2 -math (L<Util::All::Plugin::Math>)
 
-=head3 functions of L<Toolbox::Simple>
-
-=head4 B<gcd(num, num, num)  /  gcf(num, num, num)>
+=head3 B<gcd(num, num, num)  /  gcf(num, num, num)>
 
 Both (identical) functions return the greatest common divisor/factor
 for the numbers given in their arguments.
 
 
 
-=head4 B<lcm(num, num, num)>
+(This explanation is cited from L<Toolbox::Simple>)
+
+=head3 B<lcm(num, num, num)>
 
 Returns the lowest common multiple for the numbers in its argument.
 
 
 
-=head4 B<is_prime(num)>
+(This explanation is cited from L<Toolbox::Simple>)
+
+=head3 B<is_prime(num)>
 
 Tests a number for primeness. If it is, returns 1. If it isn't prime, returns 0.
 
 
 
+(This explanation is cited from L<Toolbox::Simple>)
+
 
 =head2 -md5 (L<Util::All::Plugin::Md5>)
 
-=head3 functions of L<Digest::MD5>
-
-=head4 md5($data,...)
+=head3 md5($data,...)
 
 This function will concatenate all arguments, calculate the MD5 digest
 of this "message", and return it in binary form.  The returned string
@@ -2546,14 +2656,18 @@ The result of md5("a", "b", "c") will be exactly the same as the
 result of md5("abc").
 
 
-=head4 md5_hex($data,...)
+(This explanation is cited from L<Digest::MD5>)
+
+=head3 md5_hex($data,...)
 
 Same as md5(), but will return the digest in hexadecimal form. The
 length of the returned string will be 32 and it will only contain
 characters from this set: '0'..'9' and 'a'..'f'.
 
 
-=head4 md5_base64($data,...)
+(This explanation is cited from L<Digest::MD5>)
+
+=head3 md5_base64($data,...)
 
 Same as md5(), but will return the digest as a base64 encoded string.
 The length of the returned string will be 22 and it will only contain
@@ -2565,6 +2679,8 @@ multiple of 4 bytes long.  If you want interoperability with other
 base64 encoded md5 digests you might want to append the redundant
 string "==" to the result.
 
+
+(This explanation is cited from L<Digest::MD5>)
 
 
 =head2 -number (L<Util::All::Plugin::Number>)
@@ -2640,9 +2756,7 @@ string "==" to the result.
 
 =head2 -prompt (L<Util::All::Plugin::Prompt>)
 
-=head3 functions of L<IO::Prompt>
-
-=head4 Arguments to C<prompt>
+=head3 Arguments to C<prompt>
 
 Any argument not of the following forms is treated as part of the text of the
 prompt itself.
@@ -2718,6 +2832,8 @@ Flags can be "cuddled". For example:
      prompt("next: ", -tyn1s=>0.2)   # -tty, -yes, -no, -one_char, -speed=>0.2
 
 
+(This explanation is cited from L<IO::Prompt>)
+
 =head3 required_prompt
 
   sub {
@@ -2764,48 +2880,68 @@ serialize data usign L<Data::Serializer>.
 
 =head2 -sha (L<Util::All::Plugin::Sha>)
 
-=head3 functions of L<Digest::SHA>
-
-=head4 B<sha1($data, ...)>
+=head3 B<sha1($data, ...)>
 
 
-=head4 B<sha256($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256($data, ...)>
 
 
-=head4 B<sha384($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384($data, ...)>
 
 
-=head4 B<sha512($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a binary string.
 
 
-=head4 B<sha1_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha1_hex($data, ...)>
 
 
-=head4 B<sha256_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256_hex($data, ...)>
 
 
-=head4 B<sha384_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384_hex($data, ...)>
 
 
-=head4 B<sha512_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512_hex($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a hexadecimal string.
 
 
-=head4 B<sha1_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha1_base64($data, ...)>
 
 
-=head4 B<sha256_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256_base64($data, ...)>
 
 
-=head4 B<sha384_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384_base64($data, ...)>
 
 
-=head4 B<sha512_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512_base64($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a Base64 string.
@@ -2815,6 +2951,8 @@ the padding characters typical of Base64 encodings.  This omission is
 deliberate, and is done to maintain compatibility with the family of
 CPAN Digest modules.  See L<Digest::SHA/"PADDING OF BASE64 DIGESTS"> for details.
 
+
+(This explanation is cited from L<Digest::SHA>)
 
 
 =head2 -storable (L<Util::All::Plugin::Storable>)
@@ -2834,30 +2972,34 @@ retrieve data from stroable.
 
 =head2 -string (L<Util::All::Plugin::String>)
 
-=head3 functions of L<String::CamelCase>
-
-=head4 camelize($under_score)
+=head3 camelize($under_score)
 
 convert from under_score text to CamelCase one.
 
 
-=head4 decamelize($CamelCase)
+(This explanation is cited from L<String::CamelCase>)
+
+=head3 decamelize($CamelCase)
 
 convert from CamelCase text to under_score one.
 
 
-=head4 wordsplit($str)
+(This explanation is cited from L<String::CamelCase>)
+
+=head3 wordsplit($str)
 
 
-=head3 functions of L<String::Util>
+(This explanation is cited from L<String::CamelCase>)
 
-=head4 crunch(string)
+=head3 crunch(string)
 
 Crunches all whitespace in the string down to single spaces.  Also removes all
 leading and trailing whitespace.  Undefined input results in undefined output.
 
 
-=head4 hascontent(scalar)
+(This explanation is cited from L<String::Util>)
+
+=head3 hascontent(scalar)
 
 Returns true if the given argument contains something besides whitespace.
 
@@ -2870,18 +3012,24 @@ newlines, backspace) returns false.  A string containing any other
 characers (including zero) returns true.
 
 
-=head4 trim(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 trim(string)
 
 Returns the string with all leading and trailing whitespace removed.
 Trim on undef returns undef.
 
 
-=head4 nospace(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 nospace(string)
 
 Removes all whitespace characters from the given string.
 
 
-=head4 htmlesc(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 htmlesc(string)
 
 Formats a string for literal output in HTML.  An undefined value is
 returned as an empty string.
@@ -2896,7 +3044,9 @@ came from.  It's a matter of taste.
 
 
 
-=head4 unquote(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 unquote(string)
 
 If the given string starts and ends with quotes, removes them.
 Recognizes single quotes and double quotes.  The value must begin
@@ -2904,7 +3054,9 @@ and end with same type of quotes or nothing is done to the value.
 Undef input results in undef output.  
 
 
-=head4 define(scalar)
+(This explanation is cited from L<String::Util>)
+
+=head3 define(scalar)
 
 Takes a single value as input. If the value is defined, it is
 returned unchanged.  If it is not defined, an empty string is returned.
@@ -2914,7 +3066,9 @@ as an empty string.  Granted, Perl already treats undefs as empty strings in
 string context, but this sub makes -w happy.  And you ARE using -w, right?
 
 
-=head4 randword(length, %options)
+(This explanation is cited from L<String::Util>)
+
+=head3 randword(length, %options)
 
 Returns a random string of characters. String will not contain any vowels (to
 avoid distracting dirty words). First argument is the length of the return
@@ -2939,19 +3093,25 @@ returned random string.
 
  
 
-=head4 equndef($str1, $str2)
+(This explanation is cited from L<String::Util>)
+
+=head3 equndef($str1, $str2)
 
 Returns true if the two given strings are equal.  Also returns true if both
 are undef.  If only one is undef, or if they are both defined but different,
 returns false.
 
 
-=head4 neundef($str1, $str2)
+(This explanation is cited from L<String::Util>)
+
+=head3 neundef($str1, $str2)
 
 The opposite of equndef, returns true if the two strings are *not* the same.
 
 
-=head4 fullchomp(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 fullchomp(string)
 
 Works like chomp, but is a little more thorough about removing \n's and \r's
 even if they aren't part of the OS's standard end-of-line.
@@ -2959,11 +3119,15 @@ even if they aren't part of the OS's standard end-of-line.
 Undefs are returned as undefs.
 
 
-=head4 randcrypt(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 randcrypt(string)
 
 Crypts the given string, seeding the encryption with a random
 two character seed.
 
+
+(This explanation is cited from L<String::Util>)
 
 =head3 to_fh
 
@@ -2986,9 +3150,7 @@ abstract printable character from scalar. just like strings command.
 
 =head2 -subroutine (L<Util::All::Plugin::Subroutine>)
 
-=head3 functions of L<Data::Util>
-
-=head4 install_subroutine(package, name => subr [, ...])
+=head3 install_subroutine(package, name => subr [, ...])
 
 Installs I<subr> into I<package> as I<name>.
 
@@ -3014,7 +3176,9 @@ To re-install I<subr>, use C<< no warnings 'redefine' >> directive:
 	install_subroutine($package, $name => $subr);
 
 
-=head4 uninstall_subroutine(package, names...)
+(This explanation is cited from L<Data::Util>)
+
+=head3 uninstall_subroutine(package, names...)
 
 Uninstalls I<names> from I<package>.
 
@@ -3039,7 +3203,9 @@ For example:
 	uninstall_subroutine(\$pkg, { hello => \&Bar::hello });
 
 
-=head4 get_code_info(subr)
+(This explanation is cited from L<Data::Util>)
+
+=head3 get_code_info(subr)
 
 Returns a pair of elements, the package name and the subroutine name of I<subr>.
 
@@ -3047,7 +3213,9 @@ It is similar to C<Sub::Identify::get_code_info()>, but it returns the fully
 qualified name in scalar context.
 
 
-=head4 get_code_ref(package, name, flag?)
+(This explanation is cited from L<Data::Util>)
+
+=head3 get_code_ref(package, name, flag?)
 
 Returns I<&package::name> if it exists, not touching the symbol in the stash.
 
@@ -3061,7 +3229,9 @@ For example:
 	$code = get_code_ref($pkg, $name, -create); # like \&{$pkg.'::'.$name}
 
 
-=head4 curry(subr, args and/or placeholders)
+(This explanation is cited from L<Data::Util>)
+
+=head3 curry(subr, args and/or placeholders)
 
 Makes I<subr> curried and returns the curried subroutine.
 
@@ -3070,7 +3240,9 @@ This is also considered as lightweight closures.
 See also L<Data::Util::Curry>.
 
 
-=head4 modify_subroutine(subr, ...)
+(This explanation is cited from L<Data::Util>)
+
+=head3 modify_subroutine(subr, ...)
 
 Modifies I<subr> with subroutine modifiers and returns the modified subroutine.
 This is also considered as lightweight closures.
@@ -3087,24 +3259,32 @@ C<subroutine_modifier()> is property accessors, but it does not bless the
 modified subroutines.
 
 
-=head4 subroutine_modifier(subr)
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(subr)
 
 Returns whether I<subr> is a modified subroutine.
 
 
-=head4 subroutine_modifier(modified_subr, property)
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(modified_subr, property)
 
 Gets I<property> from I<modified>.
 
 Valid properties are: C<before>, C<around>, C<after>.
 
 
-=head4 subroutine_modifier(modified_subr, modifier => [subroutine(s)])
+(This explanation is cited from L<Data::Util>)
+
+=head3 subroutine_modifier(modified_subr, modifier => [subroutine(s)])
 
 Adds subroutine I<modifier> to I<modified_subr>.
 
 Valid modifiers are: C<before>, C<around>, C<after>.
 
+
+(This explanation is cited from L<Data::Util>)
 
 
 =head2 -unicode (L<Util::All::Plugin::Unicode>)
@@ -3129,12 +3309,12 @@ If you want unicode name/block.
 
 =head2 -uri (L<Util::All::Plugin::Uri>)
 
-=head3 functions of L<URI::Escape>
-
-=head4 uri_escape( $string )
+=head3 uri_escape( $string )
 
 
-=head4 uri_escape( $string, $unsafe )
+(This explanation is cited from L<URI::Escape>)
+
+=head3 uri_escape( $string, $unsafe )
 
 Replaces each unsafe character in the $string with the corresponding
 escape sequence and returns the result.  The $string argument should
@@ -3159,7 +3339,9 @@ as the reserved characters.  I.e. the default is:
     "^A-Za-z0-9\-\._~"
 
 
-=head4 uri_unescape($string,...)
+(This explanation is cited from L<URI::Escape>)
+
+=head3 uri_unescape($string,...)
 
 Returns a string with each %XX sequence replaced with the actual byte
 (octet).
@@ -3182,9 +3364,9 @@ If the uri_unescape() function is passed multiple strings, then each
 one is returned unescaped.
 
 
-=head3 functions of L<URI::Split>
+(This explanation is cited from L<URI::Escape>)
 
-=head4 ($scheme, $auth, $path, $query, $frag) = uri_split($uri)
+=head3 ($scheme, $auth, $path, $query, $frag) = uri_split($uri)
 
 Breaks up a URI string into its component
 parts.  An C<undef> value is returned for those parts that are not
@@ -3195,7 +3377,9 @@ No sensible value is returned if this function is called in a scalar
 context.
 
 
-=head4 $uri = uri_join($scheme, $auth, $path, $query, $frag)
+(This explanation is cited from L<URI::Split>)
+
+=head3 $uri = uri_join($scheme, $auth, $path, $query, $frag)
 
 Puts together a URI string from its parts.
 Missing parts are signaled by passing C<undef> for the corresponding
@@ -3206,6 +3390,8 @@ that would confuse a parser.  For instance, any occurrence of '?' or '#'
 in $path is always escaped, as it would otherwise be parsed back
 as a query or fragment.
 
+
+(This explanation is cited from L<URI::Split>)
 
 =head3 make_uri
 

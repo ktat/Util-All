@@ -343,11 +343,15 @@ debug:
       - dd
       - usage:
         - dd(@vars);
-        - as same as dump but output to STDOUT.
+        - |
+          dd of L<Data::Dump>.
+          as same as dump but output to STDOUT.
       - ddx
       - usage:
         - dd(@vars);
-        - as same as dd but output to STDOUT with line number.
+        - |
+          ddx of L<Data::Dump>.
+          as same as dd but output to STDOUT with line number.
     p:
       - sub { sub(@) { Data::Dump::dump(@_) } }
       - p($variable)

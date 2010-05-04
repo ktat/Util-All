@@ -91,9 +91,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -list
 
-=head3 functions of L<List::Util>
-
-=head4 first BLOCK LIST
+=head3 first BLOCK LIST
 
 Similar to C<grep> in that it evaluates BLOCK setting C<$_> to each element
 of LIST in turn. C<first> returns the first element where the result from
@@ -112,7 +110,9 @@ for example wanted() could be defined() which would return the first
 defined value in @list
 
 
-=head4 max LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 max LIST
 
 Returns the entry in the list with the highest numerical value. If the
 list is empty then C<undef> is returned.
@@ -126,7 +126,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a > $b ? $a : $b } 1..10
 
 
-=head4 maxstr LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 maxstr LIST
 
 Similar to C<max>, but treats all the entries in the list as strings
 and returns the highest string as defined by the C<gt> operator.
@@ -141,7 +143,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a gt $b ? $a : $b } 'A'..'Z'
 
 
-=head4 min LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 min LIST
 
 Similar to C<max> but returns the entry in the list with the lowest
 numerical value. If the list is empty then C<undef> is returned.
@@ -155,7 +159,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a < $b ? $a : $b } 1..10
 
 
-=head4 minstr LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 minstr LIST
 
 Similar to C<min>, but treats all the entries in the list as strings
 and returns the lowest string as defined by the C<lt> operator.
@@ -170,7 +176,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a lt $b ? $a : $b } 'A'..'Z'
 
 
-=head4 reduce BLOCK LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 reduce BLOCK LIST
 
 Reduces LIST by calling BLOCK, in a scalar context, multiple times,
 setting C<$a> and C<$b> each time. The first call will be with C<$a>
@@ -188,14 +196,18 @@ element is returned and BLOCK is not executed.
     $foo = reduce { $a . $b } @bar                  # concat
 
 
-=head4 shuffle LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 shuffle LIST
 
 Returns the elements of LIST in a random order
 
     @cards = shuffle 0..51      # 0..51 in a random order
 
 
-=head4 sum LIST
+(This explanation is cited from L<List::Util>)
+
+=head3 sum LIST
 
 Returns the sum of all the elements in LIST. If LIST is empty then
 C<undef> is returned.
@@ -209,9 +221,9 @@ This function could be implemented using C<reduce> like this
     $foo = reduce { $a + $b } 1..10
 
 
-=head3 functions of L<List::MoreUtils>
+(This explanation is cited from L<List::Util>)
 
-=head4 any BLOCK LIST
+=head3 any BLOCK LIST
 
 Returns a true value if any item in LIST meets the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -222,7 +234,9 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 all BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 all BLOCK LIST
 
 Returns a true value if all items in LIST meet the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -233,7 +247,9 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 none BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 none BLOCK LIST
 
 Logically the negation of C<any>. Returns a true value if no item in LIST meets the
 criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -244,7 +260,9 @@ criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 notall BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 notall BLOCK LIST
 
 Logically the negation of C<all>. Returns a true value if not all items in LIST meet
 the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
@@ -255,7 +273,9 @@ the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
 Returns false otherwise, or C<undef> if LIST is empty.
 
 
-=head4 true BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 true BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is true. Sets C<$_> for 
 each item in LIST in turn:
@@ -263,7 +283,9 @@ each item in LIST in turn:
     printf "%i item(s) are defined", true { defined($_) } @list;
 
 
-=head4 false BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 false BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is false. Sets C<$_> for
 each item in LIST in turn:
@@ -271,10 +293,14 @@ each item in LIST in turn:
     printf "%i item(s) are not defined", false { defined($_) } @list;
 
 
-=head4 firstidx BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 firstidx BLOCK LIST
 
 
-=head4 first_index BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 first_index BLOCK LIST
 
 Returns the index of the first element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -289,10 +315,14 @@ Returns C<-1> if no such item could be found.
 C<first_index> is an alias for C<firstidx>.
 
 
-=head4 lastidx BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 lastidx BLOCK LIST
 
 
-=head4 last_index BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 last_index BLOCK LIST
 
 Returns the index of the last element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -307,7 +337,9 @@ Returns C<-1> if no such item could be found.
 C<last_index> is an alias for C<lastidx>.
 
 
-=head4 insert_after BLOCK VALUE LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 insert_after BLOCK VALUE LIST
 
 Inserts VALUE after the first item in LIST for which the criterion in BLOCK is true. Sets C<$_> for
 each item in LIST in turn.
@@ -319,7 +351,9 @@ each item in LIST in turn.
     This is a longer list
 
 
-=head4 insert_after_string STRING VALUE LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 insert_after_string STRING VALUE LIST
 
 Inserts VALUE after the first item in LIST which is equal to STRING. 
 
@@ -330,7 +364,9 @@ Inserts VALUE after the first item in LIST which is equal to STRING.
     This is a longer list
 
 
-=head4 apply BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 apply BLOCK LIST
 
 Applies BLOCK to each item in LIST and returns a list of the values after BLOCK
 has been applied. In scalar context, the last element is returned.  This
@@ -350,7 +386,9 @@ Think of it as syntactic sugar for
     for (my @mult = @list) { $_ *= 2 }
 
 
-=head4 after BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 after BLOCK LIST
 
 Returns a list of the values of LIST after (and not including) the point
 where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
@@ -358,23 +396,31 @@ where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
     @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
 
 
-=head4 after_incl BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 after_incl BLOCK LIST
 
 Same as C<after> but also inclues the element for which BLOCK is true.
 
 
-=head4 before BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 before BLOCK LIST
 
 Returns a list of values of LIST upto (and not including) the point where BLOCK
 returns a true value. Sets C<$_> for each element in LIST in turn.
 
 
-=head4 before_incl BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 before_incl BLOCK LIST
 
 Same as C<before> but also includes the element for which BLOCK is true.
 
 
-=head4 indexes BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 indexes BLOCK LIST
 
 Evaluates BLOCK for each element in LIST (assigned to C<$_>) and returns a list
 of the indices of those elements for which BLOCK returned a true value. This is
@@ -383,10 +429,14 @@ just like C<grep> only that it returns indices instead of values:
     @x = indexes { $_ % 2 == 0 } (1..10);   # returns 1, 3, 5, 7, 9
 
 
-=head4 firstval BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 firstval BLOCK LIST
 
 
-=head4 first_value BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 first_value BLOCK LIST
 
 Returns the first element in LIST for which BLOCK evaluates to true. Each
 element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
@@ -395,10 +445,14 @@ has been found.
 C<first_val> is an alias for C<firstval>.
 
 
-=head4 lastval BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 lastval BLOCK LIST
 
 
-=head4 last_value BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 last_value BLOCK LIST
 
 Returns the last value in LIST for which BLOCK evaluates to true. Each element
 of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
@@ -407,7 +461,9 @@ found.
 C<last_val> is an alias for C<lastval>.
 
 
-=head4 pairwise BLOCK ARRAY1 ARRAY2
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 pairwise BLOCK ARRAY1 ARRAY2
 
 Evaluates BLOCK for each pair of elements in ARRAY1 and ARRAY2 and returns a
 new list consisting of BLOCK's return values. The two elements are set to C<$a>
@@ -424,7 +480,9 @@ them will modify the input arrays.
     @x = pairwise { ($a, $b) } @a, @b;	# returns a, 1, b, 2, c, 3
 
 
-=head4 each_array ARRAY1 ARRAY2 ...
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 each_array ARRAY1 ARRAY2 ...
 
 Creates an array iterator to return the elements of the list of arrays ARRAY1,
 ARRAY2 throughout ARRAYn in turn.  That is, the first time it is called, it
@@ -442,13 +500,17 @@ If the iterator is passed an argument of 'C<index>', then it retuns
 the index of the last fetched set of values, as a scalar.
 
 
-=head4 each_arrayref LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 each_arrayref LIST
 
 Like each_array, but the arguments are references to arrays, not the
 plain arrays.
 
 
-=head4 natatime BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 natatime BLOCK LIST
 
 Creates an array iterator, for looping over an array in chunks of
 C<$n> items at a time.  (n at a time, get it?).  An example is
@@ -470,10 +532,14 @@ This prints
     g
 
 
-=head4 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
 
-=head4 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
 Returns a list consisting of the first elements of each array, then
 the second, then the third, etc, until all arrays are exhausted.
@@ -492,7 +558,9 @@ Examples:
 C<zip> is an alias for C<mesh>.
 
 
-=head4 uniq LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 uniq LIST
 
 Returns a new list by stripping duplicate values in LIST. The order of
 elements in the returned list is the same as in LIST. In scalar context,
@@ -502,7 +570,9 @@ returns the number of unique elements in LIST.
     my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
 
 
-=head4 minmax LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 minmax LIST
 
 Calculates the minimum and maximum of LIST and returns a two element list with
 the first element being the minimum and the second the maximum. Returns the empty
@@ -518,7 +588,9 @@ fairly big in order for minmax to win over a naive implementation. This
 limitation does not apply to the XS version.
 
 
-=head4 part BLOCK LIST
+(This explanation is cited from L<List::MoreUtils>)
+
+=head3 part BLOCK LIST
 
 Partitions LIST based on the return value of BLOCK which denotes into which partition
 the current value is put.
@@ -547,23 +619,33 @@ Negative values are only ok when they refer to a partition previously created:
     my @part = part { $idx[$++ % 3] } 1 .. 8;	# [1, 4, 7], [2, 3, 5, 6, 8]
 
 
-=head3 functions of L<List::Pairwise>
+(This explanation is cited from L<List::MoreUtils>)
 
-=head4 mapp BLOCK LIST
-
-
-=head4 grepp BLOCK LIST
+=head3 mapp BLOCK LIST
 
 
-=head4 firstp BLOCK LIST
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 grepp BLOCK LIST
 
 
-=head4 lastp BLOCK LIST
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 firstp BLOCK LIST
 
 
-=head4  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
+(This explanation is cited from L<List::Pairwise>)
+
+=head3 lastp BLOCK LIST
+
+
+(This explanation is cited from L<List::Pairwise>)
+
+=head3  Johan Lodin for the C<pair> idea and implementation, as well as numerous other
 contributions (see changelog)
 
+
+(This explanation is cited from L<List::Pairwise>)
 
 
 

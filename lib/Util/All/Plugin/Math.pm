@@ -35,26 +35,30 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -math
 
-=head3 functions of L<Toolbox::Simple>
-
-=head4 B<gcd(num, num, num)  /  gcf(num, num, num)>
+=head3 B<gcd(num, num, num)  /  gcf(num, num, num)>
 
 Both (identical) functions return the greatest common divisor/factor
 for the numbers given in their arguments.
 
 
 
-=head4 B<lcm(num, num, num)>
+(This explanation is cited from L<Toolbox::Simple>)
+
+=head3 B<lcm(num, num, num)>
 
 Returns the lowest common multiple for the numbers in its argument.
 
 
 
-=head4 B<is_prime(num)>
+(This explanation is cited from L<Toolbox::Simple>)
+
+=head3 B<is_prime(num)>
 
 Tests a number for primeness. If it is, returns 1. If it isn't prime, returns 0.
 
 
+
+(This explanation is cited from L<Toolbox::Simple>)
 
 
 

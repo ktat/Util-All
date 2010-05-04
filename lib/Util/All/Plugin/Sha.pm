@@ -43,48 +43,68 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -sha
 
-=head3 functions of L<Digest::SHA>
-
-=head4 B<sha1($data, ...)>
+=head3 B<sha1($data, ...)>
 
 
-=head4 B<sha256($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256($data, ...)>
 
 
-=head4 B<sha384($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384($data, ...)>
 
 
-=head4 B<sha512($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a binary string.
 
 
-=head4 B<sha1_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha1_hex($data, ...)>
 
 
-=head4 B<sha256_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256_hex($data, ...)>
 
 
-=head4 B<sha384_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384_hex($data, ...)>
 
 
-=head4 B<sha512_hex($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512_hex($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a hexadecimal string.
 
 
-=head4 B<sha1_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha1_base64($data, ...)>
 
 
-=head4 B<sha256_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha256_base64($data, ...)>
 
 
-=head4 B<sha384_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha384_base64($data, ...)>
 
 
-=head4 B<sha512_base64($data, ...)>
+(This explanation is cited from L<Digest::SHA>)
+
+=head3 B<sha512_base64($data, ...)>
 
 Logically joins the arguments into a single string, and returns
 its SHA-1/224/256/384/512 digest encoded as a Base64 string.
@@ -94,6 +114,8 @@ the padding characters typical of Base64 encodings.  This omission is
 deliberate, and is done to maintain compatibility with the family of
 CPAN Digest modules.  See L<Digest::SHA/"PADDING OF BASE64 DIGESTS"> for details.
 
+
+(This explanation is cited from L<Digest::SHA>)
 
 
 

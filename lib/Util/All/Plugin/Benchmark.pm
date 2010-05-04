@@ -61,9 +61,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -benchmark
 
-=head3 functions of L<Benchmark>
-
-=head4 timeit(COUNT, CODE)
+=head3 timeit(COUNT, CODE)
 
 Arguments: COUNT is the number of times to run the loop, and CODE is
 the code to run.  CODE may be either a code reference or a string to
@@ -72,7 +70,9 @@ be eval'd; either way it will be run in the caller's package.
 Returns: a Benchmark object.
 
 
-=head4 timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timethis ( COUNT, CODE, [ TITLE, [ STYLE ]] )
 
 Time COUNT iterations of CODE. CODE may be a string to eval or a
 code reference; either way the CODE will run in the caller's package.
@@ -105,7 +105,9 @@ interesting number than the actually spent seconds.
 Returns a Benchmark object.
 
 
-=head4 timethese ( COUNT, CODEHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timethese ( COUNT, CODEHASHREF, [ STYLE ] )
 
 The CODEHASHREF is a reference to a hash containing names as keys
 and either a string to eval or a code reference for each value.
@@ -121,13 +123,17 @@ The COUNT can be zero or negative, see timethis().
 Returns a hash reference of Benchmark objects, keyed by name.
 
 
-=head4 timediff ( T1, T2 )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timediff ( T1, T2 )
 
 Returns the difference between two Benchmark times as a Benchmark
 object suitable for passing to timestr().
 
 
-=head4 timestr ( TIMEDIFF, [ STYLE, [ FORMAT ] ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timestr ( TIMEDIFF, [ STYLE, [ FORMAT ] ] )
 
 Returns a string that formats the times in the TIMEDIFF object in
 the requested STYLE. TIMEDIFF is expected to be a Benchmark object
@@ -145,10 +151,14 @@ FORMAT is the L<printf(3)>-style format specifier (without the
 leading '%') to use to print the times. It defaults to '5.2f'.
 
 
-=head4 cmpthese ( COUNT, CODEHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 cmpthese ( COUNT, CODEHASHREF, [ STYLE ] )
 
 
-=head4 cmpthese ( RESULTSHASHREF, [ STYLE ] )
+(This explanation is cited from L<Benchmark>)
+
+=head3 cmpthese ( RESULTSHASHREF, [ STYLE ] )
 
 Optionally calls timethese(), then outputs comparison chart.  This:
 
@@ -194,7 +204,9 @@ this is typical of benchmarking.  If this were a real benchmark, you would
 probably want to run a lot more iterations.
 
 
-=head4 countit(TIME, CODE)
+(This explanation is cited from L<Benchmark>)
+
+=head3 countit(TIME, CODE)
 
 Arguments: TIME is the minimum length of time to run CODE for, and CODE is
 the code to run.  CODE may be either a code reference or a string to
@@ -209,11 +221,15 @@ by the times that you are concerned with, not just the iterations.
 Returns: a Benchmark object.
 
 
-=head4 timesum ( T1, T2 )
+(This explanation is cited from L<Benchmark>)
+
+=head3 timesum ( T1, T2 )
 
 Returns the sum of two Benchmark times as a Benchmark object suitable
 for passing to timestr().
 
+
+(This explanation is cited from L<Benchmark>)
 
 =head3 timesamearg
 

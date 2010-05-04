@@ -99,30 +99,34 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -string
 
-=head3 functions of L<String::CamelCase>
-
-=head4 camelize($under_score)
+=head3 camelize($under_score)
 
 convert from under_score text to CamelCase one.
 
 
-=head4 decamelize($CamelCase)
+(This explanation is cited from L<String::CamelCase>)
+
+=head3 decamelize($CamelCase)
 
 convert from CamelCase text to under_score one.
 
 
-=head4 wordsplit($str)
+(This explanation is cited from L<String::CamelCase>)
+
+=head3 wordsplit($str)
 
 
-=head3 functions of L<String::Util>
+(This explanation is cited from L<String::CamelCase>)
 
-=head4 crunch(string)
+=head3 crunch(string)
 
 Crunches all whitespace in the string down to single spaces.  Also removes all
 leading and trailing whitespace.  Undefined input results in undefined output.
 
 
-=head4 hascontent(scalar)
+(This explanation is cited from L<String::Util>)
+
+=head3 hascontent(scalar)
 
 Returns true if the given argument contains something besides whitespace.
 
@@ -135,18 +139,24 @@ newlines, backspace) returns false.  A string containing any other
 characers (including zero) returns true.
 
 
-=head4 trim(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 trim(string)
 
 Returns the string with all leading and trailing whitespace removed.
 Trim on undef returns undef.
 
 
-=head4 nospace(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 nospace(string)
 
 Removes all whitespace characters from the given string.
 
 
-=head4 htmlesc(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 htmlesc(string)
 
 Formats a string for literal output in HTML.  An undefined value is
 returned as an empty string.
@@ -161,7 +171,9 @@ came from.  It's a matter of taste.
 
 
 
-=head4 unquote(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 unquote(string)
 
 If the given string starts and ends with quotes, removes them.
 Recognizes single quotes and double quotes.  The value must begin
@@ -169,7 +181,9 @@ and end with same type of quotes or nothing is done to the value.
 Undef input results in undef output.  
 
 
-=head4 define(scalar)
+(This explanation is cited from L<String::Util>)
+
+=head3 define(scalar)
 
 Takes a single value as input. If the value is defined, it is
 returned unchanged.  If it is not defined, an empty string is returned.
@@ -179,7 +193,9 @@ as an empty string.  Granted, Perl already treats undefs as empty strings in
 string context, but this sub makes -w happy.  And you ARE using -w, right?
 
 
-=head4 randword(length, %options)
+(This explanation is cited from L<String::Util>)
+
+=head3 randword(length, %options)
 
 Returns a random string of characters. String will not contain any vowels (to
 avoid distracting dirty words). First argument is the length of the return
@@ -204,19 +220,25 @@ returned random string.
 
  
 
-=head4 equndef($str1, $str2)
+(This explanation is cited from L<String::Util>)
+
+=head3 equndef($str1, $str2)
 
 Returns true if the two given strings are equal.  Also returns true if both
 are undef.  If only one is undef, or if they are both defined but different,
 returns false.
 
 
-=head4 neundef($str1, $str2)
+(This explanation is cited from L<String::Util>)
+
+=head3 neundef($str1, $str2)
 
 The opposite of equndef, returns true if the two strings are *not* the same.
 
 
-=head4 fullchomp(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 fullchomp(string)
 
 Works like chomp, but is a little more thorough about removing \n's and \r's
 even if they aren't part of the OS's standard end-of-line.
@@ -224,11 +246,15 @@ even if they aren't part of the OS's standard end-of-line.
 Undefs are returned as undefs.
 
 
-=head4 randcrypt(string)
+(This explanation is cited from L<String::Util>)
+
+=head3 randcrypt(string)
 
 Crypts the given string, seeding the encryption with a random
 two character seed.
 
+
+(This explanation is cited from L<String::Util>)
 
 =head3 to_fh
 

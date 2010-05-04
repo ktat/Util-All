@@ -34,9 +34,7 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head2 -md5
 
-=head3 functions of L<Digest::MD5>
-
-=head4 md5($data,...)
+=head3 md5($data,...)
 
 This function will concatenate all arguments, calculate the MD5 digest
 of this "message", and return it in binary form.  The returned string
@@ -46,14 +44,18 @@ The result of md5("a", "b", "c") will be exactly the same as the
 result of md5("abc").
 
 
-=head4 md5_hex($data,...)
+(This explanation is cited from L<Digest::MD5>)
+
+=head3 md5_hex($data,...)
 
 Same as md5(), but will return the digest in hexadecimal form. The
 length of the returned string will be 32 and it will only contain
 characters from this set: '0'..'9' and 'a'..'f'.
 
 
-=head4 md5_base64($data,...)
+(This explanation is cited from L<Digest::MD5>)
+
+=head3 md5_base64($data,...)
 
 Same as md5(), but will return the digest as a base64 encoded string.
 The length of the returned string will be 22 and it will only contain
@@ -65,6 +67,8 @@ multiple of 4 bytes long.  If you want interoperability with other
 base64 encoded md5 digests you might want to append the redundant
 string "==" to the result.
 
+
+(This explanation is cited from L<Digest::MD5>)
 
 
 
