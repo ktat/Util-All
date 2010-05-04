@@ -1285,10 +1285,35 @@ basecalc:
         }
   -usage: |
     =head3 from_base / to_base
-
+    
       use Util::All -basecalc => [-args => {digits => [0,1]}];
       to_base(4);     # 100
       from_base(100); # 4
+    
+    =head2 B<dec2hex(65)>
+    
+    Converts given decimal number into hexadecimal. Result in example is '41'.
+    
+    (This explantion is cited from L<Toolbox::Simple>)
+    
+    =head2 B<hex2dec(1A)>
+    
+    Converts given hex number into decimal. Result in example is '31'.
+    
+    (This explantion is cited from L<Toolbox::Simple>)
+    
+    =head2 B<dec2bin(decimalnumber, bits)>
+    
+    Converts C<decimalnumber> into a big-endian binary string consisting of C<bits>
+    bits total (C<bits> can be between 4 and 32).
+    
+    (This explantion is cited from L<Toolbox::Simple>)
+    
+    =head2 B<dec2oct()  oct2dec()>
+    
+    Converts given decimal num to octal, and vice versa.
+    
+    (This explantion is cited from L<Toolbox::Simple>)
  
   -test :
     -
