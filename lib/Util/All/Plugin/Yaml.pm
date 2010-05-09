@@ -77,18 +77,9 @@ dump YAML data to file
 
 =head3 to_yaml
 
-    sub {
-        require Encode;
-        require Data::Structure::Util;
-        require Data::Recursive::Encode;
-        sub {
-            my $data = shift;
-            $data = Data::Recursive::Encode->decode( 'utf8', $data )
-              unless Data::Structure::Util::has_utf8($data);
-            YAML::XS::Dump($data);
-          }
-      }
+    my $yaml_string = to_yaml($perl_data);
 
+from perl data to yaml.
 
 =head3 decode_yaml
 
@@ -106,15 +97,9 @@ load YAML data from file
 
 =head3 from_yaml
 
-    sub {
-        require Encode;
-        sub {
-            my $yaml = shift;
-            YAML::XS::Load(
-                utf8::is_utf8($yaml) ? Encode::encode( "utf8", $yaml ) : $yaml );
-          }
-      }
+    my $data = from_yaml($yaml_string);
 
+from yaml to perl data.
 
 
 

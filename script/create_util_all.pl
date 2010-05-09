@@ -414,6 +414,7 @@ sub usage {
       $c .= "=head3 test code\n\n";
       foreach my $test (@$t) {
         next if ref $test eq 'HASH';
+	die "$kind/$f test is wrong?: " . $test unless ref $test;
         my ($_test, $_r) = @$test == 3 ? @{$test}[1,2] : @{$test}[0,1];
         $_test =~s{;}{;\n}g;
         $_test =~s{^\s*}{ }mg;

@@ -133,30 +133,18 @@ Flags can be "cuddled". For example:
 
 =head3 required_prompt
 
-    sub {
-        sub {
-            my $message = shift;
-            my $answer;
-          PROMPT:
-            {
-                $answer = IO::Prompt::prompt( $message, @_ );
-                $answer->{value} or redo PROMPT;
-                return $answer->{value};
-            }
-          }
-      }
+    password_prompt($message, @option_for_prompt);
+
+If inputted value is empty, re-prompt.
 
 
 =head3 password_prompt
 
-    sub {
-        sub {
-            my $message = shift;
-            my $answer;
-            $answer = IO::Prompt::prompt( $message, -echo => "*", @_ );
-            $answer->{value};
-          }
-      }
+    password_prompt($message, @option_for_prompt);
+
+This is equal to
+
+  IO::Prompt::prompt($message, -echo => "*", @option_for_prompt);
 
 
 

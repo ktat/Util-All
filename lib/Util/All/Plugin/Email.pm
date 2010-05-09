@@ -74,14 +74,18 @@ sub utils {
             sub {
                 my($header, $attributes, $parts_or_body) = @_;
                 $attributes = &Clone::clone($attributes);
+                unless (%$attributes) {
+                  $attributes->{charset} = 'UTF-8';
+                }
                 $parts_or_body = &Clone::clone($parts_or_body) if ref $parts_or_body;
                 if (ref $parts_or_body) {
                     my($use_str, $charset, $flg) = Util::All::Plugin::Email::_charset_resolver($attributes, $header);
-                    'Email::MIME'->create('attributes', $attributes, 'parts', [map({my @arg;
+                    my $e = 'Email::MIME'->create('attributes', $attributes, 'parts', [map({my @arg;
                     my($attributes, $body_or_file) = ref $_ ? @$_ : ({}, $_);
                     if (-e $body_or_file) {
                         my($ext) = $body_or_file =~ /\.(.+?)$/;
-                        my $attr = {'content_type', $mime->mimeTypeOf($ext), 'encoding', 'base64'};
+                        my($name) = $body_or_file =~m{([^/\\]+)$};
+                        my $attr = {'filename', => $name, 'content_type', ($ext ? $mime->mimeTypeOf($ext) : 'text/plain'), 'encoding', 'base64'};
                         @arg = ('body', scalar File::Slurp::slurp($body_or_file), 'attributes', $attr);
                     }
                     else {
@@ -93,6 +97,7 @@ sub utils {
                         @arg = ('attributes', $attributes, 'body', $body_or_file);
                     }
                     'Email::MIME'->create(@arg);} @$parts_or_body)], $use_str ? 'header_str' : 'header', $header);
+                    return $e;
                 }
                 else {
                     my($use_str, $charset, $flg) = Util::All::Plugin::Email::_charset_resolver($attributes, $header);

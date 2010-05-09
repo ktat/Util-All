@@ -233,7 +233,7 @@ in a list context.
 
 =head3 ddx
 
-    dd(@vars);
+    ddx(@vars);
 
 ddx of L<Data::Dump>.
 as same as dd but output to STDOUT with line number.

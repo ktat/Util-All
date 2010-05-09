@@ -7,6 +7,15 @@ use utf8;
 my ($from, $to) = @ARGV;
 die "[USAGE] email.pl FROM_ADDRESS TO_ADDRESS\n" unless $to and $from;
 
+# file only.
+send_email([From => $from, To => $to, Subject => "file only"],
+	   {},
+	   [
+	     $0,
+	     "README",
+	     "Changes",
+	    ]);
+
 foreach my $charset ('utf8', 'iso-2022-jp') {
   warn $charset, "\n";
   # no utf8 flag
@@ -40,3 +49,4 @@ sub test_email {
               $0
              ]);
 }
+

@@ -82,71 +82,50 @@ NOTE THAT: almost all of functions' explantion is cited from original modules' d
 
 =head3 number_commify
 
-    sub {
-    
-        # code is borrowed from Template::Plugin::Comma
-        sub {
-            local $_ = shift;
-            while (s/((?:\A|[^.0-9])[-+]?\d+)(\d{3})/$1,$2/s) { }
-            return $_;
-          }
-      }
+    $n = number_commify(1000);
 
+commify number.
 
 =head3 number_price
 
-    sub {
-        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-        my $n = Number::Format->new( %$kind_args, %$args );
-        sub {
-            $n->format_price(@_);
-          }
-      }
+    number_price(10000); # JPY 10,000
+    number_price(10000, 0, '\'); # \10,000
 
+
+number to price string.
 
 =head3 number_unit
 
-    sub {
-        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-        my $n = Number::Format->new( %$kind_args, %$args );
-        sub {
-            $n->format_bytes(@_);
-          }
-      }
+    number_unit(1024, unit => 'K', mode => 'iec');     # 1KiB
+    number_unit(1048576, unit => 'M', mode => 'trad'); # 1M
 
+
+number to unit.
 
 =head3 number_round
 
-    sub {
-        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-        my $n = Number::Format->new( %$kind_args, %$args );
-        sub {
-            $n->round(@_);
-          }
-      }
+    $n = number_round(3.14159);
 
+round number.
 
 =head3 to_number
 
-    sub {
-        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-        my $n = Number::Format->new( %$kind_args, %$args );
-        sub {
-            $n->unformat_number(@_);
-          }
-      }
+    to_number(1,000);   # 1000
+    to_number("1KiB");  # 1024
+    to_number("1K");    # 1024
 
+
+string to number.
 
 =head3 number_format
 
-    sub {
-        my ( $pkg, $class, $func, $args, $kind_args ) = @_;
-        my $n = Number::Format->new( %$kind_args, %$args );
-        sub {
-            $n->format_number(@_);
-          }
-      }
+    number_round($number, $precision, $trailing_zeroes);
+    number_round(1000); # 1,000
+    number_round(1000, 2, 0); # 1,000
+    number_round(1000, 2, 2); # 1,000,00
 
+
+format number.
 
 
 
