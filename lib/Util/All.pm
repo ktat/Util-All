@@ -186,6 +186,7 @@ our $Utils = {
       'Time::HiRes',
       '',
       {
+        'time' => 'utime',
         '-select' => [
           'usleep',
           'nanosleep',
@@ -523,6 +524,8 @@ If you want to disable this.
 
   use Util::All -modern => [];
 
+This is similar to L<Modern::Perl>, the difference is this checking Perl version.
+
 
 =head2 -oo
 
@@ -691,6 +694,18 @@ Note that the interaction between alarms and sleeps is unspecified.
 
 
 (This explanation is cited from L<Time::HiRes>)
+
+=head3 utime
+
+(time of L<Time::HiRes>)
+
+=head2 negative time not invented yet
+
+You tried to use a negative time argument.
+
+(This explanation is cited from L<Time::HiRes>)
+
+
 
 
 

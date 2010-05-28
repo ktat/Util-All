@@ -29,6 +29,8 @@ modern:
       If you want to disable this.
       
         use Util::All -modern => [];
+      
+      This is similar to L<Modern::Perl>, the difference is this checking Perl version.
 
 argv:
   -require: ['Term::Encoding']
@@ -1638,9 +1640,11 @@ file:
 
 utime:
   Time::HiRes:
-    - usleep
-    - nanosleep
-    - ualarm
+   -select:
+     - usleep
+     - nanosleep
+     - ualarm
+   time: utime
 
 number:
   -as_plugin: 1
