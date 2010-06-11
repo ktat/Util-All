@@ -356,6 +356,9 @@ Getting even accuracy of one thousand nanoseconds is good.
 Issues a C<ualarm> call; the C<$interval_useconds> is optional and
 will be zero if unspecified, resulting in C<alarm>-like behaviour.
 
+Returns the remaining time in the alarm in microseconds, or C<undef>
+if an error occurred.
+
 ualarm(0) will cancel an outstanding ualarm().
 
 Note that the interaction between alarms and sleeps is unspecified.
@@ -589,7 +592,7 @@ outputs a chart like:
 This chart is sorted from slowest to fastest, and shows the percent speed
 difference between each pair of tests.
 
-c<cmpthese> can also be passed the data structure that timethese() returns:
+C<cmpthese> can also be passed the data structure that timethese() returns:
 
     $results = timethese( -1, { a => "++\$i", b => "\$i *= 2" } ) ;
     cmpthese( $results );
@@ -1055,7 +1058,7 @@ If EXPR is a scalar which is a weak reference the result is true.
 B<NOTE>: Copying a weak reference creates a normal, strong, reference.
 
     $copy = $ref;
-    $weak = isweak($ref);               # false
+    $weak = isweak($copy);              # false
 
 (This explanation is cited from L<Scalar::Util>)
 
@@ -1413,34 +1416,6 @@ HANDLING"> section for more information.
 If this parameter is not used, certain error conditions may raise
 a fatal error that will cause the program will halt, unless trapped
 in an C<eval> block.
-
-=item owner => $owner
-
-=item user => $owner
-
-=item uid => $owner
-
-If present, will cause any created directory to be owned by C<$owner>.
-If the value is numeric, it will be interpreted as a uid, otherwise
-as username is assumed. An error will be issued if the username cannot be
-mapped to a uid, or the uid does not exist, or the process lacks the
-privileges to change ownership.
-
-Ownwership of directories that already exist will not be changed.
-
-C<user> and C<uid> are aliases of C<owner>.
-
-=item group => $group
-
-If present, will cause any created directory to be owned by the group C<$group>.
-If the value is numeric, it will be interpreted as a gid, otherwise
-as group name is assumed. An error will be issued if the group name cannot be
-mapped to a gid, or the gid does not exist, or the process lacks the
-privileges to change group ownership.
-
-Group ownwership of directories that already exist will not be changed.
-
-    make_path '/var/tmp/webcache', {owner=>'nobody', group=>'nogroup'};
 
 =back
 
@@ -2202,6 +2177,12 @@ element is returned and BLOCK is not executed.
     $foo = reduce { $a + $b } 1 .. 10               # sum
     $foo = reduce { $a . $b } @bar                  # concat
 
+If your algorithm requires that C<reduce> produce an identity value, then
+make sure that you always pass that identity value as the first argument to prevent
+C<undef> being returned
+
+  $foo = reduce { $a + $b } 0, @values;             # sum with 0 identity value
+
 
 (This explanation is cited from L<List::Util>)
 
@@ -2226,6 +2207,12 @@ C<undef> is returned.
 This function could be implemented using C<reduce> like this
 
     $foo = reduce { $a + $b } 1..10
+
+If your algorithm requires that C<sum> produce an identity of 0, then
+make sure that you always pass C<0> as the first argument to prevent
+C<undef> being returned
+
+  $foo = sum 0, @values;
 
 
 (This explanation is cited from L<List::Util>)
@@ -3339,10 +3326,10 @@ character class (between [ ]).  E.g.:
   "^A-Za-z"                     # everything not a letter
 
 The default set of characters to be escaped is all those which are
-I<not> part of the C<unreserved> character class shown above as well
-as the reserved characters.  I.e. the default is:
+I<not> part of the C<uric> character class shown above as well as the
+reserved characters.  I.e. the default is:
 
-    "^A-Za-z0-9\-\._~"
+  "^A-Za-z0-9\-_.!~*'()"
 
 
 (This explanation is cited from L<URI::Escape>)

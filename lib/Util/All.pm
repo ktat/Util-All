@@ -83,6 +83,7 @@ our $Utils = {
             }
             elsif ($] >= 5.01) {
                 require feature;
+                require mro;
                 'feature'->import(':5.10');
                 &mro::set_mro(scalar caller 2, 'c3');
             }
@@ -687,6 +688,9 @@ Getting even accuracy of one thousand nanoseconds is good.
 
 Issues a C<ualarm> call; the C<$interval_useconds> is optional and
 will be zero if unspecified, resulting in C<alarm>-like behaviour.
+
+Returns the remaining time in the alarm in microseconds, or C<undef>
+if an error occurred.
 
 ualarm(0) will cancel an outstanding ualarm().
 

@@ -369,7 +369,7 @@ If EXPR is a scalar which is a weak reference the result is true.
 B<NOTE>: Copying a weak reference creates a normal, strong, reference.
 
     $copy = $ref;
-    $weak = isweak($ref);               # false
+    $weak = isweak($copy);              # false
 
 (This explanation is cited from L<Scalar::Util>)
 

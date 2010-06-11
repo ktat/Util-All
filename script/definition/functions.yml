@@ -12,6 +12,7 @@ modern:
             MRO::Compat->import;
           } elsif ($] >= 5.01) {
             require feature;
+            require mro;
             feature->import(':5.10');
             mro::set_mro( scalar caller(2), 'c3' );
           }
